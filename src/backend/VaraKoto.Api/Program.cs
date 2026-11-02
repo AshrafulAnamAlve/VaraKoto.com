@@ -1,11 +1,14 @@
 using Microsoft.EntityFrameworkCore;
+using VaraKoto.Core.Interfaces;
 using VaraKoto.Infrastructure.Data;
+using VaraKoto.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
+builder.Services.AddMemoryCache();
 
 // Register SQL Server DbContext
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
@@ -13,6 +16,10 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 
 builder.Services.AddDbContext<VaraKotoDbContext>(options =>
     options.UseSqlServer(connectionString));
+
+// Register typed HTTP clients & domain services
+builder.Services.AddHttpClient<ILocationService, HybridLocationService>();
+builder.Services.AddHttpClient<IRouteService, OsrmRouteService>();
 
 // CORS configuration for Angular frontend
 builder.Services.AddCors(options =>

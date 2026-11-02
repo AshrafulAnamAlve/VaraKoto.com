@@ -55,10 +55,36 @@
 
 ---
 
+### ✅ Phase 4: Location Services, Geocoding & Routing Engine
+- **Core Interfaces & DTOs**:
+  - `LocationDto`: `Id`, `NameEn`, `NameBn`, `Latitude`, `Longitude`, `District`, `Thana`, `DisplayName`, `Source`.
+  - `DistanceResultDto`: `DistanceKm`, `EstimatedDurationMinutes`, `Source` (`CachedRoute`, `OsrmRoutingEngine`, `HaversineFallbackRoadEstimated`), `RoadFactor`.
+  - `ILocationService` & `IRouteService` defined in `VaraKoto.Core/Interfaces/`.
+- **HybridLocationService**:
+  - Direct database matching against seeded Bangladesh hubs with English and Bengali query matching.
+  - Memory caching (`IMemoryCache`) for instant repeated queries.
+  - Zero-cost Photon geocoding API fallback explicitly bounded to Bangladesh bounding box (`[88.0, 20.5, 92.7, 26.7]`).
+  - Reverse geocoding via local database nearest hub lookup (< 500m) or OpenStreetMap Nominatim reverse API.
+- **OsrmRouteService**:
+  - Checks persistent `RouteCaches` in SQL Server for previous calculations to avoid external network calls.
+  - Queries OSRM driving API (`router.project-osrm.org`) for realistic driving road distances and durations.
+  - Fallback engine: Haversine great-circle distance scaled by Bangladesh road tortuosity factor ($1.28$) with 25 km/h urban speed estimation when offline or rate-limited.
+- **API Controllers**:
+  - `LocationsController`: `GET /api/locations/search?q={query}&limit={limit}` and `GET /api/locations/reverse?lat={lat}&lon={lon}`.
+  - `RoutesController`: `GET /api/routes/distance?fromLat=...&fromLon=...&toLat=...&toLon=...`.
+- **Frontend LocationService & Models**:
+  - `LocationModel` & `DistanceResultModel` in `src/app/core/models/location.model.ts`.
+  - Signals-based `LocationService` with reactive `currentLocation`, `isDetectingLocation`, browser `navigator.geolocation` integration, debounce search, and error handling.
+- **Automated Verification**:
+  - Backend: `dotnet test` passed 11 / 11 tests (100%).
+  - Frontend: `npm test` passed 21 / 21 tests (100%).
+  - Production build: `npm run build` succeeded (raw 255 kB, gzipped 67 kB).
+
+---
+
 ## 2. Remaining Phases
 
-- **Phase 4: Location Services, Geocoding & Routing Engine** *(Next)*
-- **Phase 5: Transportation Fare Calculation Engine**
+- **Phase 5: Transportation Fare Calculation Engine** *(Next)*
 - **Phase 6: Core Frontend Homepage – Find Fare Interface**
 - **Phase 7: Community Fare Contribution & Verification System**
 - **Phase 8: End-to-End Integration, Validation & Anti-Spam Safeguards**
@@ -74,11 +100,18 @@
    - Used `DeleteBehavior.Restrict` on `FareSubmissions` and `RouteCaches` location foreign keys to prevent unintended data loss or cascade deletion anomalies.
 3. **Idempotent Automatic Database Migrations**:
    - In `DbInitializer.cs`, migration is executed conditionally for SQL Server, allowing unit tests using SQLite in-memory to execute without migration engine conflicts.
+4. **Hybrid Geocoding & Routing Strategy**:
+   - Prioritizes local Bangladesh transit hubs with 0ms latency and 0 API cost.
+   - Bounded external Photon geocoding ensures results stay within Bangladesh.
+   - Persistent `RouteCaches` and Haversine $1.28$ road factor provide resilient offline/fallback calculations.
 
 ---
 
 ## 4. API Integrations
 - `GET /api/health` $\rightarrow$ System health, version, timestamp, and environment status.
+- `GET /api/locations/search` $\rightarrow$ Autocomplete location search (local hubs + Photon fallback).
+- `GET /api/locations/reverse` $\rightarrow$ Reverse geocoding for GPS coordinate resolution.
+- `GET /api/routes/distance` $\rightarrow$ Driving distance & duration calculation (Cache + OSRM + Haversine).
 - SQL Server `(localdb)\MSSQLLocalDB` connected and verified.
 
 ---
@@ -87,6 +120,7 @@
 - Database `VaraKotoDb` created on `(localdb)\MSSQLLocalDB`.
 - Migration `InitialCreate` executed.
 - Seeded initial records for `TransportTypes`, `FareRules`, and `Locations`.
+- Added dynamic route persistence in `RouteCaches` during distance queries.
 
 ---
 
@@ -96,8 +130,12 @@
 ---
 
 ## 7. Next Recommended Phase
-👉 **Phase 4: Location Services, Geocoding & Routing Engine**
-- Implement `ILocationService` supporting local database transit hub search with Bengali/English fuzzy matching + Photon API fallback.
-- Implement reverse-geocoding for user current location detection.
-- Implement `IRouteService` computing real driving distances using OSRM with local `RouteCaches` storage and Haversine fallback.
-- Expose REST API endpoints: `GET /api/locations/search`, `GET /api/locations/reverse`, `GET /api/routes/distance`.
+👉 **Phase 5: Transportation Fare Calculation Engine**
+- Implement `IFareCalculationService` in `VaraKoto.Core` and `VaraKoto.Infrastructure`.
+- Implement specific fare formulas and pricing logic for:
+  - **Bus**: BRTA government rate with minimum fare threshold.
+  - **Rickshaw**: Short-distance flat rates and realistic negotiated distance ranges.
+  - **CNG**: Dual pricing: BRTA official meter rate vs. ground-reality negotiated market range.
+  - **Bike**: Base fare + distance rate + duration buffer based on ride-sharing norms.
+- Aggregate verified community submissions (`FareSubmissions`) to refine and benchmark fare estimates.
+- Expose REST API endpoint: `POST /api/fares/calculate` and comprehensive unit tests.
