@@ -1,26 +1,11 @@
-import { Component, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ThemeService } from './core/services/theme.service';
-import { LogoComponent } from './shared/components/logo/logo.component';
-import { LoadingScreenComponent } from './shared/components/loading-screen/loading-screen.component';
+import { Component } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, LogoComponent, LoadingScreenComponent],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  imports: [RouterOutlet],
+  template: '<router-outlet></router-outlet>',
+  styles: []
 })
-export class App {
-  readonly themeService = inject(ThemeService);
-  protected readonly title = signal('VaraKoto.com');
-  readonly showLoadingPreview = signal(false);
-
-  toggleTheme(): void {
-    this.themeService.toggleTheme();
-  }
-
-  toggleLoadingPreview(): void {
-    this.showLoadingPreview.update(prev => !prev);
-  }
-}
+export class App {}

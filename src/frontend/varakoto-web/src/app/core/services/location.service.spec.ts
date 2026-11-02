@@ -3,12 +3,15 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { LocationService } from './location.service';
 import { LocationDto, DistanceResultDto } from '../models/location.model';
+import { environment } from '../../../environments/environment';
 
 describe('LocationService', () => {
   let service: LocationService;
   let httpTesting: HttpTestingController;
+  const baseUrl = environment.apiUrl;
 
   beforeEach(() => {
+    TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [
         LocationService,
@@ -34,7 +37,7 @@ describe('LocationService', () => {
       expect(results).toEqual([]);
     });
 
-    httpTesting.expectNone('http://localhost:5000/api/locations/search');
+    httpTesting.expectNone(`${baseUrl}/locations/search`);
   });
 
   it('should query backend API when searching valid text', () => {
@@ -57,7 +60,7 @@ describe('LocationService', () => {
       expect(results[0].nameEn).toBe('Mirpur 10');
     });
 
-    const req = httpTesting.expectOne('http://localhost:5000/api/locations/search?q=Mirpur&limit=5');
+    const req = httpTesting.expectOne(`${baseUrl}/locations/search?q=Mirpur&limit=5`);
     expect(req.request.method).toBe('GET');
     req.flush(mockLocations);
   });
@@ -80,7 +83,7 @@ describe('LocationService', () => {
       expect(result?.nameEn).toBe('Farmgate');
     });
 
-    const req = httpTesting.expectOne('http://localhost:5000/api/locations/reverse?lat=23.7571&lng=90.3895');
+    const req = httpTesting.expectOne(`${baseUrl}/locations/reverse?lat=23.7571&lng=90.3895`);
     expect(req.request.method).toBe('GET');
     req.flush(mockLocation);
   });
@@ -98,7 +101,7 @@ describe('LocationService', () => {
       expect(result.source).toBe('OSRM');
     });
 
-    const req = httpTesting.expectOne('http://localhost:5000/api/routes/distance?fromLat=23.8069&fromLng=90.3687&toLat=23.7571&toLng=90.3895&fromId=1&toId=2');
+    const req = httpTesting.expectOne(`${baseUrl}/routes/distance?fromLat=23.8069&fromLng=90.3687&toLat=23.7571&toLng=90.3895&fromId=1&toId=2`);
     expect(req.request.method).toBe('GET');
     req.flush(mockDistance);
   });

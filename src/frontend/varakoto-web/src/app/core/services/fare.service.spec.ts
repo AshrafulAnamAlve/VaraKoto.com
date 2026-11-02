@@ -160,7 +160,7 @@ describe('FareService', () => {
       expect(res.primaryFare.transportCode).toBe('bus');
     });
 
-    const req = httpTesting.expectOne('http://localhost:5242/api/fares/calculate');
+    const req = httpTesting.expectOne('http://localhost:5293/api/fares/calculate');
     expect(req.request.method).toBe('POST');
     expect(req.request.body.fromLocationId).toBe(1);
     expect(req.request.body.includeAllTransports).toBe(true);
@@ -185,7 +185,7 @@ describe('FareService', () => {
       }
     });
 
-    const req = httpTesting.expectOne('http://localhost:5242/api/fares/calculate');
+    const req = httpTesting.expectOne('http://localhost:5293/api/fares/calculate');
     req.flush(
       { message: 'যাত্রার স্থান এবং গন্তব্য ভিন্ন হতে হবে।' },
       { status: 400, statusText: 'Bad Request' }
@@ -206,7 +206,7 @@ describe('FareService', () => {
       expect(types[0].code).toBe('bus');
     });
 
-    const req = httpTesting.expectOne('http://localhost:5242/api/fares/transports');
+    const req = httpTesting.expectOne('http://localhost:5293/api/fares/transports');
     expect(req.request.method).toBe('GET');
     req.flush(mockTypes);
 

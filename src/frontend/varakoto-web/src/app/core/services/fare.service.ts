@@ -8,13 +8,14 @@ import {
   TransportCode,
   TransportTypeInfo
 } from '../models/fare.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class FareService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:5242/api/fares';
+  private readonly apiUrl = `${environment.apiUrl}/fares`;
 
   // Reactive State Signals
   readonly selectedTransport = signal<TransportCode>('bus');

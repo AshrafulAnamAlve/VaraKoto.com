@@ -3,14 +3,14 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { LocationDto, DistanceResultDto } from '../models/location.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class LocationService {
   private readonly http = inject(HttpClient);
-  // Default to relative /api or configurable environment URL
-  private readonly apiUrl = 'http://localhost:5000/api';
+  private readonly apiUrl = environment.apiUrl;
 
   search(query: string, limit: number = 8): Observable<LocationDto[]> {
     if (!query || query.trim().length === 0) {

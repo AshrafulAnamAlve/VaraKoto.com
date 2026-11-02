@@ -1,0 +1,76 @@
+<!-- Fullscreen Loading Screen during fare calculation -->
+@if (fareService.isCalculating()) {
+  <app-loading-screen [active]="true" [fullscreen]="true"></app-loading-screen>
+}
+
+<div class="homepage-layout">
+  <!-- Minimalist Header -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand-link" (click)="showFinder()" role="button" tabindex="0" title="VaraKoto.com হোমপেজ">
+        <app-logo variant="compact" size="sm"></app-logo>
+      </div>
+
+      <div class="header-right">
+        <!-- Theme Toggle Button -->
+        <button
+          type="button"
+          class="theme-toggle-btn"
+          (click)="toggleTheme()"
+          [attr.aria-label]="themeService.isDark() ? 'Switch to light mode' : 'Switch to dark mode'"
+          title="থিম পরিবর্তন করুন (Toggle Dark/Light Mode)"
+        >
+          @if (themeService.isDark()) {
+            <!-- Sun Icon -->
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#FFC93C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="1" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+            <span class="theme-text">লাইট</span>
+          } @else {
+            <!-- Moon Icon -->
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#0B4F44" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+            <span class="theme-text">ডার্ক</span>
+          }
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Fare Content Area -->
+  <main class="app-main">
+    <div class="main-container">
+      @if (fareService.latestResult()) {
+        <!-- Fare Result View -->
+        <app-fare-result-card
+          (modifySearch)="showFinder()"
+          (contributeFare)="handleContribute($event)"
+        ></app-fare-result-card>
+      } @else {
+        <!-- Fare Finder Search View -->
+        <app-fare-finder-card></app-fare-finder-card>
+      }
+    </div>
+  </main>
+
+  <!-- Clean Minimalist Footer -->
+  <footer class="app-footer">
+    <div class="footer-inner">
+      <p class="footer-text">
+        <strong>VaraKoto.com (গাড়ি ভাড়া কত?)</strong> — সহজ ও স্বচ্ছ পরিবহন ভাড়া অনুসন্ধান
+      </p>
+      <p class="footer-subtext">
+        বাস, রিকশা, সিএনজি ও বাইকের নির্ভরযোগ্য ভাড়ার তথ্য
+      </p>
+    </div>
+  </footer>
+</div>

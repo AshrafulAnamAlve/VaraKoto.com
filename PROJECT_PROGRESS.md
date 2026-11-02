@@ -114,10 +114,40 @@
 
 ---
 
+### ✅ Phase 6: Core Frontend Homepage – Find Fare Interface
+- **FareFinderCardComponent** (`src/app/features/fare-finder/components/fare-finder-card`):
+  - Mobile-first, card layout matching brand colors (`--vk-green`, `--vk-orange`, `--vk-cream`, `--vk-slate`).
+  - Starting Location input: Browser GPS auto-detection with spinning loader, debounced autocomplete search, hub badges, and clear button.
+  - Route Direction Swap Button (🔄): Smooth rotational animation, swapping coordinates, labels, and auto-recalculating.
+  - Destination Location input: Search autocomplete with instant suggestions and clear button.
+  - Transport Selector: Custom SVG icons for 4 modes (Bus, Rickshaw, CNG, Bike) with distinct selected state.
+  - Primary CTA "ভাড়া দেখুন" button with disabled validation guard and loading indicator.
+- **FareResultCardComponent** (`src/app/features/fare-finder/components/fare-result-card`):
+  - Route Summary Header with origin $\rightarrow$ destination and metric pills (distance in km and travel duration in minutes formatted in Bengali digits).
+  - Fare Hero Card: Large, bold `Baloo Da 2` typography for the estimated fare / range.
+  - CNG Dual Display: Highlights street negotiated market reality (`৳২৫০ - ৳৩৪০`) alongside the official BRTA meter rate (`~৳১১০`).
+  - Feasibility Warning: Distance alert for long rickshaw journeys (> 7 km).
+  - Reliability Badge: "বিআরটিএ সরকারি রেট" (Official, 5 stars, Green), "কমিউনিটি যাচাইকৃত" (Community, 5 stars, Orange), or "সাধারণ আনুমানিক" (Teal).
+  - Interactive Transport Comparison Bar: Allows commuters to view and switch between all active vehicle estimates with a single tap without re-querying the server.
+  - Action CTAs: "রুট পরিবর্তন করুন" (Modify search) and "আপনি কত ভাড়া দিয়েছিলেন?" (Share actual fare paid).
+- **HomePageComponent** (`src/app/features/fare-finder/pages/home-page`):
+  - Sticky minimalist header with `LogoComponent` and theme switch button (Sun/Moon).
+  - Seamless state switching between Finder and Result cards.
+  - Integration with `LoadingScreenComponent` showing the complete SVG cartoon commuter animation during fare calculations.
+  - Minimalist footer with brand tagline.
+- **App Routing & Architecture**:
+  - `app.routes.ts` configured with `HomePageComponent` as the default route.
+  - `environment.ts` added with standardized API base URL (`http://localhost:5293/api`).
+- **Automated Verification**:
+  - Backend: `dotnet test` passed **19 / 19 tests (100%)**.
+  - Frontend: `npm test` passed **50 / 50 tests across 9 test suites (100%)**.
+  - Production build: `npm run build` succeeded (0 errors, 0 warnings, transfer size: 84 kB).
+
+---
+
 ## 2. Remaining Phases
 
-- **Phase 6: Core Frontend Homepage – Find Fare Interface** *(Next)*
-- **Phase 7: Community Fare Contribution & Verification System**
+- **Phase 7: Community Fare Contribution & Verification System** *(Next)*
 - **Phase 8: End-to-End Integration, Validation & Anti-Spam Safeguards**
 - **Phase 9: Testing, Responsiveness, Performance Optimization & Project Documentation**
 
@@ -138,6 +168,8 @@
 5. **Dual Fare Presentation for CNG & Clear Transparency**:
    - Explicitly displays ground-negotiated contract reality alongside official BRTA meter rate so commuters are never misled.
    - Clear reliability labeling: "Official", "Estimated", and "CommunityBacked".
+6. **Zero External CSS Framework Bloat**:
+   - Every UI component (cards, inputs, autocomplete dropdowns, transport selectors, SVGs, loading screens) is built with native Angular 21 and modern SCSS custom properties without heavy third-party UI libraries.
 
 ---
 
@@ -167,16 +199,12 @@
 ---
 
 ## 7. Next Recommended Phase
-👉 **Phase 6: Core Frontend Homepage – Find Fare Interface**
-- Create the intuitive, distraction-free homepage where users discover fares in seconds:
-  - Starting location input with polite browser auto-detect button and dropdown autocomplete.
-  - Destination location input with quick suggestion dropdown.
-  - Location swap button (🔄) for instant reverse direction.
-  - Transport selector bar with custom SVG icons (Bus, Rickshaw, CNG, Bike).
-  - High-visibility "ভাড়া দেখুন" (Find Fare) primary action button.
-- Fare Result Card display:
-  - Large, bold `Baloo Da 2` typography for the estimated fare / range.
-  - Distance & travel time pills.
-  - Reliability badge and source notes.
-  - Quick transport comparison drawer/pills.
-  - Integration with `LoadingScreenComponent` during calculation.
+👉 **Phase 7: Community Fare Contribution & Verification System**
+- Create the minimalist community fare submission interface:
+  - Form fields: Starting location, Destination, Transport Type, Actual Fare Paid (৳), optional travel date.
+  - Backend `IFareContributionService` with outlier detection:
+    - Automatically rejects extreme outliers (e.g. ৳5 or ৳10,000 for standard city trips).
+    - Statistical IQR validation against calculated baseline.
+    - Automatic approval for submissions within reasonable deviation thresholds.
+  - Expose REST API endpoint: `POST /api/fares/contribute`.
+  - Display recent community contributions on the frontend.

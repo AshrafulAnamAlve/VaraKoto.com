@@ -1,0 +1,164 @@
+@if (result() && primaryFare()) {
+  <div class="result-card" role="region" aria-label="ভাড়ার ফলাফল">
+    <!-- 1. Route Summary Header -->
+    <div class="route-header">
+      <div class="route-locations">
+        <div class="loc-item origin-loc">
+          <span class="route-dot origin-dot"></span>
+          <span class="loc-name">{{ result()?.fromLocation?.nameBn || result()?.fromLocation?.displayName }}</span>
+        </div>
+        <div class="route-arrow">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </div>
+        <div class="loc-item dest-loc">
+          <span class="route-dot dest-dot"></span>
+          <span class="loc-name">{{ result()?.toLocation?.nameBn || result()?.toLocation?.displayName }}</span>
+        </div>
+      </div>
+
+      <!-- Distance & Travel Time Pills -->
+      <div class="route-metrics">
+        <span class="metric-pill">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
+          </svg>
+          <span>দূরত্ব: <strong>{{ distanceBn() }} কিমি</strong></span>
+        </span>
+
+        <span class="metric-pill">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          <span>আনুমানিক সময়: <strong>~{{ durationBn() }} মিনিট</strong></span>
+        </span>
+      </div>
+    </div>
+
+    <!-- 2. Primary Fare Hero Display -->
+    <div class="fare-hero-box" [attr.data-transport]="primaryFare()?.transportCode">
+      <div class="hero-top-bar">
+        <div class="transport-badge">
+          <!-- Transport Icon -->
+          @switch (primaryFare()?.transportCode) {
+            @case ('bus') {
+              <span class="badge-icon">🚌</span>
+            }
+            @case ('rickshaw') {
+              <span class="badge-icon">🛺</span>
+            }
+            @case ('cng') {
+              <span class="badge-icon">🛺💨</span>
+            }
+            @case ('bike') {
+              <span class="badge-icon">🏍️</span>
+            }
+          }
+          <span class="badge-name">{{ primaryFare()?.transportNameBn }} ভাড়া</span>
+        </div>
+
+        <!-- Reliability Badge -->
+        <div class="reliability-badge" [class.official]="primaryFare()?.reliability === 'Official'" [class.community]="primaryFare()?.reliability === 'CommunityBacked'">
+          @if (primaryFare()?.reliability === 'Official') {
+            <span class="rel-icon">✓</span>
+            <span>বিআরটিএ সরকারি রেট</span>
+          } @else if (primaryFare()?.reliability === 'CommunityBacked') {
+            <span class="rel-icon">★</span>
+            <span>কমিউনিটি যাচাইকৃত</span>
+          } @else {
+            <span class="rel-icon">~</span>
+            <span>সাধারণ আনুমানিক</span>
+          }
+        </div>
+      </div>
+
+      <!-- Huge Fare Typography in Baloo Da 2 -->
+      <div class="fare-amount-display">
+        <span class="fare-label">আনুমানিক ভাড়া:</span>
+        <div class="amount-text">{{ primaryFare()?.fareDisplayBn }}</div>
+      </div>
+
+      <!-- CNG Dual Display Details -->
+      @if (primaryFare()?.officialMeterFare) {
+        <div class="meter-notice-box">
+          <div class="meter-header">
+            <span class="meter-icon">ℹ️</span>
+            <span class="meter-title">সিএনজি ভাড়া সম্পর্কে তথ্য</span>
+          </div>
+          <p class="meter-body">
+            সরকারি মিটার রেট: <strong>~৳{{ fareService.toBengaliDigits(primaryFare()?.officialMeterFare || 0) }}</strong>
+            <br>
+            <span class="meter-hint">তবে ঢাকার রাস্তায় চালকরা সাধারণত মিটারে যেতে চান না এবং <strong>{{ primaryFare()?.fareDisplayBn }}</strong> চুক্তিভিত্তিক ভাড়া দাবি করেন।</span>
+          </p>
+        </div>
+      }
+
+      <!-- Distance Feasibility Notice (e.g. Rickshaws > 7km) -->
+      @if (primaryFare()?.distanceNoticeBn) {
+        <div class="distance-warning-box">
+          <span class="warn-icon">⚠️</span>
+          <span>{{ primaryFare()?.distanceNoticeBn }}</span>
+        </div>
+      }
+
+      <!-- Source & Verification Note -->
+      <div class="fare-source-footer">
+        <span class="source-icon">📌</span>
+        <span class="source-text">{{ primaryFare()?.sourceNoteBn || primaryFare()?.sourceNote }}</span>
+      </div>
+    </div>
+
+    <!-- 3. All Transports Quick Comparison Bar -->
+    @if (result()?.allFares && (result()?.allFares?.length || 0) > 1) {
+      <div class="comparison-section">
+        <span class="comparison-title">অন্যান্য যানবাহনের ভাড়া তুলনা:</span>
+        <div class="comparison-grid">
+          @for (fare of result()?.allFares; track fare.transportCode) {
+            <button
+              type="button"
+              class="comparison-card"
+              [class.active]="fare.transportCode === primaryFare()?.transportCode"
+              (click)="selectTransport(fare.transportCode)"
+              [title]="fare.transportNameBn + ' ভাড়া দেখুন'"
+            >
+              <div class="comp-header">
+                <span class="comp-icon">
+                  @switch (fare.transportCode) {
+                    @case ('bus') { 🚌 }
+                    @case ('rickshaw') { 🛺 }
+                    @case ('cng') { 🛺💨 }
+                    @case ('bike') { 🏍️ }
+                  }
+                </span>
+                <span class="comp-name">{{ fare.transportNameBn }}</span>
+              </div>
+              <div class="comp-amount">{{ fare.fareDisplayBn }}</div>
+            </button>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- 4. Result Action Buttons -->
+    <div class="result-actions">
+      <button type="button" class="action-btn modify-btn" (click)="onModify()">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+        </svg>
+        <span>রুট পরিবর্তন করুন</span>
+      </button>
+
+      <button type="button" class="action-btn contribute-btn" (click)="onContribute()">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 20h9"></path>
+          <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+        </svg>
+        <span>আপনি কত ভাড়া দিয়েছিলেন?</span>
+      </button>
+    </div>
+  </div>
+}
