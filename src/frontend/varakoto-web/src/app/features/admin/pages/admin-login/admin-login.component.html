@@ -1,0 +1,78 @@
+<div class="admin-login-layout">
+  <div class="login-card">
+    <!-- Header Logo & Title -->
+    <div class="login-header">
+      <app-logo variant="stacked" size="md"></app-logo>
+      <div class="badge-tag">অ্যাডমিন কন্ট্রোল প্যানেল</div>
+      <h1 class="login-title">অ্যাডমিন লগইন</h1>
+      <p class="login-subtitle">সহযাত্রীদের দেওয়া ভাড়ার তথ্য যাচাই ও অনুমোদন করতে লগইন করুন</p>
+    </div>
+
+    <!-- Login Form -->
+    <form class="login-form" (ngSubmit)="onLogin()">
+      <!-- Username Field -->
+      <div class="form-group">
+        <label for="admin-user" class="form-label">ব্যবহারকারী নাম (Username)</label>
+        <div class="input-wrapper">
+          <span class="input-icon">👤</span>
+          <input
+            id="admin-user"
+            type="text"
+            class="form-input"
+            placeholder="admin"
+            [ngModel]="username()"
+            (ngModelChange)="username.set($event)"
+            name="username"
+            autocomplete="username"
+            required
+          />
+        </div>
+      </div>
+
+      <!-- Password Field -->
+      <div class="form-group">
+        <label for="admin-pass" class="form-label">পাসওয়ার্ড (Password)</label>
+        <div class="input-wrapper">
+          <span class="input-icon">🔒</span>
+          <input
+            id="admin-pass"
+            type="password"
+            class="form-input"
+            placeholder="••••••••"
+            [ngModel]="password()"
+            (ngModelChange)="password.set($event)"
+            name="password"
+            autocomplete="current-password"
+            required
+          />
+        </div>
+      </div>
+
+      <!-- Error Notice -->
+      @if (errorMessage()) {
+        <div class="error-banner">
+          <span>⚠️ {{ errorMessage() }}</span>
+        </div>
+      }
+
+      <!-- Submit CTA -->
+      <button
+        type="submit"
+        class="login-cta"
+        [disabled]="isLoading()"
+      >
+        @if (isLoading()) {
+          <span class="spinner"></span>
+          <span>লগইন হচ্ছে...</span>
+        } @else {
+          <span>লগইন করুন ➔</span>
+        }
+      </button>
+
+      <!-- Back to Main Site -->
+      <div class="back-link-box">
+        <a routerLink="/" class="back-link">← মূল ওয়েবসাইটে ফিরে যান</a>
+      </div>
+    </form>
+  </div>
+</div>

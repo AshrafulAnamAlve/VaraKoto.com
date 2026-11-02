@@ -15,6 +15,7 @@ public class VaraKotoDbContext : DbContext
     public DbSet<FareRule> FareRules => Set<FareRule>();
     public DbSet<FareSubmission> FareSubmissions => Set<FareSubmission>();
     public DbSet<RouteCache> RouteCaches => Set<RouteCache>();
+    public DbSet<AdminUser> AdminUsers => Set<AdminUser>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -77,9 +78,11 @@ public class VaraKotoDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.ActualFarePaid).HasPrecision(10, 2);
+            entity.Property(e => e.CalculatedStandardFare).HasPrecision(10, 2);
             entity.Property(e => e.DistanceKm).HasPrecision(10, 2);
             entity.Property(e => e.DeviceHash).HasMaxLength(64);
             entity.Property(e => e.ModerationStatus).IsRequired().HasMaxLength(30);
+            entity.Property(e => e.AdminNote).HasMaxLength(500);
 
             entity.HasOne(e => e.TransportType)
                 .WithMany(t => t.Submissions)
@@ -98,6 +101,20 @@ public class VaraKotoDbContext : DbContext
 
             entity.HasIndex(e => new { e.FromLocationId, e.ToLocationId, e.TransportTypeId });
             entity.HasIndex(e => e.SubmittedAt);
+            entity.HasIndex(e => e.ModerationStatus);
+        });
+
+        // AdminUser Configuration
+        modelBuilder.Entity<AdminUser>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Username).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.PasswordHash).IsRequired().HasMaxLength(256);
+            entity.Property(e => e.Salt).IsRequired().HasMaxLength(128);
+            entity.Property(e => e.DisplayName).HasMaxLength(100);
+            entity.Property(e => e.Role).HasMaxLength(30);
+
+            entity.HasIndex(e => e.Username).IsUnique();
         });
 
         // RouteCache Configuration

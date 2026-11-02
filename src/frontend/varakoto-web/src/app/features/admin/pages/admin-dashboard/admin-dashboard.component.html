@@ -1,0 +1,243 @@
+<div class="admin-dashboard-layout">
+  <!-- Top Navigation Header -->
+  <header class="admin-header">
+    <div class="header-inner">
+      <div class="brand-group">
+        <app-logo variant="compact" size="sm"></app-logo>
+        <span class="admin-badge">অ্যাডমিন কন্ট্রোল</span>
+      </div>
+
+      <div class="header-actions">
+        <a routerLink="/" class="btn-site-link" target="_blank" title="মূল ওয়েবসাইট দেখুন">
+          <span>🌐 মূল ওয়েবসাইট</span>
+        </a>
+        <div class="user-info">
+          <span class="user-name">👤 {{ adminService.currentUser()?.displayName || 'Admin' }}</span>
+        </div>
+        <button type="button" class="btn-logout" (click)="logout()" title="লগআউট">
+          লগআউট ➔
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="dashboard-main">
+    <div class="dashboard-container">
+      <!-- Page Title & Tagline -->
+      <div class="page-intro">
+        <h1 class="page-title">কমিউনিটি ভাড়া মডারেশন ও অনুমোদন প্যানেল</h1>
+        <p class="page-subtitle">সহযাত্রীদের শেয়ার করা ভাড়া পর্যালোচনা করুন এবং ডাটাবেজ স্ট্যান্ডার্ডের সাথে তুলনা করে অনুমোদন দিন</p>
+      </div>
+
+      <!-- Action Toast Notice -->
+      @if (actionMessage()) {
+        <div class="toast-notice" [class.success]="actionMessage()?.type === 'success'" [class.error]="actionMessage()?.type === 'error'">
+          <span>{{ actionMessage()?.type === 'success' ? '✓' : '⚠️' }} {{ actionMessage()?.text }}</span>
+        </div>
+      }
+
+      <!-- Statistics KPI Metric Cards -->
+      <div class="stats-grid">
+        <div class="kpi-card pending-kpi" (click)="loadSubmissions('Pending')" [class.active]="selectedFilter() === 'Pending'">
+          <div class="kpi-icon">⏳</div>
+          <div class="kpi-info">
+            <span class="kpi-value">{{ stats()?.totalPending || 0 }}</span>
+            <span class="kpi-label">অপেক্ষমাণ (Pending Review)</span>
+          </div>
+        </div>
+
+        <div class="kpi-card approved-kpi" (click)="loadSubmissions('Approved')" [class.active]="selectedFilter() === 'Approved'">
+          <div class="kpi-icon">✅</div>
+          <div class="kpi-info">
+            <span class="kpi-value">{{ stats()?.totalApproved || 0 }}</span>
+            <span class="kpi-label">অনুমোদিত (Approved)</span>
+          </div>
+        </div>
+
+        <div class="kpi-card flagged-kpi" (click)="loadSubmissions('Flagged')" [class.active]="selectedFilter() === 'Flagged'">
+          <div class="kpi-icon">⚠️</div>
+          <div class="kpi-info">
+            <span class="kpi-value">{{ stats()?.totalFlagged || 0 }}</span>
+            <span class="kpi-label">ফ্ল্যাগড (Outliers)</span>
+          </div>
+        </div>
+
+        <div class="kpi-card total-kpi" (click)="loadSubmissions('All')" [class.active]="selectedFilter() === 'All'">
+          <div class="kpi-icon">📊</div>
+          <div class="kpi-info">
+            <span class="kpi-value">{{ stats()?.totalSubmissions || 0 }}</span>
+            <span class="kpi-label">সর্বমোট সাবমিশন</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Moderation Filter Tabs -->
+      <div class="filter-tabs">
+        <button
+          type="button"
+          class="tab-btn"
+          [class.active]="selectedFilter() === 'Pending'"
+          (click)="loadSubmissions('Pending')"
+        >
+          অপেক্ষমাণ ({{ stats()?.totalPending || 0 }})
+        </button>
+        <button
+          type="button"
+          class="tab-btn"
+          [class.active]="selectedFilter() === 'Approved'"
+          (click)="loadSubmissions('Approved')"
+        >
+          অনুমোদিত ({{ stats()?.totalApproved || 0 }})
+        </button>
+        <button
+          type="button"
+          class="tab-btn"
+          [class.active]="selectedFilter() === 'Flagged'"
+          (click)="loadSubmissions('Flagged')"
+        >
+          ফ্ল্যাগড ({{ stats()?.totalFlagged || 0 }})
+        </button>
+        <button
+          type="button"
+          class="tab-btn"
+          [class.active]="selectedFilter() === 'Rejected'"
+          (click)="loadSubmissions('Rejected')"
+        >
+          বাতিল ({{ stats()?.totalRejected || 0 }})
+        </button>
+        <button
+          type="button"
+          class="tab-btn"
+          [class.active]="selectedFilter() === 'All'"
+          (click)="loadSubmissions('All')"
+        >
+          সব ({{ stats()?.totalSubmissions || 0 }})
+        </button>
+      </div>
+
+      <!-- Submissions List -->
+      @if (isLoading()) {
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <p>সাবমিশন লোড হচ্ছে...</p>
+        </div>
+      } @else if (submissions().length === 0) {
+        <div class="empty-state">
+          <span class="empty-icon">📭</span>
+          <h3>কোনো সাবমিশন নেই</h3>
+          <p>এই ফিল্টারে বর্তমানে কোনো ভাড়ার তথ্য জমা নেই।</p>
+        </div>
+      } @else {
+        <div class="submissions-list">
+          @for (sub of submissions(); track sub.id) {
+            <div class="submission-card" [attr.data-status]="sub.moderationStatus">
+              <!-- Top Row: Route & Vehicle & Status -->
+              <div class="card-top">
+                <div class="route-box">
+                  <span class="transport-tag">
+                    @if (sub.transportCode === 'bus') { 🚌 বাস }
+                    @else if (sub.transportCode === 'rickshaw') { 🛺 রিকশা }
+                    @else if (sub.transportCode === 'cng') { 🛺💨 সিএনজি }
+                    @else if (sub.transportCode === 'bike') { 🏍️ বাইক }
+                    @else { {{ sub.transportNameBn }} }
+                  </span>
+                  <div class="route-names">
+                    <span class="from-name">{{ sub.fromLocationName }}</span>
+                    <span class="arrow">➔</span>
+                    <span class="to-name">{{ sub.toLocationName }}</span>
+                  </div>
+                  <span class="distance-pill">{{ sub.distanceKm }} কিমি</span>
+                </div>
+
+                <div class="meta-status">
+                  <span class="time-ago">🕒 {{ sub.timeAgoBn }}</span>
+                  <span class="status-badge" [class]="sub.moderationStatus.toLowerCase()">
+                    {{ sub.moderationStatus === 'Approved' ? '✓ অনুমোদিত' : (sub.moderationStatus === 'Pending' ? '⏳ অপেক্ষমাণ' : (sub.moderationStatus === 'Flagged' ? '⚠️ ফ্ল্যাগড' : '✕ বাতিল')) }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Side-by-Side Comparison Box (User Fare vs Database Fare) -->
+              <div class="comparison-container">
+                <!-- 1. User Submitted Fare -->
+                <div class="compare-box user-side">
+                  <span class="compare-title">ইউজারের দেওয়া ভাড়া:</span>
+                  <span class="fare-val user-val">৳{{ sub.userSubmittedFare }}</span>
+                  <span class="compare-sub">সহযাত্রীর পরিশোধিত তথ্য</span>
+                </div>
+
+                <div class="versus-divider">VS</div>
+
+                <!-- 2. Database Standard Calculated Fare -->
+                <div class="compare-box db-side">
+                  <span class="compare-title">আমাদের ডেটাবেজের হিসেবে আনুমানিক:</span>
+                  <span class="fare-val db-val">৳{{ sub.databaseStandardFare || sub.userSubmittedFare }}</span>
+                  <span class="compare-sub">স্ট্যান্ডার্ড রুট রেট</span>
+                </div>
+
+                <!-- 3. Difference Calculation -->
+                <div class="compare-box diff-side">
+                  <span class="compare-title">পার্থক্য (Difference):</span>
+                  <span class="diff-pill" [class.higher]="sub.differenceAmount > 0" [class.lower]="sub.differenceAmount < 0" [class.exact]="sub.differenceAmount === 0">
+                    @if (sub.differenceAmount > 0) {
+                      +৳{{ sub.differenceAmount }} (+{{ sub.differencePercentage }}%)
+                    } @else if (sub.differenceAmount < 0) {
+                      -৳{{ -sub.differenceAmount }} ({{ sub.differencePercentage }}%)
+                    } @else {
+                      একদম সঠিক (০%)
+                    }
+                  </span>
+                  <span class="compare-sub">
+                    {{ sub.differenceAmount > 0 ? 'স্ট্যান্ডার্ডের চেয়ে বেশি' : (sub.differenceAmount < 0 ? 'স্ট্যান্ডার্ডের চেয়ে কম' : 'একই রেট') }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Notes / Admin Remarks if any -->
+              @if (sub.adminNote) {
+                <div class="admin-note-display">
+                  <strong>মন্তব্য:</strong> {{ sub.adminNote }}
+                </div>
+              }
+
+              <!-- Bottom Actions Bar -->
+              <div class="card-actions">
+                @if (sub.moderationStatus !== 'Approved') {
+                  <button
+                    type="button"
+                    class="btn-action btn-approve"
+                    (click)="onApprove(sub)"
+                    title="অনুমোদন করুন এবং সবার জন্য দৃশ্যমান করুন"
+                  >
+                    ✓ অনুমোদন করুন (Approve)
+                  </button>
+                }
+
+                @if (sub.moderationStatus !== 'Rejected') {
+                  <button
+                    type="button"
+                    class="btn-action btn-reject"
+                    (click)="onReject(sub)"
+                    title="বাতিল করুন"
+                  >
+                    ✕ বাতিল করুন (Reject)
+                  </button>
+                }
+
+                <button
+                  type="button"
+                  class="btn-action btn-delete"
+                  (click)="onDelete(sub)"
+                  title="স্থায়ীভাবে মুছে ফেলুন"
+                >
+                  🗑️ ডিলিট
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </main>
+</div>

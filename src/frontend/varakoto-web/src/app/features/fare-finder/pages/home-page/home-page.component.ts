@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { FareFinderCardComponent } from '../../components/fare-finder-card/fare-finder-card.component';
 import { FareResultCardComponent } from '../../components/fare-result-card/fare-result-card.component';
 import { FareContributionModalComponent } from '../../../fare-contribution/components/fare-contribution-modal/fare-contribution-modal.component';
@@ -14,6 +15,7 @@ import { FareContributionResponseModel, TransportCode } from '../../../../core/m
   standalone: true,
   imports: [
     CommonModule,
+    RouterModule,
     FareFinderCardComponent,
     FareResultCardComponent,
     FareContributionModalComponent,

@@ -22,6 +22,7 @@ builder.Services.AddHttpClient<ILocationService, HybridLocationService>();
 builder.Services.AddHttpClient<IRouteService, OsrmRouteService>();
 builder.Services.AddScoped<IFareCalculationService, FareCalculationService>();
 builder.Services.AddScoped<IFareContributionService, FareContributionService>();
+builder.Services.AddScoped<IAdminService, AdminService>();
 
 // CORS configuration for Angular frontend
 builder.Services.AddCors(options =>

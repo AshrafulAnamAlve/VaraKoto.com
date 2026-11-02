@@ -129,5 +129,23 @@ public static class DbInitializer
             context.Locations.AddRange(hubs);
             await context.SaveChangesAsync();
         }
+
+        // Seed Default Admin User if not exists
+        if (!await context.AdminUsers.AnyAsync(u => u.Username == "admin"))
+        {
+            var (hash, salt) = VaraKoto.Infrastructure.Security.PasswordSecurityHelper.HashPassword("Admin@123");
+            var admin = new AdminUser
+            {
+                Username = "admin",
+                PasswordHash = hash,
+                Salt = salt,
+                DisplayName = "VaraKoto Admin",
+                Role = "Admin",
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+            context.AdminUsers.Add(admin);
+            await context.SaveChangesAsync();
+        }
     }
 }

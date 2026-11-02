@@ -71,6 +71,20 @@
         <app-fare-finder-card></app-fare-finder-card>
       }
 
+      <!-- Prominent Community Contribution Banner Card -->
+      <section class="community-invite-card" (click)="openContributionModal()" role="button" tabindex="0" title="যেকোনো রুটের ভাড়া শেয়ার করুন">
+        <div class="invite-left">
+          <span class="invite-icon">💡</span>
+          <div class="invite-text">
+            <h3 class="invite-title">আপনি কি কোনো এলাকার বা রুটের ভাড়া জানেন?</h3>
+            <p class="invite-desc">সহযাত্রীদের বাস্তবসম্মত ধারণা দিতে যেকোনো স্থানের বাস, রিকশা বা সিএনজি ভাড়া যোগ করুন</p>
+          </div>
+        </div>
+        <button type="button" class="invite-cta-btn" (click)="$event.stopPropagation(); openContributionModal()">
+          + ভাড়া যুক্ত করুন
+        </button>
+      </section>
+
       <!-- Recent Community Contributions Section -->
       @if (fareService.recentContributions().length > 0) {
         <section class="recent-contributions-section" aria-label="সাম্প্রতিক ভাড়ার তথ্য">
@@ -124,7 +138,7 @@
         <strong>VaraKoto.com (গাড়ি ভাড়া কত?)</strong> — সহজ ও স্বচ্ছ পরিবহন ভাড়া অনুসন্ধান
       </p>
       <p class="footer-subtext">
-        বাস, রিকশা, সিএনজি ও বাইকের নির্ভরযোগ্য ভাড়ার তথ্য
+        বাস, রিকশা, সিএনজি ও বাইকের নির্ভরযোগ্য ভাড়ার তথ্য • <a routerLink="/admin/login" class="footer-admin-link">অ্যাডমিন প্যানেল</a>
       </p>
     </div>
   </footer>

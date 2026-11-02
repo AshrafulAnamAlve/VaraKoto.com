@@ -140,6 +140,85 @@
   }
 }
 
+/* Prominent Community Invite Card */
+.community-invite-card {
+  background: var(--bg-surface);
+  border: 2px dashed var(--accent-cta);
+  border-radius: var(--radius-lg);
+  padding: 1.15rem 1.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(229, 87, 10, 0.08);
+  transition: all var(--transition-fast);
+
+  &:hover {
+    background: var(--bg-surface-elevated);
+    border-style: solid;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(229, 87, 10, 0.15);
+  }
+
+  .invite-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .invite-icon {
+      font-size: 1.8rem;
+    }
+
+    .invite-text {
+      display: flex;
+      flex-direction: column;
+
+      .invite-title {
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: var(--text-heading);
+      }
+
+      .invite-desc {
+        margin: 0.15rem 0 0;
+        font-size: 0.85rem;
+        color: var(--text-muted);
+      }
+    }
+  }
+
+  .invite-cta-btn {
+    background: var(--accent-cta);
+    color: #ffffff;
+    border: none;
+    border-radius: var(--radius-full);
+    padding: 0.55rem 1.15rem;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all var(--transition-fast);
+
+    &:hover {
+      background: var(--accent-cta-hover);
+      transform: scale(1.03);
+    }
+  }
+
+  @media (max-width: 600px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+
+    .invite-cta-btn {
+      width: 100%;
+    }
+  }
+}
+
 /* Recent Community Contributions Section */
 .recent-contributions-section {
   background: var(--bg-surface);
@@ -313,5 +392,17 @@
     margin: 0;
     font-size: 13px;
     color: var(--text-muted);
+
+    .footer-admin-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-weight: 700;
+      transition: color var(--transition-fast);
+
+      &:hover {
+        color: var(--accent-cta);
+        text-decoration: underline;
+      }
+    }
   }
 }

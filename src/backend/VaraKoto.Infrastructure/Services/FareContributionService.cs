@@ -154,20 +154,15 @@ public class FareContributionService : IFareContributionService
         if (request.ActualFarePaid > maxCeiling || ratio > 2.8m || ratio < 0.3m)
         {
             moderationStatus = "Flagged";
-            messageBn = "আপনার দেওয়া ভাড়ার তথ্যটি স্বাভাবিক ভাড়ার চেয়ে অনেকটাই ভিন্ন হওয়ায় পর্যালোচনার জন্য রাখা হয়েছে।";
-            messageEn = "Your submission deviates significantly from normal bounds and has been flagged for review.";
-        }
-        else if (ratio > 1.9m || ratio < 0.5m)
-        {
-            moderationStatus = "Pending";
-            messageBn = "আপনার ভাড়ার তথ্যটি গ্রহণ করা হয়েছে এবং পর্যালোচনার জন্য জমা রাখা হয়েছে।";
-            messageEn = "Your submission has been received and queued for community review.";
+            messageBn = "আপনার দেওয়া ভাড়ার তথ্যটি স্বাভাবিক ভাড়ার চেয়ে অনেকটাই ভিন্ন হওয়ায় অ্যাডমিন পর্যালোচনার জন্য রাখা হয়েছে।";
+            messageEn = "Your submission deviates significantly from normal bounds and has been flagged for admin review.";
         }
         else
         {
-            moderationStatus = "Approved";
-            messageBn = "ধন্যবাদ! আপনার ভাড়ার তথ্য যাচাইকৃত হয়েছে এবং অন্য যাত্রীদের সাথে শেয়ার করা হয়েছে।";
-            messageEn = "Thank you! Your fare contribution has been verified and shared with fellow commuters.";
+            // All commuter submissions are queued as Pending for Admin Approval
+            moderationStatus = "Pending";
+            messageBn = "ধন্যবাদ! আপনার ভাড়ার তথ্যটি সফলভাবে জমা হয়েছে। অ্যাডমিন পর্যালোচনার পর এটি প্রকাশিত হবে।";
+            messageEn = "Thank you! Your fare contribution has been received and queued for admin review.";
         }
 
         // 7. Persist Submission to Database
@@ -177,6 +172,7 @@ public class FareContributionService : IFareContributionService
             FromLocationId = fromLoc.Id ?? throw new InvalidOperationException("Origin location could not be persisted."),
             ToLocationId = toLoc.Id ?? throw new InvalidOperationException("Destination location could not be persisted."),
             ActualFarePaid = request.ActualFarePaid,
+            CalculatedStandardFare = standardMidFare,
             DistanceKm = distanceKm,
             TravelDate = request.TravelDate ?? DateTime.UtcNow,
             DeviceHash = deviceHash,

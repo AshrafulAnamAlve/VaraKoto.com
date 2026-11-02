@@ -127,13 +127,13 @@ public class FareContributionTests : IDisposable
         var response = await contributionService.SubmitFareAsync(request, "192.168.1.10", "Mozilla/5.0");
 
         Assert.NotNull(response);
-        Assert.Equal("Approved", response.Status);
+        Assert.Equal("Pending", response.Status);
         Assert.True(response.SubmissionId > 0);
 
         var saved = await _context.FareSubmissions.FindAsync(response.SubmissionId);
         Assert.NotNull(saved);
         Assert.Equal(30m, saved.ActualFarePaid);
-        Assert.Equal("Approved", saved.ModerationStatus);
+        Assert.Equal("Pending", saved.ModerationStatus);
     }
 
     [Fact]
@@ -156,7 +156,7 @@ public class FareContributionTests : IDisposable
         var response = await contributionService.SubmitFareAsync(request, "192.168.1.11", "Mozilla/5.0");
 
         Assert.Equal("Pending", response.Status);
-        Assert.Contains("পর্যালোচনার জন্য", response.MessageBn);
+        Assert.Contains("অ্যাডমিন", response.MessageBn);
     }
 
     [Fact]
@@ -293,7 +293,7 @@ public class FareContributionTests : IDisposable
         var okResult = Assert.IsType<OkObjectResult>(actionResult);
         var response = Assert.IsType<FareContributionResponseDto>(okResult.Value);
 
-        Assert.Equal("Approved", response.Status);
+        Assert.Equal("Pending", response.Status);
     }
 
     public void Dispose()

@@ -14,9 +14,12 @@ public class FareSubmission
     public Location ToLocation { get; set; } = null!;
 
     public decimal ActualFarePaid { get; set; }
+    public decimal? CalculatedStandardFare { get; set; }
     public decimal DistanceKm { get; set; }
     public DateTime? TravelDate { get; set; }
     public string? DeviceHash { get; set; }
-    public string ModerationStatus { get; set; } = "Approved"; // Approved, Pending, Flagged
+    public string ModerationStatus { get; set; } = "Pending"; // Pending, Approved, Flagged, Rejected
+    public string? AdminNote { get; set; }
+    public DateTime? ReviewedAt { get; set; }
     public DateTime SubmittedAt { get; set; } = DateTime.UtcNow;
 }
