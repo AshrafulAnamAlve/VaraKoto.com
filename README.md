@@ -7,7 +7,7 @@
 
 ### 🌐 Live Deployment Links
 - 🚀 **Live Web Application (GitHub Pages)**: [https://ashrafulanamalve.github.io/VaraKoto.com/](https://ashrafulanamalve.github.io/VaraKoto.com/)
-- 🛡️ **Live Admin Dashboard**: [https://ashrafulanamalve.github.io/VaraKoto.com/admin]
+
 
 
 ## 🌟 Overview
