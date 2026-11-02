@@ -5,6 +5,9 @@ import {
   FareBreakdownModel,
   FareCalculationRequestModel,
   FareCalculationResultModel,
+  FareContributionRequestModel,
+  FareContributionResponseModel,
+  RecentContributionModel,
   TransportCode,
   TransportTypeInfo
 } from '../models/fare.model';
@@ -23,6 +26,7 @@ export class FareService {
   readonly isCalculating = signal<boolean>(false);
   readonly calculationError = signal<string | null>(null);
   readonly transportTypes = signal<TransportTypeInfo[]>([]);
+  readonly recentContributions = signal<RecentContributionModel[]>([]);
 
   /**
    * Sets the currently selected transport mode
@@ -110,6 +114,30 @@ export class FareService {
   toBengaliDigits(input: string | number): string {
     const bengaliDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
     return String(input).replace(/[0-9]/g, (digit) => bengaliDigits[parseInt(digit, 10)]);
+  }
+
+  /**
+   * Submits community fare contribution
+   */
+  contributeFare(request: FareContributionRequestModel): Observable<FareContributionResponseModel> {
+    return this.http.post<FareContributionResponseModel>(`${this.apiUrl}/contribute`, request).pipe(
+      catchError((error) => {
+        const errorMsg = error.error?.message || 'ভাড়া জমা দেওয়া যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।';
+        return throwError(() => new Error(errorMsg));
+      })
+    );
+  }
+
+  /**
+   * Loads recent approved community contributions
+   */
+  loadRecentContributions(limit: number = 6): Observable<RecentContributionModel[]> {
+    return this.http.get<RecentContributionModel[]>(`${this.apiUrl}/recent-contributions?limit=${limit}`).pipe(
+      tap((contributions) => {
+        this.recentContributions.set(contributions);
+      }),
+      catchError(() => of([]))
+    );
   }
 
   /**

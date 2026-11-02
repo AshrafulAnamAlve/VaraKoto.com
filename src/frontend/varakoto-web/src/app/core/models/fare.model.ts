@@ -67,3 +67,43 @@ export interface TransportTypeInfo {
     officialSourceNote: string;
   };
 }
+
+export interface FareContributionRequestModel {
+  fromLocationId?: number | null;
+  toLocationId?: number | null;
+  fromName?: string | null;
+  toName?: string | null;
+  fromLatitude?: number | null;
+  fromLongitude?: number | null;
+  toLatitude?: number | null;
+  toLongitude?: number | null;
+  transportCode: string;
+  actualFarePaid: number;
+  travelDate?: string | null;
+}
+
+export interface FareContributionResponseModel {
+  submissionId: number;
+  status: 'Approved' | 'Pending' | 'Flagged';
+  messageEn: string;
+  messageBn: string;
+  calculatedStandardFare: number | null;
+  submittedFare: number;
+  fromLocationName: string;
+  toLocationName: string;
+  transportName: string;
+  submittedAt: string;
+}
+
+export interface RecentContributionModel {
+  id: number;
+  fromLocationName: string;
+  toLocationName: string;
+  transportCode: string;
+  transportNameBn: string;
+  actualFarePaid: number;
+  fareDisplayBn: string;
+  distanceKm: number;
+  timeAgoBn: string;
+  submittedAt: string;
+}

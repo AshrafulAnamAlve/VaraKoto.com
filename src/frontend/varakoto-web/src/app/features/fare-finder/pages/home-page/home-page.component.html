@@ -12,6 +12,17 @@
       </div>
 
       <div class="header-right">
+        <!-- Share Fare Header CTA Button -->
+        <button
+          type="button"
+          class="contribute-header-btn"
+          (click)="openContributionModal()"
+          title="আপনার দেওয়া ভাড়া শেয়ার করুন"
+        >
+          <span class="btn-icon">💬</span>
+          <span class="btn-text">ভাড়া শেয়ার</span>
+        </button>
+
         <!-- Theme Toggle Button -->
         <button
           type="button"
@@ -59,6 +70,50 @@
         <!-- Fare Finder Search View -->
         <app-fare-finder-card></app-fare-finder-card>
       }
+
+      <!-- Recent Community Contributions Section -->
+      @if (fareService.recentContributions().length > 0) {
+        <section class="recent-contributions-section" aria-label="সাম্প্রতিক ভাড়ার তথ্য">
+          <div class="section-header">
+            <div class="header-title-box">
+              <span class="dot-indicator"></span>
+              <h3 class="section-title">সাম্প্রতিক সহযাত্রীদের আপডেট</h3>
+            </div>
+            <button
+              type="button"
+              class="share-link-btn"
+              (click)="openContributionModal()"
+            >
+              + আপনার ভাড়া জানান
+            </button>
+          </div>
+
+          <div class="contributions-grid">
+            @for (item of fareService.recentContributions(); track item.id) {
+              <div class="contribution-chip">
+                <div class="chip-top">
+                  <span class="chip-route">
+                    <span class="route-from">{{ item.fromLocationName }}</span>
+                    <span class="route-arrow">➔</span>
+                    <span class="route-to">{{ item.toLocationName }}</span>
+                  </span>
+                  <span class="chip-time">{{ item.timeAgoBn }}</span>
+                </div>
+                <div class="chip-bottom">
+                  <span class="chip-transport">
+                    @if (item.transportCode === 'bus') { 🚌 বাস }
+                    @else if (item.transportCode === 'rickshaw') { 🛺 রিকশা }
+                    @else if (item.transportCode === 'cng') { 🛺💨 সিএনজি }
+                    @else if (item.transportCode === 'bike') { 🏍️ বাইক }
+                    @else { {{ item.transportNameBn }} }
+                  </span>
+                  <span class="chip-fare">{{ item.fareDisplayBn }}</span>
+                </div>
+              </div>
+            }
+          </div>
+        </section>
+      }
     </div>
   </main>
 
@@ -74,3 +129,13 @@
     </div>
   </footer>
 </div>
+
+<!-- Community Contribution Modal -->
+<app-fare-contribution-modal
+  [isOpen]="isContributionModalOpen()"
+  [initialFrom]="contributionInitialFrom()"
+  [initialTo]="contributionInitialTo()"
+  [initialTransport]="contributionInitialTransport()"
+  (closeModal)="closeContributionModal()"
+  (fareContributed)="handleFareContributed($event)"
+></app-fare-contribution-modal>

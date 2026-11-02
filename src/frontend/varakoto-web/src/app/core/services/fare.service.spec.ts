@@ -222,4 +222,64 @@ describe('FareService', () => {
     expect(service.latestResult()).toBeNull();
     expect(service.calculationError()).toBeNull();
   });
+
+  it('should post contributeFare and return contribution response', () => {
+    const request = {
+      fromName: 'ধানমন্ডি',
+      toName: 'গুলশান',
+      transportCode: 'cng' as const,
+      actualFarePaid: 320,
+      travelDate: '2026-11-02'
+    };
+
+    service.contributeFare(request).subscribe((res) => {
+      expect(res.submissionId).toBe(1);
+      expect(res.status).toBe('Approved');
+    });
+
+    const req = httpTesting.expectOne('http://localhost:5293/api/fares/contribute');
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body.actualFarePaid).toBe(320);
+    req.flush({
+      submissionId: 1,
+      status: 'Approved',
+      messageEn: 'Approved',
+      messageBn: 'গৃহীত হয়েছে',
+      calculatedStandardFare: 300,
+      submittedFare: 320,
+      fromLocationName: 'ধানমন্ডি',
+      toLocationName: 'গুলশান',
+      transportName: 'সিএনজি',
+      submittedAt: new Date().toISOString()
+    });
+  });
+
+  it('should load recent contributions and update recentContributions signal', () => {
+    const mockContributions = [
+      {
+        id: 101,
+        fromLocationName: 'মিরপুর ১০',
+        toLocationName: 'ফার্মগেট',
+        transportCode: 'bus',
+        transportNameBn: 'বাস',
+        actualFarePaid: 35,
+        fareDisplayBn: '৳৩৫',
+        distanceKm: 7.5,
+        timeAgoBn: '১০ মিনিট আগে',
+        submittedAt: '2026-11-02T12:00:00Z'
+      }
+    ];
+
+    service.loadRecentContributions(5).subscribe((data) => {
+      expect(data.length).toBe(1);
+      expect(data[0].actualFarePaid).toBe(35);
+    });
+
+    const req = httpTesting.expectOne('http://localhost:5293/api/fares/recent-contributions?limit=5');
+    expect(req.request.method).toBe('GET');
+    req.flush(mockContributions);
+
+    expect(service.recentContributions().length).toBe(1);
+    expect(service.recentContributions()[0].fromLocationName).toBe('মিরপুর ১০');
+  });
 });

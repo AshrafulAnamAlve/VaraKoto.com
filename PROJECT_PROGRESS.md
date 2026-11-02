@@ -128,7 +128,7 @@
   - CNG Dual Display: Highlights street negotiated market reality (`৳২৫০ - ৳৩৪০`) alongside the official BRTA meter rate (`~৳১১০`).
   - Feasibility Warning: Distance alert for long rickshaw journeys (> 7 km).
   - Reliability Badge: "বিআরটিএ সরকারি রেট" (Official, 5 stars, Green), "কমিউনিটি যাচাইকৃত" (Community, 5 stars, Orange), or "সাধারণ আনুমানিক" (Teal).
-  - Interactive Transport Comparison Bar: Allows commuters to view and switch between all active vehicle estimates with a single tap without re-querying the server.
+  - Interactive Transport Comparison Bar: Tap between all active vehicle estimates with a single tap without re-querying the server.
   - Action CTAs: "রুট পরিবর্তন করুন" (Modify search) and "আপনি কত ভাড়া দিয়েছিলেন?" (Share actual fare paid).
 - **HomePageComponent** (`src/app/features/fare-finder/pages/home-page`):
   - Sticky minimalist header with `LogoComponent` and theme switch button (Sun/Moon).
@@ -145,10 +145,47 @@
 
 ---
 
+### ✅ Phase 7: Community Fare Contribution & Verification System
+- **Backend Architecture & Moderation Engine (`IFareContributionService` & `FareContributionService`)**:
+  - **Sanity Validation & Vehicle Ceilings**:
+    - Minimum submission floor: ৳10. Maximum global ceiling: ৳5,000.
+    - Transport-specific ceilings: Bus (৳400), Rickshaw (৳350), CNG (৳1,500), Bike (৳1,000).
+  - **Baseline Deviation Ratio Moderation**:
+    - Calculates standard route fare and derives ratio: $R = \text{ActualFarePaid} / \text{StandardCalculatedFare}$.
+    - $0.5 \le R \le 1.9 \rightarrow$ `"Approved"` (Immediately published and used in Phase 5 benchmarks).
+    - $1.9 < R \le 2.8 \rightarrow$ `"Pending"` (Quarantined for secondary verification).
+    - $R > 2.8$ or $R < 0.3 \rightarrow$ `"Flagged"` (Suspicious outlier blocked from affecting public estimates).
+  - **Anti-Spam Safeguards & Fingerprinting**:
+    - Device fingerprinting via SHA256 hash of Client IP + User-Agent header.
+    - Rate-limiting: Maximum 5 submissions per hour per device hash.
+    - Duplicate suppression: Rejects identical route submissions from the same device within 10 minutes.
+  - **Live Feed Service (`GetRecentApprovedSubmissionsAsync`)**:
+    - Returns recently approved community contributions with formatted Bengali relative timestamps (`এইমাত্র`, `X মিনিট আগে`, `X ঘণ্টা আগে`).
+- **REST Endpoints (`FaresController`)**:
+  - `POST /api/fares/contribute`: Validates, sanitizes, moderates, and stores user fare contributions.
+  - `GET /api/fares/recent-contributions?limit=6`: Serves recent community submissions for the homepage feed.
+- **Frontend Fare Contribution Modal (`FareContributionModalComponent`)**:
+  - Standalone modal component at `features/fare-contribution/components/fare-contribution-modal`.
+  - Accessible dialog with backdrop blur, keyboard/click close, and clean responsive mobile layout.
+  - Pre-fills origin, destination, and selected vehicle from active fare queries.
+  - Transport selector pills (Bus, Rickshaw, CNG, Bike).
+  - Currency-tagged fare input with live validation.
+  - Success state display showing submission status (`Approved` vs `Pending`), route summary, and Bengali confirmation message.
+- **Homepage Integration (`HomePageComponent`)**:
+  - Header CTA "💬 ভাড়া শেয়ার" button opens the contribution modal anytime.
+  - Result card "আমি অন্য ভাড়া দিয়েছি" button passes active route data to pre-fill the modal.
+  - Live "সাম্প্রতিক সহযাত্রীদের আপডেট" section rendered below cards showing actual commuter fares with pulsing live indicator.
+- **Automated Verification**:
+  - Backend: `dotnet test` passed **26 / 26 tests across 4 test suites (100%)**.
+  - Frontend: `npm test` passed **61 / 61 tests across 10 test suites (100%)**.
+  - Production build: `npm run build` succeeded (raw 372 kB, transfer size 88 kB, 0 errors, 0 warnings).
+  - Live API testing verified: `POST /api/fares/contribute` $\rightarrow$ `Approved`, `GET /api/fares/recent-contributions` returns real-time item.
+
+---
+
 ## 2. Remaining Phases
 
-- **Phase 7: Community Fare Contribution & Verification System** *(Next)*
-- **Phase 8: End-to-End Integration, Validation & Anti-Spam Safeguards**
+- **Phase 8: End-to-End Integration, Validation & Anti-Spam Safeguards** *(Next)*
 - **Phase 9: Testing, Responsiveness, Performance Optimization & Project Documentation**
 
 ---
@@ -168,8 +205,11 @@
 5. **Dual Fare Presentation for CNG & Clear Transparency**:
    - Explicitly displays ground-negotiated contract reality alongside official BRTA meter rate so commuters are never misled.
    - Clear reliability labeling: "Official", "Estimated", and "CommunityBacked".
-6. **Zero External CSS Framework Bloat**:
-   - Every UI component (cards, inputs, autocomplete dropdowns, transport selectors, SVGs, loading screens) is built with native Angular 21 and modern SCSS custom properties without heavy third-party UI libraries.
+6. **Community Data Quality Guardrails**:
+   - Multi-tier moderation separates reasonable fare variations from egregious gouging or typos before community data can influence public calculations.
+   - IP + User-Agent SHA256 device hashing prevents bot flooding without requiring user sign-in/passwords, keeping the app completely frictionless.
+7. **Zero External CSS Framework Bloat**:
+   - Every UI component (cards, inputs, autocomplete dropdowns, transport selectors, SVGs, loading screens, modals) is built with native Angular 21 and modern SCSS custom properties without heavy third-party UI libraries.
 
 ---
 
@@ -181,6 +221,8 @@
 - `POST /api/fares/calculate` $\rightarrow$ Full multi-transport fare calculation engine.
 - `GET /api/fares/estimate-for-distance` $\rightarrow$ Quick distance-based fare preview.
 - `GET /api/fares/transports` $\rightarrow$ Active transport types and rule configuration.
+- `POST /api/fares/contribute` $\rightarrow$ Community fare submission with outlier moderation and anti-spam protection.
+- `GET /api/fares/recent-contributions` $\rightarrow$ Feed of verified recent community commuter submissions.
 - SQL Server `(localdb)\MSSQLLocalDB` connected and verified.
 
 ---
@@ -189,7 +231,7 @@
 - Database `VaraKotoDb` created on `(localdb)\MSSQLLocalDB`.
 - Migration `InitialCreate` executed.
 - Seeded initial records for `TransportTypes`, `FareRules`, and `Locations`.
-- Dynamic integration with `FareSubmissions` for verified community benchmark elevation.
+- Verified dynamic integration with `FareSubmissions` feeding Phase 5 reliability elevation.
 
 ---
 
@@ -199,12 +241,5 @@
 ---
 
 ## 7. Next Recommended Phase
-👉 **Phase 7: Community Fare Contribution & Verification System**
-- Create the minimalist community fare submission interface:
-  - Form fields: Starting location, Destination, Transport Type, Actual Fare Paid (৳), optional travel date.
-  - Backend `IFareContributionService` with outlier detection:
-    - Automatically rejects extreme outliers (e.g. ৳5 or ৳10,000 for standard city trips).
-    - Statistical IQR validation against calculated baseline.
-    - Automatic approval for submissions within reasonable deviation thresholds.
-  - Expose REST API endpoint: `POST /api/fares/contribute`.
-  - Display recent community contributions on the frontend.
+👉 **Phase 8: End-to-End Integration, Validation & Anti-Spam Safeguards**
+- Global error handling, network failure resilience, rate limiting middleware, full user journey verification.

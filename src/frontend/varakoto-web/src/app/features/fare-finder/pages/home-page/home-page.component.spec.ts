@@ -1,17 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { describe, it, expect, beforeEach } from 'vitest';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { HomePageComponent } from './home-page.component';
 import { FareService } from '../../../../core/services/fare.service';
 import { ThemeService } from '../../../../core/services/theme.service';
-import { FareCalculationResultModel } from '../../../../core/models/fare.model';
+import { FareCalculationResultModel, RecentContributionModel } from '../../../../core/models/fare.model';
 
 describe('HomePageComponent', () => {
   let component: HomePageComponent;
   let fixture: ComponentFixture<HomePageComponent>;
   let fareService: FareService;
   let themeService: ThemeService;
+  let httpTesting: HttpTestingController;
 
   const mockResult: FareCalculationResultModel = {
     fromLocation: {
@@ -64,6 +65,21 @@ describe('HomePageComponent', () => {
     calculatedAt: new Date().toISOString()
   };
 
+  const mockRecentContributions: RecentContributionModel[] = [
+    {
+      id: 1,
+      fromLocationName: 'মিরপুর ১০',
+      toLocationName: 'ফার্মগেট',
+      transportCode: 'bus',
+      transportNameBn: 'বাস',
+      actualFarePaid: 35,
+      fareDisplayBn: '৳৩৫',
+      distanceKm: 7.5,
+      timeAgoBn: '১০ মিনিট আগে',
+      submittedAt: new Date().toISOString()
+    }
+  ];
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [HomePageComponent],
@@ -79,8 +95,21 @@ describe('HomePageComponent', () => {
     component = fixture.componentInstance;
     fareService = TestBed.inject(FareService);
     themeService = TestBed.inject(ThemeService);
+    httpTesting = TestBed.inject(HttpTestingController);
+
     fareService.clearResult();
     fixture.detectChanges();
+
+    // Flush recent-contributions request from ngOnInit
+    const req = httpTesting.match('http://localhost:5293/api/fares/recent-contributions?limit=6');
+    if (req.length > 0) {
+      req[0].flush(mockRecentContributions);
+      fixture.detectChanges();
+    }
+  });
+
+  afterEach(() => {
+    httpTesting.verify();
   });
 
   it('should create the home page component', () => {
@@ -126,5 +155,27 @@ describe('HomePageComponent', () => {
 
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('app-loading-screen')).toBeTruthy();
+  });
+
+  it('should open and close contribution modal', () => {
+    expect(component.isContributionModalOpen()).toBe(false);
+
+    component.openContributionModal('উত্তরা', 'বনানী', 'cng');
+    expect(component.isContributionModalOpen()).toBe(true);
+    expect(component.contributionInitialFrom()).toBe('উত্তরা');
+    expect(component.contributionInitialTo()).toBe('বনানী');
+    expect(component.contributionInitialTransport()).toBe('cng');
+
+    component.closeContributionModal();
+    expect(component.isContributionModalOpen()).toBe(false);
+  });
+
+  it('should render recent community contributions section', () => {
+    const compiled = fixture.nativeElement as HTMLElement;
+    const section = compiled.querySelector('.recent-contributions-section');
+    expect(section).toBeTruthy();
+    expect(section?.textContent).toContain('সাম্প্রতিক সহযাত্রীদের আপডেট');
+    expect(section?.textContent).toContain('মিরপুর ১০');
+    expect(section?.textContent).toContain('ফার্মগেট');
   });
 });

@@ -1,0 +1,167 @@
+@if (isOpen()) {
+  <div class="modal-backdrop" (click)="onClose()" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <!-- Modal Close Button -->
+      <button type="button" class="close-btn" (click)="onClose()" aria-label="বন্ধ করুন" title="বন্ধ করুন">✕</button>
+
+      <!-- 1. Success View (When submitted) -->
+      @if (successData()) {
+        <div class="success-view">
+          <div class="success-icon-badge" [class.approved]="successData()?.status === 'Approved'" [class.pending]="successData()?.status !== 'Approved'">
+            @if (successData()?.status === 'Approved') {
+              <span>✓</span>
+            } @else {
+              <span>⏳</span>
+            }
+          </div>
+
+          <h2 class="success-title">
+            @if (successData()?.status === 'Approved') {
+              ভাড়া সফলভাবে যুক্ত হয়েছে!
+            } @else {
+              ভাড়ার তথ্য জমা হয়েছে
+            }
+          </h2>
+
+          <p class="success-message">{{ successData()?.messageBn }}</p>
+
+          <div class="summary-box">
+            <div class="summary-row">
+              <span class="row-label">রুট:</span>
+              <span class="row-val">{{ successData()?.fromLocationName }} ➔ {{ successData()?.toLocationName }}</span>
+            </div>
+            <div class="summary-row">
+              <span class="row-label">বাহন:</span>
+              <span class="row-val">{{ successData()?.transportName }}</span>
+            </div>
+            <div class="summary-row">
+              <span class="row-label">পরিশোধিত ভাড়া:</span>
+              <span class="row-val fare-highlight">৳{{ successData()?.submittedFare }}</span>
+            </div>
+          </div>
+
+          <button type="button" class="btn-primary close-modal-btn" (click)="onClose()">
+            ঠিক আছে
+          </button>
+        </div>
+      } @else {
+        <!-- 2. Contribution Form View -->
+        <div class="form-view">
+          <div class="modal-header">
+            <h2 id="modal-title" class="modal-title">ভাড়া শেয়ার করুন</h2>
+            <p class="modal-subtitle">আপনার দেওয়া তথ্যের মাধ্যমে সহযাত্রীরা বাস্তবসম্মত ভাড়ার ধারণা পাবেন</p>
+          </div>
+
+          <form class="modal-form" (ngSubmit)="onSubmit()">
+            <!-- From Location -->
+            <div class="form-group">
+              <label for="contrib-from" class="form-label">কোথা থেকে (From)</label>
+              <input
+                id="contrib-from"
+                type="text"
+                class="form-input"
+                placeholder="যেমন: মিরপুর ১০, উত্তরা..."
+                [ngModel]="fromText()"
+                (ngModelChange)="fromText.set($event)"
+                name="fromLocation"
+                autocomplete="off"
+                required
+              />
+            </div>
+
+            <!-- To Location -->
+            <div class="form-group">
+              <label for="contrib-to" class="form-label">কোথায় গিয়েছিলেন (To)</label>
+              <input
+                id="contrib-to"
+                type="text"
+                class="form-input"
+                placeholder="যেমন: ফার্মগেট, মতিঝিল..."
+                [ngModel]="toText()"
+                (ngModelChange)="toText.set($event)"
+                name="toLocation"
+                autocomplete="off"
+                required
+              />
+            </div>
+
+            <!-- Transport Selection -->
+            <div class="form-group">
+              <label class="form-label">যানবাহনের ধরন</label>
+              <div class="transport-pills">
+                @for (item of transports; track item.code) {
+                  <button
+                    type="button"
+                    class="pill-btn"
+                    [class.active]="transportCode() === item.code"
+                    (click)="selectTransport(item.code)"
+                  >
+                    <span class="pill-icon">{{ item.icon }}</span>
+                    <span>{{ item.labelBn }}</span>
+                  </button>
+                }
+              </div>
+            </div>
+
+            <!-- Actual Fare Paid Input -->
+            <div class="form-group">
+              <label for="contrib-fare" class="form-label">প্রকৃতপক্ষে কত ভাড়া দিয়েছেন? (৳)</label>
+              <div class="fare-input-box">
+                <span class="currency-tag">৳</span>
+                <input
+                  id="contrib-fare"
+                  type="number"
+                  min="10"
+                  max="5000"
+                  step="5"
+                  class="fare-number-input"
+                  placeholder="যেমন: ৫০, ১৫০..."
+                  [ngModel]="actualFare()"
+                  (ngModelChange)="actualFare.set($event)"
+                  name="actualFare"
+                  required
+                />
+              </div>
+            </div>
+
+            <!-- Travel Date (Optional) -->
+            <div class="form-group">
+              <label for="contrib-date" class="form-label">ভ্রমণের তারিখ (ঐচ্ছিক)</label>
+              <input
+                id="contrib-date"
+                type="date"
+                class="form-input date-input"
+                [ngModel]="travelDate()"
+                (ngModelChange)="travelDate.set($event)"
+                name="travelDate"
+              />
+            </div>
+
+            <!-- Error Notice -->
+            @if (errorMessage()) {
+              <div class="error-notice">
+                <span>⚠️ {{ errorMessage() }}</span>
+              </div>
+            }
+
+            <!-- Submit CTA -->
+            <div class="modal-actions">
+              <button
+                type="submit"
+                class="btn-primary submit-btn"
+                [disabled]="isSubmitting()"
+              >
+                @if (isSubmitting()) {
+                  <span class="btn-spinner"></span>
+                  <span>যাচাই করা হচ্ছে...</span>
+                } @else {
+                  <span>ভাড়া জমা দিন</span>
+                }
+              </button>
+            </div>
+          </form>
+        </div>
+      }
+    </div>
+  </div>
+}

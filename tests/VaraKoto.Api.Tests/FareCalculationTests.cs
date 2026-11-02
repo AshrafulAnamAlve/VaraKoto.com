@@ -345,7 +345,8 @@ public class FareCalculationTests : IDisposable
             mockRouteService, 
             NullLogger<FareCalculationService>.Instance);
 
-        var controller = new FaresController(fareService, NullLogger<FaresController>.Instance);
+        var mockContributionService = new FakeFareContributionService();
+        var controller = new FaresController(fareService, mockContributionService, NullLogger<FaresController>.Instance);
 
         var request = new FareCalculationRequestDto
         {
@@ -373,7 +374,8 @@ public class FareCalculationTests : IDisposable
             mockRouteService, 
             NullLogger<FareCalculationService>.Instance);
 
-        var controller = new FaresController(fareService, NullLogger<FaresController>.Instance);
+        var mockContributionService = new FakeFareContributionService();
+        var controller = new FaresController(fareService, mockContributionService, NullLogger<FaresController>.Instance);
 
         var request = new FareCalculationRequestDto
         {
@@ -438,6 +440,24 @@ public class FareCalculationTests : IDisposable
                 Longitude = longitude,
                 Source = "Fake"
             });
+        }
+    }
+
+    private class FakeFareContributionService : IFareContributionService
+    {
+        public Task<FareContributionResponseDto> SubmitFareAsync(FareContributionRequestDto request, string? clientIp, string? userAgent, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(new FareContributionResponseDto
+            {
+                SubmissionId = 1,
+                Status = "Approved",
+                SubmittedFare = request.ActualFarePaid
+            });
+        }
+
+        public Task<IReadOnlyList<RecentContributionDto>> GetRecentApprovedSubmissionsAsync(int limit = 10, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult<IReadOnlyList<RecentContributionDto>>([]);
         }
     }
 }

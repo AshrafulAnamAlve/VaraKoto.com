@@ -9,11 +9,16 @@ namespace VaraKoto.Api.Controllers;
 public class FaresController : ControllerBase
 {
     private readonly IFareCalculationService _fareCalculationService;
+    private readonly IFareContributionService _fareContributionService;
     private readonly ILogger<FaresController> _logger;
 
-    public FaresController(IFareCalculationService fareCalculationService, ILogger<FaresController> logger)
+    public FaresController(
+        IFareCalculationService fareCalculationService, 
+        IFareContributionService fareContributionService,
+        ILogger<FaresController> logger)
     {
         _fareCalculationService = fareCalculationService;
+        _fareContributionService = fareContributionService;
         _logger = logger;
     }
 
@@ -119,5 +124,59 @@ public class FaresController : ControllerBase
         });
 
         return Ok(result);
+    }
+
+    /// <summary>
+    /// Submits a user's actual transportation fare paid for a route.
+    /// Moderates outliers, validates against standard rate, and benchmarks community reliability.
+    /// </summary>
+    [HttpPost("contribute")]
+    [ProducesResponseType(typeof(FareContributionResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> ContributeFare([FromBody] FareContributionRequestDto request, CancellationToken cancellationToken)
+    {
+        if (request == null)
+        {
+            return BadRequest(new { message = "অনুরোধের তথ্য সঠিক নয় (Request body cannot be null)." });
+        }
+
+        var clientIp = HttpContext.Connection.RemoteIpAddress?.ToString();
+        if (Request.Headers.TryGetValue("X-Forwarded-For", out var forwardedFor))
+        {
+            clientIp = forwardedFor.FirstOrDefault()?.Split(',')[0].Trim();
+        }
+
+        var userAgent = Request.Headers.UserAgent.ToString();
+
+        try
+        {
+            var result = await _fareContributionService.SubmitFareAsync(request, clientIp, userAgent, cancellationToken);
+            return Ok(result);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error submitting community fare.");
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "ভাড়া জমা দিতে সমস্যা হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন।" });
+        }
+    }
+
+    /// <summary>
+    /// Gets recent approved community contributions.
+    /// </summary>
+    [HttpGet("recent-contributions")]
+    [ProducesResponseType(typeof(IReadOnlyList<RecentContributionDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetRecentContributions([FromQuery] int limit = 10, CancellationToken cancellationToken = default)
+    {
+        var clampedLimit = Math.Clamp(limit, 1, 50);
+        var recent = await _fareContributionService.GetRecentApprovedSubmissionsAsync(clampedLimit, cancellationToken);
+        return Ok(recent);
     }
 }

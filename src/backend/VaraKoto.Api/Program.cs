@@ -21,17 +21,18 @@ builder.Services.AddDbContext<VaraKotoDbContext>(options =>
 builder.Services.AddHttpClient<ILocationService, HybridLocationService>();
 builder.Services.AddHttpClient<IRouteService, OsrmRouteService>();
 builder.Services.AddScoped<IFareCalculationService, FareCalculationService>();
+builder.Services.AddScoped<IFareContributionService, FareContributionService>();
 
 // CORS configuration for Angular frontend
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins(
-                "http://localhost:4200",
-                "https://localhost:4200",
-                "http://127.0.0.1:4200"
-            )
+        policy.SetIsOriginAllowed(origin =>
+            {
+                var uri = new Uri(origin);
+                return uri.Host == "localhost" || uri.Host == "127.0.0.1";
+            })
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
