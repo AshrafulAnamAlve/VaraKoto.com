@@ -183,10 +183,36 @@
 
 ---
 
+### ✅ Phase 8: End-to-End Integration, Validation & Anti-Spam Safeguards
+- **Global Backend Exception Middleware (`ExceptionHandlingMiddleware`)**:
+  - Catches all unhandled exceptions cleanly and returns RFC-compliant JSON responses with localized Bengali commuter messages (`messageBn`), English technical details (`messageEn`), and unique `traceId` correlation identifiers.
+  - Prevents raw stack trace leakage in production while keeping detailed logs.
+- **XSS & HTML Injection Sanitization Engine (`InputSanitizer`)**:
+  - Implemented comprehensive regex stripping in `VaraKoto.Core/Common/InputSanitizer.cs`.
+  - Removes malicious `<script>`, `<iframe>`, `<style>` tag blocks along with inner payloads.
+  - Neutralizes inline JavaScript event handlers (`onload`, `onclick`, `onerror`, `javascript:`) and encodes stray markup brackets.
+  - Applied automatically to query parameters in `LocationsController` and user-submitted landmark names in `FaresController`.
+- **IP Rate Limiting Middleware (ASP.NET Core RateLimiter)**:
+  - Configured built-in partition rate limiting in `Program.cs` based on client IP:
+    - **Global API Limiter**: 120 requests/minute per IP address with token bucket algorithm.
+    - **Admin Login Protection (`admin-login-policy`)**: Fixed window limiter restricting attempts to 6 requests/minute per IP, returning HTTP 429 (`খুব বেশি চেষ্টার কারণে সাময়িকভাবে স্থগিত`).
+- **Frontend Reactive Notification System & HTTP Interceptor**:
+  - `NotificationService`: Angular Signals-based notification bus emitting dismissible toast alerts (success, error, warning, info) with configurable auto-dismiss timers.
+  - `errorInterceptor`: Functional Angular interceptor catching HTTP status `0` (offline/server unreachable), `429` (rate limited), `404` (not found), and `500+` (server error), surfacing localized Bengali alerts to commuters.
+  - Global floating toast UI rendered in `app.component.ts` with backdrop blur, brand-aligned iconography, and smooth slide-in animations.
+- **Admin Panel Contrast & Accessibility Polish**:
+  - Resolved dark mode contrast issue on Admin Dashboard where standard calculated fare (`৳280`) previously blended into the dark background.
+  - Replaced with radiant mint green (`#34D399`) and warm amber (`#FBBF24`), achieving WCAG AAA contrast compliance.
+- **Automated Verification**:
+  - Backend: `dotnet test` passed **41 / 41 tests across 5 test suites (100%)**.
+  - Frontend: `npm test` passed **76 / 76 tests across 15 test suites (100%)**.
+  - Production build: `npm run build` succeeded (0 errors, 0 warnings, transfer size 97.86 kB).
+
+---
+
 ## 2. Remaining Phases
 
-- **Phase 8: End-to-End Integration, Validation & Anti-Spam Safeguards** *(Next)*
-- **Phase 9: Testing, Responsiveness, Performance Optimization & Project Documentation**
+- **Phase 9: Testing, Responsiveness, Performance Optimization & Project Documentation** *(Final Phase)*
 
 ---
 
@@ -241,5 +267,5 @@
 ---
 
 ## 7. Next Recommended Phase
-👉 **Phase 8: End-to-End Integration, Validation & Anti-Spam Safeguards**
-- Global error handling, network failure resilience, rate limiting middleware, full user journey verification.
+👉 **Phase 9: Testing, Responsiveness, Performance Optimization & Project Documentation**
+- Comprehensive test coverage, multi-device viewport responsiveness, accessibility audit, production optimization, and final developer/deployment documentation.

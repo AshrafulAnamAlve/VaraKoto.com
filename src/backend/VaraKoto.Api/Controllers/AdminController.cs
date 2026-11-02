@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using VaraKoto.Core.DTOs;
 using VaraKoto.Core.Interfaces;
 
@@ -21,6 +22,7 @@ public class AdminController : ControllerBase
     /// Admin login with username and password
     /// </summary>
     [HttpPost("login")]
+    [EnableRateLimiting("admin-login-policy")]
     [ProducesResponseType(typeof(AdminLoginResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]

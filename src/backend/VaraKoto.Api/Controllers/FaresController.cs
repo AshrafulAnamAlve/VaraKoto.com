@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using VaraKoto.Core.Common;
 using VaraKoto.Core.DTOs;
 using VaraKoto.Core.Interfaces;
 
@@ -139,6 +140,9 @@ public class FaresController : ControllerBase
         {
             return BadRequest(new { message = "অনুরোধের তথ্য সঠিক নয় (Request body cannot be null)." });
         }
+
+        request.FromName = InputSanitizer.Sanitize(request.FromName);
+        request.ToName = InputSanitizer.Sanitize(request.ToName);
 
         var clientIp = HttpContext.Connection.RemoteIpAddress?.ToString();
         if (Request.Headers.TryGetValue("X-Forwarded-For", out var forwardedFor))

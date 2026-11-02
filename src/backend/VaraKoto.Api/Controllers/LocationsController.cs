@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using VaraKoto.Core.Common;
 using VaraKoto.Core.Interfaces;
 
 namespace VaraKoto.Api.Controllers;
@@ -17,12 +18,13 @@ public class LocationsController : ControllerBase
     [HttpGet("search")]
     public async Task<IActionResult> Search([FromQuery] string? q, [FromQuery] int limit = 8, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(q))
+        var sanitizedQuery = InputSanitizer.Sanitize(q);
+        if (string.IsNullOrWhiteSpace(sanitizedQuery))
         {
             return Ok(Array.Empty<object>());
         }
 
-        var results = await _locationService.SearchLocationsAsync(q, Math.Clamp(limit, 1, 20), cancellationToken);
+        var results = await _locationService.SearchLocationsAsync(sanitizedQuery, Math.Clamp(limit, 1, 20), cancellationToken);
         return Ok(results);
     }
 
