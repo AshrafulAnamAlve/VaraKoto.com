@@ -1,0 +1,212 @@
+:host {
+  display: inline-block;
+  user-select: none;
+}
+
+.vk-logo-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  font-family: var(--vk-font);
+  transition: all var(--transition-normal);
+
+  &.stacked {
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    text-align: center;
+  }
+
+  &.compact {
+    gap: 10px;
+  }
+}
+
+/* ============================
+   SVG Colors & Styling (Light)
+   ============================ */
+.roof-box {
+  fill: #E5570A;
+}
+
+.roof-qm-stroke {
+  stroke: #FFF6E5;
+}
+
+.roof-qm-dot {
+  fill: #FFF6E5;
+}
+
+.car-body {
+  fill: #0B4F44;
+}
+
+.car-windows {
+  fill: #FFF6E5;
+  stroke: #FFF6E5;
+}
+
+.light-front {
+  fill: #FFC93C;
+}
+
+.light-rear {
+  fill: #E5570A;
+}
+
+.wheel-tire {
+  fill: #17302B;
+  stroke: #FFFFFF;
+}
+
+.wheel-hub {
+  fill: #FFC93C;
+}
+
+/* Typography (Light) */
+.vk-logo-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+
+.brand-name {
+  font-weight: 800;
+  letter-spacing: -1.5px;
+  line-height: 0.95;
+
+  .part-vara {
+    color: #0B4F44;
+  }
+
+  .part-koto {
+    color: #E5570A;
+  }
+
+  .part-domain {
+    font-size: 0.42em;
+    font-weight: 700;
+    letter-spacing: 0;
+    color: #17302B;
+    margin-left: 2px;
+  }
+}
+
+.brand-tagline {
+  font-weight: 700;
+  color: #0B4F44;
+  margin-top: 4px;
+}
+
+/* ============================
+   Dark Mode Overrides
+   ============================ */
+.vk-logo-container.dark {
+  .roof-box {
+    fill: #FFC93C;
+  }
+
+  .roof-qm-stroke {
+    stroke: #0B4F44;
+  }
+
+  .roof-qm-dot {
+    fill: #0B4F44;
+  }
+
+  .car-body {
+    fill: #FFF6E5;
+  }
+
+  .car-windows {
+    fill: #0B4F44;
+    stroke: #0B4F44;
+  }
+
+  .wheel-tire {
+    fill: #17302B;
+    stroke: #FFF6E5;
+  }
+
+  .wheel-hub {
+    fill: #FFC93C;
+  }
+
+  .brand-name {
+    .part-vara {
+      color: #FFF6E5;
+    }
+
+    .part-koto {
+      color: #FFC93C;
+    }
+
+    .part-domain {
+      color: #FFF6E5;
+    }
+  }
+
+  .brand-tagline {
+    color: #FFC93C;
+  }
+}
+
+/* ============================
+   Sizes
+   ============================ */
+/* Small */
+.vk-logo-container[data-size="sm"] {
+  .vk-logo-car {
+    width: 38px;
+    height: 35px;
+  }
+  .brand-name {
+    font-size: 24px;
+  }
+  .brand-tagline {
+    font-size: 11px;
+  }
+}
+
+/* Medium (Default) */
+.vk-logo-container[data-size="md"] {
+  .vk-logo-car {
+    width: 68px;
+    height: 62px;
+  }
+  .brand-name {
+    font-size: 44px;
+  }
+  .brand-tagline {
+    font-size: 16px;
+  }
+}
+
+/* Large */
+.vk-logo-container[data-size="lg"] {
+  .vk-logo-car {
+    width: 120px;
+    height: 110px;
+  }
+  .brand-name {
+    font-size: 78px;
+  }
+  .brand-tagline {
+    font-size: 24px;
+  }
+}
+
+/* Compact Navigation Bar specific */
+.vk-logo-container.compact {
+  .vk-logo-car {
+    width: 44px;
+    height: 40px;
+  }
+  .brand-name {
+    font-size: 28px;
+  }
+}
+
+.vk-logo-container.icon-only {
+  gap: 0;
+}

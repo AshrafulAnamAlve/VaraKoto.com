@@ -1,0 +1,39 @@
+<div class="vk-logo-container" [class.dark]="isDark()" [class.stacked]="variant() === 'stacked'" [class.compact]="variant() === 'compact'" [class.icon-only]="variant() === 'icon-only'" [attr.data-size]="size()">
+  <!-- Car SVG Icon -->
+  <svg class="vk-logo-car" viewBox="0 0 120 110" role="img" aria-label="VaraKoto transportation icon">
+    <!-- Roof Box -->
+    <rect x="50" y="8" width="30" height="22" rx="6" class="roof-box"></rect>
+    <!-- Roof Question Mark -->
+    <path d="M58 16 C58 11 72 11 72 16 C72 20 65 20 65 24" fill="none" class="roof-qm-stroke" stroke-width="3" stroke-linecap="round"></path>
+    <circle cx="65" cy="27.5" r="1.8" class="roof-qm-dot"></circle>
+    
+    <!-- Car Body -->
+    <path d="M30 56 L45 36 Q47 30 54 30 L82 30 Q89 30 92 36 L104 56 Z" class="car-body"></path>
+    <rect x="8" y="54" width="104" height="34" rx="14" class="car-body"></rect>
+    
+    <!-- Windows -->
+    <path d="M42 54 L52 38 L66 38 L66 54 Z M72 54 L72 38 L82 38 L90 54 Z" class="car-windows" stroke-width="3" stroke-linejoin="round"></path>
+    
+    <!-- Lights -->
+    <rect x="102" y="62" width="8" height="8" rx="3" class="light-front"></rect>
+    <rect x="10" y="62" width="8" height="8" rx="3" class="light-rear"></rect>
+    
+    <!-- Wheels -->
+    <circle cx="32" cy="90" r="14" class="wheel-tire" stroke-width="3"></circle>
+    <circle cx="32" cy="90" r="6" class="wheel-hub"></circle>
+    <circle cx="90" cy="90" r="14" class="wheel-tire" stroke-width="3"></circle>
+    <circle cx="90" cy="90" r="6" class="wheel-hub"></circle>
+  </svg>
+
+  <!-- Logotype Typography (hidden in icon-only variant) -->
+  @if (variant() !== 'icon-only') {
+    <div class="vk-logo-text">
+      <div class="brand-name">
+        <span class="part-vara">Vara</span><span class="part-koto">Koto</span><span class="part-domain">.com</span>
+      </div>
+      @if (showTagline() && variant() !== 'compact') {
+        <div class="brand-tagline">গাড়ি ভাড়া কত?</div>
+      }
+    </div>
+  }
+</div>
