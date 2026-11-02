@@ -82,10 +82,41 @@
 
 ---
 
+### ✅ Phase 5: Transportation Fare Calculation Engine
+- **BengaliNumberHelper**:
+  - Full conversion of numerals to Bengali digits (`0-9` $\rightarrow$ `০-৯`) for culturally authentic fare presentation (e.g. `৳৫০ - ৳৭০`).
+- **Core Interfaces & DTOs**:
+  - `FareCalculationRequestDto`: Origin/Destination IDs or coordinates, transport code selection, and full breakdown toggle.
+  - `FareBreakdownDto`: Per-transport calculation, minimum/maximum range, exact fares, official meter comparison, reliability indicators, and distance constraints.
+  - `FareCalculationResultDto`: Complete fare response packaging origin, destination, road distance, travel duration, primary fare, and all transport options.
+  - `IFareCalculationService` defined in `VaraKoto.Core/Interfaces/`.
+- **Fare Calculation Engine Implementation (`FareCalculationService`)**:
+  - **Bus Engine**: BRTA official gazette formula (first 5 km = minimum fare ৳20, excess distance = ৳2.50/km, rounded to ৳5 bus ticket slabs) + seating/direct service variation range.
+  - **Rickshaw Engine**: Local Dhaka negotiated rates (short hop ৳25–৳35, incremental distance rates, ৳5 rounding). Automatic distance feasibility notice for trips > 7 km (fatigue/VIP road restrictions).
+  - **CNG Dual Display Engine**:
+    - **Official BRTA Meter**: Minimum ৳40 (first 2 km) + ৳12/km + traffic waiting charge (৳2/min) rounded to ৳5.
+    - **Ground Reality Negotiated Contract**: Dhaka street reality formula (base ৳120–৳160, distance scaling) rounded to ৳10.
+    - Transparent dual disclosure protecting commuters from unrealistic meter expectations.
+  - **Bike Engine**: Ride-sharing baseline model (Pathao/Uber Moto rates: base ৳25, per-km ৳12–৳14.50, per-minute traffic buffer, minimum ৳35).
+  - **Community Submission Aggregation**: Integrates approved community submissions (`FareSubmissions`) on identical or nearby routes ($\pm 0.8\text{ km}$), calculating average fares and elevating reliability to `"CommunityBacked"` (5 stars).
+- **API Endpoints (`FaresController`)**:
+  - `POST /api/fares/calculate`: Comprehensive fare calculation endpoint.
+  - `GET /api/fares/estimate-for-distance`: Quick distance-based fare preview.
+  - `GET /api/fares/transports`: Active transport types and rule configuration.
+- **Frontend FareService (Angular 21)**:
+  - Signals-based reactive state (`selectedTransport`, `latestResult`, `isCalculating`, `calculationError`, `transportTypes`).
+  - Active transport switching with live primary fare update.
+  - Bengali digit formatting helper (`toBengaliDigits`).
+- **Automated Verification**:
+  - Backend: `dotnet test` passed **19 / 19 tests (100%)**.
+  - Frontend: `npm test` passed **28 / 28 tests (100%)**.
+  - Production build: `npm run build` succeeded (raw 255 kB, gzipped 67 kB).
+
+---
+
 ## 2. Remaining Phases
 
-- **Phase 5: Transportation Fare Calculation Engine** *(Next)*
-- **Phase 6: Core Frontend Homepage – Find Fare Interface**
+- **Phase 6: Core Frontend Homepage – Find Fare Interface** *(Next)*
 - **Phase 7: Community Fare Contribution & Verification System**
 - **Phase 8: End-to-End Integration, Validation & Anti-Spam Safeguards**
 - **Phase 9: Testing, Responsiveness, Performance Optimization & Project Documentation**
@@ -104,6 +135,9 @@
    - Prioritizes local Bangladesh transit hubs with 0ms latency and 0 API cost.
    - Bounded external Photon geocoding ensures results stay within Bangladesh.
    - Persistent `RouteCaches` and Haversine $1.28$ road factor provide resilient offline/fallback calculations.
+5. **Dual Fare Presentation for CNG & Clear Transparency**:
+   - Explicitly displays ground-negotiated contract reality alongside official BRTA meter rate so commuters are never misled.
+   - Clear reliability labeling: "Official", "Estimated", and "CommunityBacked".
 
 ---
 
@@ -112,6 +146,9 @@
 - `GET /api/locations/search` $\rightarrow$ Autocomplete location search (local hubs + Photon fallback).
 - `GET /api/locations/reverse` $\rightarrow$ Reverse geocoding for GPS coordinate resolution.
 - `GET /api/routes/distance` $\rightarrow$ Driving distance & duration calculation (Cache + OSRM + Haversine).
+- `POST /api/fares/calculate` $\rightarrow$ Full multi-transport fare calculation engine.
+- `GET /api/fares/estimate-for-distance` $\rightarrow$ Quick distance-based fare preview.
+- `GET /api/fares/transports` $\rightarrow$ Active transport types and rule configuration.
 - SQL Server `(localdb)\MSSQLLocalDB` connected and verified.
 
 ---
@@ -120,7 +157,7 @@
 - Database `VaraKotoDb` created on `(localdb)\MSSQLLocalDB`.
 - Migration `InitialCreate` executed.
 - Seeded initial records for `TransportTypes`, `FareRules`, and `Locations`.
-- Added dynamic route persistence in `RouteCaches` during distance queries.
+- Dynamic integration with `FareSubmissions` for verified community benchmark elevation.
 
 ---
 
@@ -130,12 +167,16 @@
 ---
 
 ## 7. Next Recommended Phase
-👉 **Phase 5: Transportation Fare Calculation Engine**
-- Implement `IFareCalculationService` in `VaraKoto.Core` and `VaraKoto.Infrastructure`.
-- Implement specific fare formulas and pricing logic for:
-  - **Bus**: BRTA government rate with minimum fare threshold.
-  - **Rickshaw**: Short-distance flat rates and realistic negotiated distance ranges.
-  - **CNG**: Dual pricing: BRTA official meter rate vs. ground-reality negotiated market range.
-  - **Bike**: Base fare + distance rate + duration buffer based on ride-sharing norms.
-- Aggregate verified community submissions (`FareSubmissions`) to refine and benchmark fare estimates.
-- Expose REST API endpoint: `POST /api/fares/calculate` and comprehensive unit tests.
+👉 **Phase 6: Core Frontend Homepage – Find Fare Interface**
+- Create the intuitive, distraction-free homepage where users discover fares in seconds:
+  - Starting location input with polite browser auto-detect button and dropdown autocomplete.
+  - Destination location input with quick suggestion dropdown.
+  - Location swap button (🔄) for instant reverse direction.
+  - Transport selector bar with custom SVG icons (Bus, Rickshaw, CNG, Bike).
+  - High-visibility "ভাড়া দেখুন" (Find Fare) primary action button.
+- Fare Result Card display:
+  - Large, bold `Baloo Da 2` typography for the estimated fare / range.
+  - Distance & travel time pills.
+  - Reliability badge and source notes.
+  - Quick transport comparison drawer/pills.
+  - Integration with `LoadingScreenComponent` during calculation.

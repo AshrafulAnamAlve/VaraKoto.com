@@ -11,9 +11,13 @@ export interface LocationDto {
   source: string;
 }
 
+export type LocationModel = LocationDto;
+
 export interface DistanceResultDto {
   distanceKm: number;
   durationMinutes: number;
   source: string;
   isEstimatedRoute: boolean;
 }
+
+export type DistanceResultModel = DistanceResultDto;

@@ -20,6 +20,7 @@ builder.Services.AddDbContext<VaraKotoDbContext>(options =>
 // Register typed HTTP clients & domain services
 builder.Services.AddHttpClient<ILocationService, HybridLocationService>();
 builder.Services.AddHttpClient<IRouteService, OsrmRouteService>();
+builder.Services.AddScoped<IFareCalculationService, FareCalculationService>();
 
 // CORS configuration for Angular frontend
 builder.Services.AddCors(options =>
