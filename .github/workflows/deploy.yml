@@ -1,0 +1,55 @@
+name: Deploy Frontend to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: 'pages'
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: src/frontend/varakoto-web/package-lock.json
+
+      - name: Install Dependencies
+        working-directory: src/frontend/varakoto-web
+        run: npm ci
+
+      - name: Build Angular App for Production
+        working-directory: src/frontend/varakoto-web
+        run: |
+          npx ng build --configuration production --base-href /VaraKoto.com/
+          cp dist/varakoto-web/browser/index.html dist/varakoto-web/browser/404.html
+          touch dist/varakoto-web/browser/.nojekyll
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: src/frontend/varakoto-web/dist/varakoto-web/browser
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
