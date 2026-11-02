@@ -26,34 +26,38 @@
 - **Typography & Font**: Connected Google Font `Baloo Da 2` (weights 500, 600, 700, 800) in `index.html` and configured global SCSS tokens.
 - **Color Palette Tokens**: Defined all brand primitive colors (`#0B4F44`, `#E5570A`, `#FFC93C`, `#FFF6E5`, `#17302B`) and semantic variables for Light & Dark mode.
 - **ThemeService**: Signals-based reactive theme service supporting `'light' | 'dark'`, `localStorage` persistence, system `prefers-color-scheme` detection, and dynamic `data-theme` document binding.
-- **LogoComponent**: Native Angular standalone SVG component recreating `Logo system-html`:
-  - Primary (horizontal with tagline)
-  - Stacked (vertical centered)
-  - Compact (navigation bar)
-  - Icon-only (app icon / favicon)
-  - Full reactive Light/Dark mode auto-adaptation using Angular 21 `input()` signals.
-- **LoadingScreenComponent**: Native Angular standalone component recreating `Loading page-html`:
-  - Bottom city skyline backdrop SVG (`#0B4F44` with 10% opacity).
-  - Drifting clouds SVG (`drift` keyframes).
-  - Animated cartoon commuter scratching head (`scratch`, `bob`, `look`, `drop` keyframes).
-  - Floating colored question marks (`qm` keyframes in orange, yellow, green).
-  - Idea lightbulb illumination sequence (`bulb` keyframes).
-  - Swinging fare tag (`tag` keyframes alternating between `৳ ?` and `৳ ৫,০০০`).
-  - Road progress track with dashed animated stripes (`dash`) and moving VaraKoto car (`drive`).
-  - Dynamic Bangla status message sequence (*গাড়ি খুঁজছি…*, *ভাড়া মিলিয়ে দেখছি…*, *পেয়ে গেছি!*).
-  - Complete `@media (prefers-reduced-motion: reduce)` accessibility support.
-- **Showcase Interface**: Responsive header with compact logo, live Light/Dark mode switch, and full interactive loading animation preview.
+- **LogoComponent**: Native Angular standalone SVG component recreating `Logo system-html` (Primary, Stacked, Compact, Icon-only) with dynamic light/dark adaptation using Angular 21 `input()` signals.
+- **LoadingScreenComponent**: Native Angular standalone component recreating `Loading page-html` with vector skyline, drifting clouds, animated commuter, lightbulb, floating `?`, swinging fare tag, dashed road progress bar, and Bengali status messages.
 - **Verification**:
-  - `npm test`: **16 passed (100%)** across `ThemeService`, `LogoComponent`, `LoadingScreenComponent`, and `AppComponent`.
-  - `npm run build`: **Success (0 Errors, 0 Warnings)**. Bundle size: 237.21 kB (62.77 kB gzipped).
-  - `dotnet test`: **1 passed (100%)**.
+  - `npm test`: 16 passed (100%).
+  - `npm run build`: 0 Errors, 0 Warnings.
+
+### ✅ Phase 3: Database Design, EF Core & Backend Foundation
+- **Entity Domain Models**:
+  - `Location`: `Id`, `NameEn`, `NameBn`, `Latitude`, `Longitude`, `District`, `Thana`, `IsHub`, `CreatedAt`.
+  - `TransportType`: `Id`, `Code` (`bus`, `rickshaw`, `cng`, `bike`), `NameEn`, `NameBn`, `IconKey`, `DisplayOrder`, `IsActive`.
+  - `FareRule`: `Id`, `TransportTypeId`, `BaseFare`, `BaseDistanceKm`, `PerKmRate`, `MinimumFare`, `EstimatedSpeedKmph`, `HighDemandMultiplier`, `OfficialSourceNote`, `LastUpdated`.
+  - `FareSubmission`: `Id`, `TransportTypeId`, `FromLocationId`, `ToLocationId`, `ActualFarePaid`, `DistanceKm`, `TravelDate`, `DeviceHash`, `ModerationStatus`, `SubmittedAt`.
+  - `RouteCache`: `Id`, `FromLocationId`, `ToLocationId`, `DistanceKm`, `EstimatedDurationMinutes`, `CachedAt`.
+- **EF Core DbContext & Fluent API**:
+  - Precision mapping: `(9, 6)` for coordinates, `(10, 2)` for fares and distances.
+  - Restricted delete behaviors to prevent cascade cycles on multi-location foreign keys.
+  - Compound and single-column indexes on coordinates, search names, and route lookups.
+- **Data Seeder (`DbInitializer`)**:
+  - Seeded 4 primary Bangladesh transport types (Bus, Rickshaw, CNG, Bike) with accurate BRTA / community baseline rules.
+  - Seeded 15 major transit hubs in Dhaka and Chittagong with Bengali and English names and precise geographic coordinates.
+- **Database Migrations & Execution**:
+  - Generated migration `20261102163955_InitialCreate`.
+  - Applied migration to `(localdb)\MSSQLLocalDB` creating the `VaraKotoDb` database.
+- **Automated Verification**:
+  - Added 4 integration test suites in `tests/VaraKoto.Api.Tests/DatabaseTests.cs` using SQLite in-memory provider.
+  - `dotnet test`: **5 / 5 passed (100%)**.
 
 ---
 
 ## 2. Remaining Phases
 
-- **Phase 3: Database Design, EF Core & Backend Foundation** *(Next)*
-- **Phase 4: Location Services, Geocoding & Routing Engine**
+- **Phase 4: Location Services, Geocoding & Routing Engine** *(Next)*
 - **Phase 5: Transportation Fare Calculation Engine**
 - **Phase 6: Core Frontend Homepage – Find Fare Interface**
 - **Phase 7: Community Fare Contribution & Verification System**
@@ -64,33 +68,36 @@
 
 ## 3. Important Technical Decisions
 
-1. **Angular 21 Signal Inputs (`input()`)**:
-   - Upgraded component properties (`variant`, `mode`, `active`, etc.) from legacy `@Input()` to Angular signal inputs (`input()`). This ensures seamless reactivity with `computed()` signals and completely eliminates `NG0100: ExpressionChangedAfterItHasBeenCheckedError` during Vitest execution.
-2. **Zero Runtime Bloat for Animations**:
-   - Recreated all SVG shapes, bobbing, scratching, swinging, and driving mechanics strictly through pure hardware-accelerated CSS keyframe transforms (`translateY`, `rotate`, `scaleX`, `opacity`), achieving 60fps on mobile without third-party animation libraries or React runtimes.
-3. **Color & Theme Tokens Architecture**:
-   - Defined in `:root` and `[data-theme="dark"]` using CSS custom properties for instant, flicker-free theme switching.
+1. **Precision & Scale for Coordinates**:
+   - Mapped `decimal(9, 6)` for latitude and longitude in SQL Server, providing sub-meter geographic precision without floating-point inaccuracies.
+2. **Restrict Delete Constraints**:
+   - Used `DeleteBehavior.Restrict` on `FareSubmissions` and `RouteCaches` location foreign keys to prevent unintended data loss or cascade deletion anomalies.
+3. **Idempotent Automatic Database Migrations**:
+   - In `DbInitializer.cs`, migration is executed conditionally for SQL Server, allowing unit tests using SQLite in-memory to execute without migration engine conflicts.
 
 ---
 
 ## 4. API Integrations
 - `GET /api/health` $\rightarrow$ System health, version, timestamp, and environment status.
+- SQL Server `(localdb)\MSSQLLocalDB` connected and verified.
 
 ---
 
 ## 5. Database Changes
-- Scheduled for **Phase 3** (SQL Server tables for `Locations`, `TransportTypes`, `FareRules`, `FareSubmissions`, `RouteCaches`).
+- Database `VaraKotoDb` created on `(localdb)\MSSQLLocalDB`.
+- Migration `InitialCreate` executed.
+- Seeded initial records for `TransportTypes`, `FareRules`, and `Locations`.
 
 ---
 
 ## 6. Known Issues / Blockers
-- None. All builds, tests, and styles are clean and passing with 0 warnings.
+- None. All backend and frontend builds and test suites are 100% clean and passing.
 
 ---
 
 ## 7. Next Recommended Phase
-👉 **Phase 3: Database Design, EF Core & Backend Foundation**
-- Define EF Core entity models (`Location`, `TransportType`, `FareRule`, `FareSubmission`, `RouteCache`).
-- Configure `VaraKotoDbContext` with Fluent API mappings, indices, and constraints.
-- Seed initial transit hubs for Bangladesh (Dhaka and Chittagong metro hubs) and official BRTA / ground fare rules.
-- Execute EF Core migrations to `(localdb)\MSSQLLocalDB`.
+👉 **Phase 4: Location Services, Geocoding & Routing Engine**
+- Implement `ILocationService` supporting local database transit hub search with Bengali/English fuzzy matching + Photon API fallback.
+- Implement reverse-geocoding for user current location detection.
+- Implement `IRouteService` computing real driving distances using OSRM with local `RouteCaches` storage and Haversine fallback.
+- Expose REST API endpoints: `GET /api/locations/search`, `GET /api/locations/reverse`, `GET /api/routes/distance`.
