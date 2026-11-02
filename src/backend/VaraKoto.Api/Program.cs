@@ -52,7 +52,16 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
     ?? "Server=(localdb)\\mssqllocaldb;Database=VaraKotoDb;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True";
 
 builder.Services.AddDbContext<VaraKotoDbContext>(options =>
-    options.UseSqlServer(connectionString));
+{
+    options.UseSqlServer(connectionString, sqlOptions =>
+    {
+        sqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 5,
+            maxRetryDelay: TimeSpan.FromSeconds(10),
+            errorNumbersToAdd: null);
+        sqlOptions.CommandTimeout(60);
+    });
+});
 
 // Register typed HTTP clients & domain services
 builder.Services.AddHttpClient<ILocationService, HybridLocationService>();
@@ -68,8 +77,14 @@ builder.Services.AddCors(options =>
     {
         policy.SetIsOriginAllowed(origin =>
             {
+                if (string.IsNullOrWhiteSpace(origin)) return false;
                 var uri = new Uri(origin);
-                return uri.Host == "localhost" || uri.Host == "127.0.0.1";
+                return uri.Host == "localhost" 
+                    || uri.Host == "127.0.0.1"
+                    || uri.Host.EndsWith("github.io", StringComparison.OrdinalIgnoreCase)
+                    || uri.Host.EndsWith("runasp.net", StringComparison.OrdinalIgnoreCase)
+                    || uri.Host.EndsWith("databaseasp.net", StringComparison.OrdinalIgnoreCase)
+                    || uri.Host.EndsWith("varakoto.com", StringComparison.OrdinalIgnoreCase);
             })
             .AllowAnyHeader()
             .AllowAnyMethod()
@@ -82,19 +97,35 @@ var app = builder.Build();
 // Global Exception Handling Middleware (First in pipeline)
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
-// Auto-migrate and seed database
+// Auto-migrate and seed database with retry support
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-    try
+    var logger = services.GetRequiredService<ILogger<Program>>();
+    var context = services.GetRequiredService<VaraKotoDbContext>();
+
+    const int maxAttempts = 3;
+    for (int attempt = 1; attempt <= maxAttempts; attempt++)
     {
-        var context = services.GetRequiredService<VaraKotoDbContext>();
-        await DbInitializer.InitializeAsync(context);
-    }
-    catch (Exception ex)
-    {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while initializing/seeding the database.");
+        try
+        {
+            logger.LogInformation("Database migration and seeding attempt {Attempt}/{MaxAttempts}...", attempt, maxAttempts);
+            await DbInitializer.InitializeAsync(context);
+            logger.LogInformation("Database migration and seeding successfully completed.");
+            break;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Database migration attempt {Attempt} failed: {Message}", attempt, ex.Message);
+            if (attempt == maxAttempts)
+            {
+                logger.LogError("All startup database migration attempts failed. Application will run and allow retry via /api/health/migrate.");
+            }
+            else
+            {
+                await Task.Delay(TimeSpan.FromSeconds(3 * attempt));
+            }
+        }
     }
 }
 

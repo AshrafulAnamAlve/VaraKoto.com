@@ -19,14 +19,14 @@ public class HealthControllerTests
     }
 
     [Fact]
-    public void Get_ReturnsOkResult_WithHealthyStatus()
+    public async Task Get_ReturnsOkResult_WithHealthyStatus()
     {
         // Arrange
         var fakeEnv = new FakeWebHostEnvironment();
         var controller = new HealthController(fakeEnv);
 
         // Act
-        var result = controller.Get();
+        var result = await controller.Get();
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);

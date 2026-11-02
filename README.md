@@ -5,6 +5,16 @@
 
 ---
 
+### 🌐 Live Deployment Links
+- 🚀 **Live Web Application (GitHub Pages)**: [https://ashrafulanamalve.github.io/VaraKoto.com/](https://ashrafulanamalve.github.io/VaraKoto.com/)
+- 🛡️ **Live Admin Dashboard**: [https://ashrafulanamalve.github.io/VaraKoto.com/admin](https://ashrafulanamalve.github.io/VaraKoto.com/admin)
+  - **Admin Username**: `admin`
+  - **Admin Password**: `Admin@123`
+- ⚡ **Live Production Backend API (RunASP.NET / MonsterASP)**: [https://varakoto.runasp.net/api/health](https://varakoto.runasp.net/api/health)
+- 🗄️ **Live Cloud Database (MSSQL)**: `db77540.databaseasp.net` (Hosted datacenter)
+
+---
+
 ## 🌟 Overview
 
 Navigating daily transport in Bangladesh often involves arbitrary pricing, lack of transparent fare metrics, and confusing street bargaining. **VaraKoto.com** solves this by delivering an ultra-fast, mobile-first, distraction-free web platform where commuters instantly discover standard and verified fares with zero sign-up friction.
