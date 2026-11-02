@@ -398,12 +398,17 @@
       }
 
       &.db-val {
-        color: var(--vk-green);
+        color: #059669;
+
+        :host-context([data-theme="dark"]) &,
+        [data-theme="dark"] & {
+          color: #34D399;
+        }
       }
     }
 
     .compare-sub {
-      font-size: 0.75rem;
+      font-size: 0.78rem;
       color: var(--text-muted);
     }
   }
@@ -429,17 +434,59 @@
       padding: 0.2rem 0;
 
       &.higher {
-        color: #B45309;
+        color: #D97706;
+
+        :host-context([data-theme="dark"]) &,
+        [data-theme="dark"] & {
+          color: #FBBF24;
+        }
       }
 
       &.lower {
-        color: #047857;
+        color: #059669;
+
+        :host-context([data-theme="dark"]) &,
+        [data-theme="dark"] & {
+          color: #34D399;
+        }
       }
 
       &.exact {
-        color: var(--vk-green);
+        color: #059669;
+
+        :host-context([data-theme="dark"]) &,
+        [data-theme="dark"] & {
+          color: #34D399;
+        }
       }
     }
+  }
+}
+
+/* Dark Theme Specific Overrides for High Contrast */
+:host-context([data-theme="dark"]) {
+  .fare-val.db-val {
+    color: #34D399 !important;
+  }
+  .diff-pill.higher {
+    color: #FBBF24 !important;
+  }
+  .diff-pill.lower,
+  .diff-pill.exact {
+    color: #34D399 !important;
+  }
+}
+
+[data-theme="dark"] {
+  .fare-val.db-val {
+    color: #34D399 !important;
+  }
+  .diff-pill.higher {
+    color: #FBBF24 !important;
+  }
+  .diff-pill.lower,
+  .diff-pill.exact {
+    color: #34D399 !important;
   }
 }
 
