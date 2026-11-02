@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/backend/">
+    <Project Path="src/backend/VaraKoto.Api/VaraKoto.Api.csproj" />
+    <Project Path="src/backend/VaraKoto.Core/VaraKoto.Core.csproj" />
+    <Project Path="src/backend/VaraKoto.Infrastructure/VaraKoto.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/VaraKoto.Api.Tests/VaraKoto.Api.Tests.csproj" />
+  </Folder>
+</Solution>

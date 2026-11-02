@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<title>Vara Koto Loading</title>
+<script src="./vendor/react.js"></script>
+<script src="./vendor/react-dom.js"></script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@500;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FFF6E5;font-family:'Baloo Da 2',system-ui,sans-serif}
+.hb{animation:bob 1.8s ease-in-out infinite;transform-origin:130px 318px}
+.shadow{animation:shadow 1.8s ease-in-out infinite;transform-origin:130px 322px}
+.arm{animation:scratch .45s ease-in-out infinite alternate;transform-origin:100px 192px}
+.look{animation:look 3s ease-in-out infinite}
+.drop{animation:drop 2.4s ease-in infinite}
+.carb{animation:carb .7s ease-in-out infinite}
+.qm{opacity:0;animation:qm 3s ease-in infinite;transform-box:fill-box;transform-origin:center}
+.q2{animation-delay:-1s}
+.q3{animation-delay:-2s}
+.tag{animation:swing 2.4s ease-in-out infinite;transform-origin:320px 112px}
+.p1{animation:p1 6s linear infinite}
+.p2{opacity:0;animation:p2 6s linear infinite}
+.bulb{opacity:0;animation:bulb 6s ease-out infinite;transform-box:fill-box;transform-origin:center}
+.msg{position:absolute;left:0;right:0;top:0;text-align:center;opacity:0;animation:msg 6s ease-in-out infinite backwards}
+.m2{animation-delay:2s}
+.m3{animation-delay:4s}
+.dash{animation:dash .5s linear infinite}
+.drive{animation:drive 3.2s linear infinite}
+.cloud{animation:drift 22s linear infinite}
+.c2{animation-duration:30s;animation-delay:-12s}
+.rise{opacity:0;animation:rise .8s ease-out .15s forwards}
+@keyframes bob{
+0%,100%{transform:translateY(0) rotate(-1deg)}
+50%{transform:translateY(-6px) rotate(1deg)}
+}
+@keyframes shadow{
+0%,100%{transform:scaleX(1);opacity:.14}
+50%{transform:scaleX(.88);opacity:.08}
+}
+@keyframes scratch{
+from{transform:rotate(-5deg)}
+to{transform:rotate(5deg)}
+}
+@keyframes look{
+0%,100%{transform:translateX(-3px)}
+50%{transform:translateX(4px)}
+}
+@keyframes drop{
+0%{opacity:0;transform:translateY(0)}
+20%{opacity:1}
+100%{opacity:0;transform:translateY(22px)}
+}
+@keyframes carb{
+0%,100%{transform:translateY(0)}
+50%{transform:translateY(-1.5px)}
+}
+@keyframes qm{
+0%{opacity:0;transform:translateY(10px) scale(.6) rotate(-10deg)}
+20%{opacity:1}
+70%{opacity:1;transform:translateY(-14px) scale(1) rotate(8deg)}
+100%{opacity:0;transform:translateY(-26px) scale(1.05) rotate(12deg)}
+}
+@keyframes swing{
+0%,100%{transform:rotate(-8deg)}
+50%{transform:rotate(8deg)}
+}
+@keyframes p1{
+0%,46%{opacity:1}
+50%,100%{opacity:0}
+}
+@keyframes p2{
+0%,50%{opacity:0}
+56%,94%{opacity:1}
+100%{opacity:0}
+}
+@keyframes bulb{
+0%,74%{opacity:0;transform:scale(.2)}
+82%{opacity:1;transform:scale(1.25)}
+88%,94%{opacity:1;transform:scale(1)}
+100%{opacity:0;transform:scale(.2)}
+}
+@keyframes msg{
+0%{opacity:0;transform:translateY(10px)}
+4%,28%{opacity:1;transform:translateY(0)}
+33%,100%{opacity:0;transform:translateY(-10px)}
+}
+@keyframes dash{
+from{background-position:0 0}
+to{background-position:-36px 0}
+}
+@keyframes drive{
+from{left:-14%}
+to{left:100%}
+}
+@keyframes drift{
+from{transform:translateX(-140px)}
+to{transform:translateX(1500px)}
+}
+@keyframes rise{
+from{opacity:0;transform:translateY(16px)}
+to{opacity:1;transform:translateY(0)}
+}
+@media (prefers-reduced-motion:reduce){
+.hb,.shadow,.arm,.look,.drop,.carb,.qm,.tag,.p1,.p2,.bulb,.msg,.dash,.drive,.cloud,.rise{animation:none}
+.qm,.p1,.m1,.rise{opacity:1}
+.drive{left:40%}
+}
+</style>
+</helmet>
+
+<div style="position: relative; overflow: hidden; min-height: 100vh; box-sizing: border-box; background: #FFF6E5; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 16px 110px; gap: 4px">
+
+<svg aria-hidden="true" viewBox="0 0 1280 220" preserveAspectRatio="xMidYMax slice" style="position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 150px">
+<g fill="#0B4F44" opacity="0.10">
+<rect x="20" y="110" width="80" height="110" rx="6"></rect><rect x="120" y="150" width="70" height="70" rx="6"></rect><rect x="210" y="80" width="90" height="140" rx="6"></rect><rect x="320" y="130" width="70" height="90" rx="6"></rect><rect x="410" y="100" width="100" height="120" rx="6"></rect><rect x="530" y="150" width="70" height="70" rx="6"></rect><rect x="620" y="70" width="90" height="150" rx="6"></rect><rect x="730" y="125" width="80" height="95" rx="6"></rect><rect x="830" y="95" width="100" height="125" rx="6"></rect><rect x="950" y="150" width="70" height="70" rx="6"></rect><rect x="1040" y="105" width="90" height="115" rx="6"></rect><rect x="1150" y="135" width="100" height="85" rx="6"></rect>
+</g>
+</svg>
+
+<svg aria-hidden="true" class="cloud" viewBox="0 0 120 50" style="position: absolute; top: 9%; left: 0; width: 110px"><path d="M20 40 Q4 40 6 28 Q8 18 22 20 Q26 6 44 8 Q58 2 68 16 Q86 10 92 26 Q112 26 110 38 Q108 42 100 40 Z" fill="#FFFFFF"></path></svg>
+<svg aria-hidden="true" class="cloud c2" viewBox="0 0 120 50" style="position: absolute; top: 22%; left: 0; width: 80px"><path d="M20 40 Q4 40 6 28 Q8 18 22 20 Q26 6 44 8 Q58 2 68 16 Q86 10 92 26 Q112 26 110 38 Q108 42 100 40 Z" fill="#FFFFFF"></path></svg>
+
+<svg role="img" aria-label="Cartoon man scratching his head, puzzled about how much a car rental costs" viewBox="0 -10 420 350" style="position: relative; width: min(460px, 92vw); height: auto; display: block">
+
+<ellipse class="shadow" cx="130" cy="322" rx="62" ry="9" fill="#0B4F44" opacity="0.14"></ellipse>
+<ellipse cx="312" cy="322" rx="92" ry="9" fill="#0B4F44" opacity="0.14"></ellipse>
+
+<text class="qm" x="36" y="120" font-family="'Baloo Da 2',sans-serif" font-weight="800" font-size="58" fill="#E5570A" stroke="#17302B" stroke-width="3" paint-order="stroke">?</text>
+<text class="qm q2" x="190" y="96" font-family="'Baloo Da 2',sans-serif" font-weight="800" font-size="44" fill="#FFC93C" stroke="#17302B" stroke-width="3" paint-order="stroke">?</text>
+<text class="qm q3" x="62" y="52" font-family="'Baloo Da 2',sans-serif" font-weight="800" font-size="38" fill="#0B4F44" stroke="#17302B" stroke-width="3" paint-order="stroke">?</text>
+
+<g class="bulb">
+<circle cx="130" cy="40" r="34" fill="#FFC93C" opacity="0.35"></circle>
+<path d="M130 18 C115 18 107 30 111 42 C113 48 119 52 119 58 L141 58 C141 52 147 48 149 42 C153 30 145 18 130 18 Z" fill="#FFE27A" stroke="#17302B" stroke-width="3.5" stroke-linejoin="round"></path>
+<rect x="120" y="58" width="20" height="9" rx="3" fill="#17302B"></rect>
+<path d="M130 -4 V4 M95 12 L101 18 M165 12 L159 18 M87 40 H95 M165 40 H173" stroke="#17302B" stroke-width="3.5" stroke-linecap="round" fill="none"></path>
+</g>
+
+<g class="carb">
+<path d="M320 118 V190" stroke="#17302B" stroke-width="4" stroke-linecap="round" fill="none"></path>
+<g transform="translate(232 179) scale(1.35)">
+<rect x="50" y="8" width="30" height="22" rx="6" fill="#E5570A" stroke="#17302B" stroke-width="3"></rect>
+<path d="M58 16 C58 11 72 11 72 16 C72 20 65 20 65 24" fill="none" stroke="#FFF6E5" stroke-width="3" stroke-linecap="round"></path>
+<circle cx="65" cy="27.5" r="1.8" fill="#FFF6E5"></circle>
+<path d="M30 56 L45 36 Q47 30 54 30 L82 30 Q89 30 92 36 L104 56 Z" fill="#0B4F44" stroke="#17302B" stroke-width="3" stroke-linejoin="round"></path>
+<rect x="8" y="54" width="104" height="34" rx="14" fill="#0B4F44" stroke="#17302B" stroke-width="3"></rect>
+<path d="M42 54 L52 38 L66 38 L66 54 Z M72 54 L72 38 L82 38 L90 54 Z" fill="#FFF6E5" stroke="#FFF6E5" stroke-width="3" stroke-linejoin="round"></path>
+<rect x="102" y="62" width="8" height="8" rx="3" fill="#FFC93C"></rect>
+<rect x="10" y="62" width="8" height="8" rx="3" fill="#E5570A"></rect>
+<circle cx="32" cy="90" r="14" fill="#17302B" stroke="#FFF6E5" stroke-width="3"></circle>
+<circle cx="32" cy="90" r="6" fill="#FFC93C"></circle>
+<circle cx="90" cy="90" r="14" fill="#17302B" stroke="#FFF6E5" stroke-width="3"></circle>
+<circle cx="90" cy="90" r="6" fill="#FFC93C"></circle>
+</g>
+</g>
+
+<g class="tag">
+<path d="M320 112 L338 138" stroke="#17302B" stroke-width="3" fill="none"></path>
+<circle cx="320" cy="112" r="5" fill="#FFF6E5" stroke="#17302B" stroke-width="3"></circle>
+<rect x="312" y="134" width="92" height="44" rx="12" fill="#FFC93C" stroke="#17302B" stroke-width="4"></rect>
+<circle cx="324" cy="146" r="4" fill="#FFF6E5" stroke="#17302B" stroke-width="2.5"></circle>
+<text class="p1" x="360" y="166" text-anchor="middle" font-family="'Baloo Da 2',sans-serif" font-weight="800" font-size="26" fill="#17302B">৳ ?</text>
+<text class="p2" x="362" y="165" text-anchor="middle" font-family="'Baloo Da 2',sans-serif" font-weight="800" font-size="17" fill="#17302B">৳ ৫,০০০</text>
+</g>
+
+<g class="hb">
+
+<rect x="106" y="248" width="22" height="64" rx="8" fill="#2B3A67" stroke="#17302B" stroke-width="4.5"></rect>
+<rect x="134" y="248" width="22" height="64" rx="8" fill="#2B3A67" stroke="#17302B" stroke-width="4.5"></rect>
+<rect x="96" y="304" width="36" height="16" rx="8" fill="#17302B"></rect>
+<rect x="130" y="304" width="36" height="16" rx="8" fill="#17302B"></rect>
+
+<path d="M162 196 C 186 204 190 232 182 256" stroke="#17302B" stroke-width="22" stroke-linecap="round" fill="none"></path>
+<path d="M162 196 C 186 204 190 232 182 256" stroke="#FFC93C" stroke-width="13" stroke-linecap="round" fill="none"></path>
+<circle cx="182" cy="262" r="12" fill="#D9976B" stroke="#17302B" stroke-width="4"></circle>
+
+<rect x="94" y="170" width="72" height="92" rx="24" fill="#FFC93C" stroke="#17302B" stroke-width="5"></rect>
+<path d="M118 172 L130 190 L142 172" fill="#FFF6E5" stroke="#17302B" stroke-width="4" stroke-linejoin="round"></path>
+
+<circle cx="86" cy="124" r="10" fill="#D9976B" stroke="#17302B" stroke-width="4"></circle>
+<circle cx="174" cy="124" r="10" fill="#D9976B" stroke="#17302B" stroke-width="4"></circle>
+<circle cx="130" cy="120" r="44" fill="#D9976B" stroke="#17302B" stroke-width="5"></circle>
+<path d="M88 112 C86 78 112 66 134 70 C158 72 176 92 172 112 C160 98 148 94 130 96 C112 98 98 100 88 112 Z" fill="#17302B" stroke="#17302B" stroke-width="3" stroke-linejoin="round"></path>
+
+<ellipse cx="114" cy="124" rx="11" ry="13" fill="#FFFFFF" stroke="#17302B" stroke-width="3.5"></ellipse>
+<ellipse cx="148" cy="124" rx="11" ry="13" fill="#FFFFFF" stroke="#17302B" stroke-width="3.5"></ellipse>
+<g class="look">
+<circle cx="114" cy="122" r="5.5" fill="#17302B"></circle>
+<circle cx="148" cy="122" r="5.5" fill="#17302B"></circle>
+</g>
+<path d="M100 104 Q112 96 126 102" stroke="#17302B" stroke-width="4.5" stroke-linecap="round" fill="none"></path>
+<path d="M138 96 Q150 90 162 98" stroke="#17302B" stroke-width="4.5" stroke-linecap="round" fill="none"></path>
+<path d="M131 128 Q137 138 129 141" stroke="#17302B" stroke-width="3.5" stroke-linecap="round" fill="none"></path>
+<path d="M116 152 q 7 -8 14 0 t 14 0" stroke="#17302B" stroke-width="4.5" stroke-linecap="round" fill="none"></path>
+
+<path class="drop" d="M170 96 C166 104 164 108 170 110 C176 108 174 104 170 96 Z" fill="#7CC7F2" stroke="#17302B" stroke-width="2.5" stroke-linejoin="round"></path>
+
+<g class="arm">
+<path d="M98 194 C 58 190 50 130 90 94" stroke="#17302B" stroke-width="22" stroke-linecap="round" fill="none"></path>
+<path d="M98 194 C 58 190 50 130 90 94" stroke="#FFC93C" stroke-width="13" stroke-linecap="round" fill="none"></path>
+<circle cx="96" cy="86" r="14" fill="#D9976B" stroke="#17302B" stroke-width="4"></circle>
+<path d="M89 80 L93 88 M96 78 L99 87 M103 80 L104 88" stroke="#17302B" stroke-width="2.5" stroke-linecap="round" fill="none"></path>
+</g>
+
+</g>
+</svg>
+
+<div class="rise" style="display: flex; flex-direction: column; align-items: center; gap: 0">
+<h1 style="margin: 0; font-family: 'Baloo Da 2', sans-serif; font-weight: 800; font-size: clamp(52px, 11vw, 84px); line-height: 1; letter-spacing: -1px; color: #0B4F44">Vara<span style="color: #E5570A">Koto</span><span style="font-size: 0.38em; font-weight: 700; letter-spacing: 0; color: #17302B">.com</span></h1>
+<p style="margin: 6px 0 0; font-family: 'Baloo Da 2', sans-serif; font-weight: 700; font-size: 22px; color: #0B4F44">গাড়ি ভাড়া কত?</p>
+</div>
+
+<div class="rise" style="position: relative; width: min(360px, 88vw); height: 36px; margin-top: 14px">
+<div class="msg m1" style="font-family: 'Baloo Da 2', sans-serif; font-weight: 500; font-size: 22px; color: #17302B">গাড়ি খুঁজছি…</div>
+<div class="msg m2" style="font-family: 'Baloo Da 2', sans-serif; font-weight: 500; font-size: 22px; color: #17302B">ভাড়া মিলিয়ে দেখছি…</div>
+<div class="msg m3" style="font-family: 'Baloo Da 2', sans-serif; font-weight: 700; font-size: 22px; color: #0B4F44">পেয়ে গেছি!</div>
+</div>
+
+<div role="progressbar" aria-label="Loading" aria-valuetext="Loading" class="rise" style="position: relative; width: min(360px, 88vw); height: 52px; overflow: hidden; margin-top: 4px">
+<div style="position: absolute; left: 0; right: 0; bottom: 0; height: 18px; border-radius: 9px; background: #17302B"></div>
+<div class="dash" style="position: absolute; left: 10px; right: 10px; bottom: 7px; height: 4px; background-image: repeating-linear-gradient(90deg, #FFC93C 0, #FFC93C 18px, transparent 18px, transparent 36px)"></div>
+<div class="drive" style="position: absolute; bottom: 12px; left: -14%; width: 56px; height: 34px">
+<svg viewBox="0 0 120 110" width="56" height="51" aria-hidden="true" style="display: block; margin-top: -17px"><rect x="50" y="8" width="30" height="22" rx="6" fill="#E5570A"></rect><path d="M58 16 C58 11 72 11 72 16 C72 20 65 20 65 24" fill="none" stroke="#FFF6E5" stroke-width="3" stroke-linecap="round"></path><circle cx="65" cy="27.5" r="1.8" fill="#FFF6E5"></circle><path d="M30 56 L45 36 Q47 30 54 30 L82 30 Q89 30 92 36 L104 56 Z" fill="#0B4F44"></path><rect x="8" y="54" width="104" height="34" rx="14" fill="#0B4F44"></rect><path d="M42 54 L52 38 L66 38 L66 54 Z M72 54 L72 38 L82 38 L90 54 Z" fill="#FFF6E5" stroke="#FFF6E5" stroke-width="3" stroke-linejoin="round"></path><rect x="102" y="62" width="8" height="8" rx="3" fill="#FFC93C"></rect><rect x="10" y="62" width="8" height="8" rx="3" fill="#E5570A"></rect><circle cx="32" cy="90" r="14" fill="#17302B" stroke="#FFF6E5" stroke-width="3"></circle><circle cx="32" cy="90" r="6" fill="#FFC93C"></circle><circle cx="90" cy="90" r="14" fill="#17302B" stroke="#FFF6E5" stroke-width="3"></circle><circle cx="90" cy="90" r="6" fill="#FFC93C"></circle></svg>
+</div>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":720}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>
