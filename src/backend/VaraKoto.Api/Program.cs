@@ -12,6 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddMemoryCache();
+builder.Services.AddResponseCaching();
 
 // Rate Limiting Policy Configuration
 builder.Services.AddRateLimiter(options =>
@@ -105,6 +106,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseCors("AllowFrontend");
+app.UseResponseCaching();
 app.UseRateLimiter();
 app.UseAuthorization();
 

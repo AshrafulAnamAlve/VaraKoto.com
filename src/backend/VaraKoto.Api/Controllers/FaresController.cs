@@ -103,6 +103,7 @@ public class FaresController : ControllerBase
     /// Retrieves active transport types and their base rules.
     /// </summary>
     [HttpGet("transports")]
+    [ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Any)]
     public async Task<IActionResult> GetTransportTypes(CancellationToken cancellationToken)
     {
         var types = await _fareCalculationService.GetActiveTransportTypesAsync(cancellationToken);

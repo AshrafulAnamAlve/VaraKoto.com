@@ -22,6 +22,7 @@ dist/
 .cache/
 
 # Environment and secrets
+*.publishSettings
 appsettings.Development.local.json
 appsettings.Production.json
 *.local
