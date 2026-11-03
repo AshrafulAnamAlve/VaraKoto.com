@@ -59,93 +59,96 @@
 
   <!-- Main Fare Content Area -->
   <main class="app-main">
-    <div class="main-container" [class.result-mode]="fareService.latestResult() !== null">
-      @if (fareService.latestResult()) {
-        <!-- Fare Result View with Animated Route Map -->
-        <div class="result-layout-grid">
-          <!-- Animated Route Map Panel (LEFT) -->
-          <div class="map-column">
-            <app-route-map
-              [from]="resultFrom()"
-              [to]="resultTo()"
-              [vehicle]="resultVehicle()"
-              [distanceKm]="resultDistanceKm()"
-              [durationMinutes]="resultDurationMinutes()"
-              [fareAmount]="resultFareAmount()"
-              [fareDisplayBn]="resultFareDisplayBn()"
-            ></app-route-map>
-          </div>
+    <div class="main-container">
+      <div class="main-layout-grid">
+        <!-- Animated Route Map Panel (LEFT) -->
+        <div class="map-column">
+          <app-route-map
+            [from]="resultFrom()"
+            [to]="resultTo()"
+            [vehicle]="resultVehicle()"
+            [distanceKm]="resultDistanceKm()"
+            [durationMinutes]="resultDurationMinutes()"
+            [fareAmount]="resultFareAmount()"
+            [fareDisplayBn]="resultFareDisplayBn()"
+            [replayTrigger]="replayTrigger()"
+          ></app-route-map>
+        </div>
 
-          <!-- Fare Result Details Card (RIGHT) -->
-          <div class="result-card-column">
+        <!-- Cards Column (RIGHT) -->
+        <div class="card-column">
+          @if (fareService.latestResult()) {
+            <!-- Fare Result Details Card -->
             <app-fare-result-card
               (modifySearch)="showFinder()"
               (contributeFare)="handleContribute($event)"
             ></app-fare-result-card>
-          </div>
-        </div>
-      } @else {
-        <!-- Fare Finder Search View (Original clean centered UI) -->
-        <app-fare-finder-card></app-fare-finder-card>
-      }
+          } @else {
+            <!-- Fare Finder Search Card -->
+            <app-fare-finder-card
+              (searchSubmitted)="onSearchSubmitted()"
+            ></app-fare-finder-card>
+          }
 
-      <!-- Prominent Community Contribution Banner Card -->
-      <section class="community-invite-card" (click)="openContributionModal()" role="button" tabindex="0" title="যেকোনো রুটের ভাড়া শেয়ার করুন">
-        <div class="invite-left">
-          <span class="invite-icon">💡</span>
-          <div class="invite-text">
-            <h3 class="invite-title">আপনি কি কোনো এলাকার বা রুটের ভাড়া জানেন?</h3>
-            <p class="invite-desc">সহযাত্রীদের বাস্তবসম্মত ধারণা দিতে যেকোনো স্থানের বাস, রিকশা বা সিএনজি ভাড়া যোগ করুন</p>
-          </div>
-        </div>
-        <button type="button" class="invite-cta-btn" (click)="$event.stopPropagation(); openContributionModal()">
-          + ভাড়া যুক্ত করুন
-        </button>
-      </section>
-
-      <!-- Recent Community Contributions Section -->
-      @if (fareService.recentContributions().length > 0) {
-        <section class="recent-contributions-section" aria-label="সাম্প্রতিক ভাড়ার তথ্য">
-          <div class="section-header">
-            <div class="header-title-box">
-              <span class="dot-indicator"></span>
-              <h3 class="section-title">সাম্প্রতিক সহযাত্রীদের আপডেট</h3>
-            </div>
-            <button
-              type="button"
-              class="share-link-btn"
-              (click)="openContributionModal()"
-            >
-              + আপনার ভাড়া জানান
-            </button>
-          </div>
-
-          <div class="contributions-grid">
-            @for (item of fareService.recentContributions(); track item.id) {
-              <div class="contribution-chip">
-                <div class="chip-top">
-                  <span class="chip-route">
-                    <span class="route-from">{{ item.fromLocationName }}</span>
-                    <span class="route-arrow">➔</span>
-                    <span class="route-to">{{ item.toLocationName }}</span>
-                  </span>
-                  <span class="chip-time">{{ item.timeAgoBn }}</span>
-                </div>
-                <div class="chip-bottom">
-                  <span class="chip-transport">
-                    @if (item.transportCode === 'bus') { 🚌 বাস }
-                    @else if (item.transportCode === 'rickshaw') { 🛺 রিকশা }
-                    @else if (item.transportCode === 'cng') { 🛺💨 সিএনজি }
-                    @else if (item.transportCode === 'bike') { 🏍️ বাইক }
-                    @else { {{ item.transportNameBn }} }
-                  </span>
-                  <span class="chip-fare">{{ item.fareDisplayBn }}</span>
-                </div>
+          <!-- Prominent Community Contribution Banner Card -->
+          <section class="community-invite-card" (click)="openContributionModal()" role="button" tabindex="0" title="যেকোনো রুটের ভাড়া শেয়ার করুন">
+            <div class="invite-left">
+              <span class="invite-icon">💡</span>
+              <div class="invite-text">
+                <h3 class="invite-title">আপনি কি কোনো এলাকার বা রুটের ভাড়া জানেন?</h3>
+                <p class="invite-desc">সহযাত্রীদের বাস্তবসম্মত ধারণা দিতে যেকোনো স্থানের বাস, রিকশা বা সিএনজি ভাড়া যোগ করুন</p>
               </div>
-            }
-          </div>
-        </section>
-      }
+            </div>
+            <button type="button" class="invite-cta-btn" (click)="$event.stopPropagation(); openContributionModal()">
+              + ভাড়া যুক্ত করুন
+            </button>
+          </section>
+
+          <!-- Recent Community Contributions Section -->
+          @if (fareService.recentContributions().length > 0) {
+            <section class="recent-contributions-section" aria-label="সাম্প্রতিক ভাড়ার তথ্য">
+              <div class="section-header">
+                <div class="header-title-box">
+                  <span class="dot-indicator"></span>
+                  <h3 class="section-title">সাম্প্রতিক সহযাত্রীদের আপডেট</h3>
+                </div>
+                <button
+                  type="button"
+                  class="share-link-btn"
+                  (click)="openContributionModal()"
+                >
+                  + আপনার ভাড়া জানান
+                </button>
+              </div>
+
+              <div class="contributions-grid">
+                @for (item of fareService.recentContributions(); track item.id) {
+                  <div class="contribution-chip">
+                    <div class="chip-top">
+                      <span class="chip-route">
+                        <span class="route-from">{{ item.fromLocationName }}</span>
+                        <span class="route-arrow">➔</span>
+                        <span class="route-to">{{ item.toLocationName }}</span>
+                      </span>
+                      <span class="chip-time">{{ item.timeAgoBn }}</span>
+                    </div>
+                    <div class="chip-bottom">
+                      <span class="chip-transport">
+                        @if (item.transportCode === 'bus') { 🚌 বাস }
+                        @else if (item.transportCode === 'rickshaw') { 🛺 রিকশা }
+                        @else if (item.transportCode === 'cng') { 🛺💨 সিএনজি }
+                        @else if (item.transportCode === 'bike') { 🏍️ বাইক }
+                        @else { {{ item.transportNameBn }} }
+                      </span>
+                      <span class="chip-fare">{{ item.fareDisplayBn }}</span>
+                    </div>
+                  </div>
+                }
+              </div>
+            </section>
+          }
+        </div>
+      </div>
     </div>
   </main>
 

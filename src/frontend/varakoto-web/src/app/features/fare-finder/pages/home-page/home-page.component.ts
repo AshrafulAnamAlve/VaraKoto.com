@@ -33,6 +33,7 @@ export class HomePageComponent implements OnInit {
 
   // View state: 'finder' | 'result'
   readonly currentView = signal<'finder' | 'result'>('finder');
+  readonly replayTrigger = signal<number>(0);
 
   // Route Map Data (computed directly from the calculated fare result)
   readonly resultFrom = computed(() => {
@@ -85,6 +86,10 @@ export class HomePageComponent implements OnInit {
   showFinder(): void {
     this.currentView.set('finder');
     this.fareService.clearResult();
+  }
+
+  onSearchSubmitted(): void {
+    this.replayTrigger.update(v => v + 1);
   }
 
   openContributionModal(from?: string, to?: string, transport?: string): void {

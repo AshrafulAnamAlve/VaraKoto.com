@@ -8,6 +8,10 @@
     </span>
   </div>
 
+  <div class="hint glass" [class.hide]="isInfoShown() || isRouteActive()" aria-hidden="true">
+    <i></i>স্থান ও বাহন নির্বাচন করে 'ভাড়া দেখুন' চাপুন
+  </div>
+
   <div class="info glass" [class.show]="isInfoShown()" aria-live="polite">
     <div class="info-top">
       <div class="ends">

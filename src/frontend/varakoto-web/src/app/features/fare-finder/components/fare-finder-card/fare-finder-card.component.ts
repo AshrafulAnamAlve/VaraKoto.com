@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
@@ -19,6 +19,9 @@ import { MapPickerModalComponent, SelectedMapLocation } from '../../../../shared
 export class FareFinderCardComponent implements OnInit {
   private readonly locationService = inject(LocationService);
   readonly fareService = inject(FareService);
+
+  // Output events
+  readonly searchSubmitted = output<void>();
 
   // Form Signals
   readonly fromQuery = signal<string>('');
@@ -279,6 +282,7 @@ export class FareFinderCardComponent implements OnInit {
     }
 
     this.validationMessage.set(null);
+    this.searchSubmitted.emit();
 
     const manualDist = this.isManualDistanceActive() && this.manualDistance() && this.manualDistance()! > 0
       ? this.manualDistance()!
