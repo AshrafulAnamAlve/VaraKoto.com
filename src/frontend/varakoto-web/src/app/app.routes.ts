@@ -5,6 +5,10 @@ import { adminGuard } from './core/guards/admin.guard';
 export const routes: Routes = [
   { path: '', component: HomePageComponent },
   {
+    path: 'download',
+    loadComponent: () => import('./features/download/pages/download-page/download-page.component').then(m => m.DownloadPageComponent)
+  },
+  {
     path: 'admin/login',
     loadComponent: () => import('./features/admin/pages/admin-login/admin-login.component').then(m => m.AdminLoginComponent)
   },
