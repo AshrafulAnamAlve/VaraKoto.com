@@ -319,6 +319,40 @@ public class FareContributionTests : IDisposable
         Assert.Contains("সফলভাবে জমা হয়েছে", result.MessageBn);
     }
 
+        [Fact]
+    public async Task SubmitFare_WhenNamesAreDistinct_LikeRajukAndAjuk_ShouldSucceed()
+    {
+        var rajukLoc = new Location
+        {
+            Id = 50,
+            NameEn = "Rajuk Bhaban",
+            NameBn = "রাজউক ভবন",
+            Latitude = 23.7291m,
+            Longitude = 90.4172m,
+            IsHub = true
+        };
+        _context.Locations.Add(rajukLoc);
+        await _context.SaveChangesAsync();
+
+        var calcService = new FareCalculationService(_context, new FakeLocationService(), new FakeRouteService(5m, 15m), NullLogger<FareCalculationService>.Instance);
+        var contribService = new FareContributionService(_context, new FakeLocationService(), new FakeRouteService(5m, 15m), calcService, NullLogger<FareContributionService>.Instance);
+
+        var request = new FareContributionRequestDto
+        {
+            FromName = "Rajuk",
+            ToName = "Ajuk",
+            TransportCode = "cng",
+            ActualFarePaid = 118m
+        };
+
+        var result = await contribService.SubmitFareAsync(request, "127.0.0.1", "TestAgent", CancellationToken.None);
+
+        Assert.NotNull(result);
+        Assert.Equal("Pending", result.Status);
+        Assert.Equal(118m, result.SubmittedFare);
+        Assert.NotEqual(result.FromLocationName, result.ToLocationName);
+    }
+
     public void Dispose()
     {
         _context.Dispose();

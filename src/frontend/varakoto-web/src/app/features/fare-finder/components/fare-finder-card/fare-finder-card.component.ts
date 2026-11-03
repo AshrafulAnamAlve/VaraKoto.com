@@ -257,17 +257,20 @@ export class FareFinderCardComponent implements OnInit {
 
     if (!to && this.toSuggestions().length > 0) {
       const match = this.toSuggestions().find(s => 
-        s.nameBn.toLowerCase().includes(toText.toLowerCase()) || 
-        s.nameEn.toLowerCase().includes(toText.toLowerCase()) ||
-        toText.toLowerCase().includes(s.nameBn.toLowerCase())
-      ) || this.toSuggestions()[0];
-      to = match;
-      this.selectedTo.set(match);
+        (from == null || s.id !== from.id) &&
+        (s.nameBn.toLowerCase().includes(toText.toLowerCase()) || 
+         s.nameEn.toLowerCase().includes(toText.toLowerCase()) ||
+         toText.toLowerCase().includes(s.nameBn.toLowerCase()))
+      );
+      if (match) {
+        to = match;
+        this.selectedTo.set(match);
+      }
     }
 
-    if (from && to && from.id && to.id && from.id === to.id) {
-      this.validationMessage.set('যাত্রার স্থান এবং গন্তব্য ভিন্ন হতে হবে');
-      return;
+    // If different text was typed, prevent accidental same location ID
+    if (from && to && from.id && to.id && from.id === to.id && fromText.toLowerCase() !== toText.toLowerCase()) {
+      to = null;
     }
 
     if (fromText.toLowerCase() === toText.toLowerCase()) {

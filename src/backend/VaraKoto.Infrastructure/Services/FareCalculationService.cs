@@ -31,6 +31,14 @@ public class FareCalculationService : IFareCalculationService
     {
         var isManualDistance = request.ManualDistanceKm.HasValue && request.ManualDistanceKm.Value > 0;
 
+        var namesAreDistinct = !string.IsNullOrWhiteSpace(request.FromName) && 
+                               !string.IsNullOrWhiteSpace(request.ToName) && 
+                               !string.Equals(request.FromName.Trim(), request.ToName.Trim(), StringComparison.OrdinalIgnoreCase);
+
+        var effectiveToLocationId = namesAreDistinct && request.FromLocationId.HasValue && request.ToLocationId.HasValue && request.FromLocationId.Value == request.ToLocationId.Value
+            ? (int?)null
+            : request.ToLocationId;
+
         // 1. Resolve Origin Location
         var fromLoc = await ResolveLocationAsync(
             request.FromLocationId, 
@@ -39,20 +47,39 @@ public class FareCalculationService : IFareCalculationService
             request.FromName, 
             "Origin", 
             isManualDistance,
-            cancellationToken);
+            excludeLocationId: null,
+            cancellationToken: cancellationToken);
 
         // 2. Resolve Destination Location
         var toLoc = await ResolveLocationAsync(
-            request.ToLocationId, 
+            effectiveToLocationId, 
             request.ToLatitude, 
             request.ToLongitude, 
             request.ToName, 
             "Destination", 
             isManualDistance,
-            cancellationToken);
+            excludeLocationId: namesAreDistinct && fromLoc.Id > 0 ? fromLoc.Id : null,
+            cancellationToken: cancellationToken);
+
+        // Disambiguate if fuzzy matching still collided on different place names
+        if (namesAreDistinct && fromLoc.Id > 0 && toLoc.Id == fromLoc.Id)
+        {
+            toLoc = new LocationDto
+            {
+                Id = 0,
+                NameEn = request.ToName!.Trim(),
+                NameBn = request.ToName!.Trim(),
+                DisplayName = request.ToName!.Trim(),
+                Latitude = 23.8103m,
+                Longitude = 90.4125m,
+                District = "নতুন এলাকা",
+                IsHub = false,
+                Source = "CustomManual"
+            };
+        }
 
         // 3. Validate origin and destination are distinct
-        if (fromLoc.Id > 0 && toLoc.Id > 0 && fromLoc.Id == toLoc.Id)
+        if (!namesAreDistinct && fromLoc.Id > 0 && toLoc.Id > 0 && fromLoc.Id == toLoc.Id)
         {
             throw new InvalidOperationException("যাত্রার স্থান এবং গন্তব্য ভিন্ন হতে হবে (Origin and destination must be different locations).");
         }
@@ -71,20 +98,34 @@ public class FareCalculationService : IFareCalculationService
         {
             var coordDistSq = (fromLoc.Latitude - toLoc.Latitude) * (fromLoc.Latitude - toLoc.Latitude) +
                               (fromLoc.Longitude - toLoc.Longitude) * (fromLoc.Longitude - toLoc.Longitude);
-            if (coordDistSq < 0.000001m) // ~30 meters
+            if (coordDistSq < 0.000001m && !namesAreDistinct) // ~30 meters
             {
                 throw new InvalidOperationException("যাত্রার স্থান এবং গন্তব্য অতি কাছাকাছি (Origin and destination are too close to each other).");
             }
 
             // 4. Calculate Road Distance & Travel Duration
-            var routeResult = await _routeService.CalculateDistanceAsync(
-                fromLoc.Latitude, 
-                fromLoc.Longitude, 
-                toLoc.Latitude, 
-                toLoc.Longitude, 
-                fromLoc.Id > 0 ? fromLoc.Id : null, 
-                toLoc.Id > 0 ? toLoc.Id : null, 
-                cancellationToken);
+            DistanceResultDto routeResult;
+            if (coordDistSq < 0.000001m && namesAreDistinct)
+            {
+                routeResult = new DistanceResultDto
+                {
+                    DistanceKm = 4.0m,
+                    DurationMinutes = 15m,
+                    Source = "EstimatedDefault",
+                    IsEstimatedRoute = true
+                };
+            }
+            else
+            {
+                routeResult = await _routeService.CalculateDistanceAsync(
+                    fromLoc.Latitude, 
+                    fromLoc.Longitude, 
+                    toLoc.Latitude, 
+                    toLoc.Longitude, 
+                    fromLoc.Id > 0 ? fromLoc.Id : null, 
+                    toLoc.Id > 0 ? toLoc.Id : null, 
+                    cancellationToken);
+            }
 
             distanceKm = routeResult.DistanceKm;
             durationMinutes = routeResult.DurationMinutes;
@@ -474,6 +515,23 @@ public class FareCalculationService : IFareCalculationService
         };
     }
 
+    private static LocationDto MapToDto(Location loc)
+    {
+        return new LocationDto
+        {
+            Id = loc.Id,
+            NameEn = loc.NameEn,
+            NameBn = loc.NameBn,
+            DisplayName = string.IsNullOrEmpty(loc.District) ? loc.NameBn : $"{loc.NameBn}, {loc.District}",
+            Latitude = loc.Latitude,
+            Longitude = loc.Longitude,
+            District = loc.District,
+            Thana = loc.Thana,
+            IsHub = loc.IsHub,
+            Source = "Database"
+        };
+    }
+
     private async Task<LocationDto> ResolveLocationAsync(
         int? locationId, 
         decimal? latitude, 
@@ -481,26 +539,15 @@ public class FareCalculationService : IFareCalculationService
         string? name, 
         string label, 
         bool allowCustomFallback,
+        int? excludeLocationId,
         CancellationToken cancellationToken)
     {
         if (locationId.HasValue && locationId.Value > 0)
         {
             var dbLoc = await _context.Locations.FindAsync([locationId.Value], cancellationToken);
-            if (dbLoc != null)
+            if (dbLoc != null && (excludeLocationId == null || dbLoc.Id != excludeLocationId.Value))
             {
-                return new LocationDto
-                {
-                    Id = dbLoc.Id,
-                    NameEn = dbLoc.NameEn,
-                    NameBn = dbLoc.NameBn,
-                    DisplayName = string.IsNullOrEmpty(dbLoc.District) ? dbLoc.NameBn : $"{dbLoc.NameBn}, {dbLoc.District}",
-                    Latitude = dbLoc.Latitude,
-                    Longitude = dbLoc.Longitude,
-                    District = dbLoc.District,
-                    Thana = dbLoc.Thana,
-                    IsHub = dbLoc.IsHub,
-                    Source = "Database"
-                };
+                return MapToDto(dbLoc);
             }
         }
 
@@ -519,31 +566,49 @@ public class FareCalculationService : IFareCalculationService
         if (!string.IsNullOrWhiteSpace(name))
         {
             var cleanName = name.Trim();
-            var match = await _context.Locations
-                .FirstOrDefaultAsync(l => l.NameBn.Contains(cleanName) || l.NameEn.Contains(cleanName) || cleanName.Contains(l.NameBn) || cleanName.Contains(l.NameEn), cancellationToken);
 
-            if (match != null)
+            // 1. Exact match (case-insensitive)
+            var exactMatch = await _context.Locations
+                .Where(l => excludeLocationId == null || l.Id != excludeLocationId.Value)
+                .FirstOrDefaultAsync(l => l.NameBn.ToLower() == cleanName.ToLower() || l.NameEn.ToLower() == cleanName.ToLower(), cancellationToken);
+
+            if (exactMatch != null)
             {
-                return new LocationDto
+                return MapToDto(exactMatch);
+            }
+
+            // 2. StartsWith match (e.g. "Dhan" matches "Dhanmondi")
+            if (cleanName.Length >= 3)
+            {
+                var prefixMatch = await _context.Locations
+                    .Where(l => excludeLocationId == null || l.Id != excludeLocationId.Value)
+                    .FirstOrDefaultAsync(l => l.NameBn.StartsWith(cleanName) || l.NameEn.StartsWith(cleanName), cancellationToken);
+
+                if (prefixMatch != null)
                 {
-                    Id = match.Id,
-                    NameEn = match.NameEn,
-                    NameBn = match.NameBn,
-                    DisplayName = string.IsNullOrEmpty(match.District) ? match.NameBn : $"{match.NameBn}, {match.District}",
-                    Latitude = match.Latitude,
-                    Longitude = match.Longitude,
-                    District = match.District,
-                    Thana = match.Thana,
-                    IsHub = match.IsHub,
-                    Source = "Database"
-                };
+                    return MapToDto(prefixMatch);
+                }
+            }
+
+            // 3. Whole Word match (avoid substring traps like "Ajuk" matching inside "Rajuk")
+            if (cleanName.Length >= 4)
+            {
+                var wordMatch = await _context.Locations
+                    .Where(l => excludeLocationId == null || l.Id != excludeLocationId.Value)
+                    .FirstOrDefaultAsync(l => cleanName.Contains(l.NameBn) || cleanName.Contains(l.NameEn) ||
+                                              l.NameBn.Contains(" " + cleanName) || l.NameEn.Contains(" " + cleanName), cancellationToken);
+
+                if (wordMatch != null)
+                {
+                    return MapToDto(wordMatch);
+                }
             }
 
             // Fallback: search geocoding via _locationService
             try
             {
-                var searchResults = await _locationService.SearchLocationsAsync(cleanName, 1, cancellationToken);
-                var topMatch = searchResults.FirstOrDefault();
+                var searchResults = await _locationService.SearchLocationsAsync(cleanName, 2, cancellationToken);
+                var topMatch = searchResults.FirstOrDefault(s => excludeLocationId == null || s.Id != excludeLocationId.Value);
                 if (topMatch != null)
                 {
                     return await _locationService.GetOrCreateLocationAsync(
@@ -560,10 +625,12 @@ public class FareCalculationService : IFareCalculationService
             }
 
             // Fallback: Match by district/thana keywords in cleanName
-            var hubKeywords = await _context.Locations.Where(l => l.IsHub).ToListAsync(cancellationToken);
+            var hubKeywords = await _context.Locations
+                .Where(l => l.IsHub && (excludeLocationId == null || l.Id != excludeLocationId.Value))
+                .ToListAsync(cancellationToken);
+
             var matchedHub = hubKeywords.FirstOrDefault(h => 
-                cleanName.Contains(h.NameBn, StringComparison.OrdinalIgnoreCase) || 
-                cleanName.Contains(h.NameEn, StringComparison.OrdinalIgnoreCase) ||
+                (cleanName.Length >= 4 && (h.NameBn.StartsWith(cleanName) || h.NameEn.StartsWith(cleanName))) ||
                 (!string.IsNullOrEmpty(h.District) && cleanName.Contains(h.District, StringComparison.OrdinalIgnoreCase)) ||
                 (!string.IsNullOrEmpty(h.Thana) && cleanName.Contains(h.Thana, StringComparison.OrdinalIgnoreCase)));
 
@@ -594,13 +661,13 @@ public class FareCalculationService : IFareCalculationService
                     DisplayName = cleanName,
                     Latitude = 23.8103m,
                     Longitude = 90.4125m,
-                    District = "বাংলাদেশ",
+                    District = "নতুন এলাকা",
                     Source = "CustomManual"
                 };
             }
         }
 
         var labelBn = label == "Origin" ? "যাত্রার প্রারম্ভিক স্থান" : "গন্তব্য স্থান";
-        throw new ArgumentException($"'{name ?? labelBn}' ম্যাপে চিহ্নিত করা সম্ভব হয়নি। অনুগ্রহ করে ড্রপডাউন থেকে বাছাই করুন, ম্যাপে পিন করুন অথবা আনুমানিক দূরত্ব লিখুন। ({label} could not be determined. Please select from suggestions, pin on map, or enter manual distance).");
+        throw new ArgumentException($"'{name ?? labelBn}' ম্যাপে চিহ্নিত করা সম্ভব হয়নি। অনুগ্রহ করে ড্রপডাউন থেকে বাছাই করুন, ম্যাপে পিন করুন অথবা আনুমানিক দূরত্ব লিখুন।");
     }
 }

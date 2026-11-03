@@ -260,12 +260,20 @@ export class FareContributionModalComponent implements OnInit, OnDestroy {
 
     if (!to && this.toSuggestions().length > 0) {
       const match = this.toSuggestions().find(s => 
-        s.nameBn.toLowerCase().includes(toVal.toLowerCase()) || 
-        s.nameEn.toLowerCase().includes(toVal.toLowerCase()) ||
-        toVal.toLowerCase().includes(s.nameBn.toLowerCase())
-      ) || this.toSuggestions()[0];
-      to = match;
-      this.selectedTo.set(match);
+        (from == null || s.id !== from.id) &&
+        (s.nameBn.toLowerCase().includes(toVal.toLowerCase()) || 
+         s.nameEn.toLowerCase().includes(toVal.toLowerCase()) ||
+         toVal.toLowerCase().includes(s.nameBn.toLowerCase()))
+      );
+      if (match) {
+        to = match;
+        this.selectedTo.set(match);
+      }
+    }
+
+    // If different text was typed, prevent accidental same location ID
+    if (from && to && from.id && to.id && from.id === to.id && fromVal.toLowerCase() !== toVal.toLowerCase()) {
+      to = null;
     }
 
     if (fromVal.toLowerCase() === toVal.toLowerCase()) {
