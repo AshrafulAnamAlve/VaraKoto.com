@@ -5,6 +5,7 @@ import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { LocationService } from '../../../../core/services/location.service';
 import { FareService } from '../../../../core/services/fare.service';
+import { NativeMobileService } from '../../../../core/services/native-mobile.service';
 import { LocationDto } from '../../../../core/models/location.model';
 import { TransportCode } from '../../../../core/models/fare.model';
 import { MapPickerModalComponent, SelectedMapLocation } from '../../../../shared/components/map-picker-modal/map-picker-modal.component';
@@ -19,6 +20,7 @@ import { MapPickerModalComponent, SelectedMapLocation } from '../../../../shared
 export class FareFinderCardComponent implements OnInit {
   private readonly locationService = inject(LocationService);
   readonly fareService = inject(FareService);
+  private readonly nativeMobile = inject(NativeMobileService);
 
   // Output events
   readonly searchSubmitted = output<void>();
@@ -209,6 +211,7 @@ export class FareFinderCardComponent implements OnInit {
     this.isDetectingGps.set(true);
     this.gpsError.set(null);
 
+    this.nativeMobile.hapticImpact('light');
     this.locationService.detectBrowserLocation().pipe(
       switchMap((coords) => this.locationService.reverse(coords.latitude, coords.longitude))
     ).subscribe({
@@ -216,6 +219,7 @@ export class FareFinderCardComponent implements OnInit {
         this.isDetectingGps.set(false);
         if (loc) {
           this.selectFrom(loc);
+          this.nativeMobile.hapticSuccess();
         } else {
           this.gpsError.set('লোকেশন সনাক্ত করা সম্ভব হয়নি। নাম লিখে সার্চ করুন বা ম্যাপে পিন করুন।');
         }
@@ -228,6 +232,7 @@ export class FareFinderCardComponent implements OnInit {
   }
 
   selectTransport(code: TransportCode): void {
+    this.nativeMobile.hapticSelection();
     this.fareService.setSelectedTransport(code);
   }
 
@@ -282,6 +287,7 @@ export class FareFinderCardComponent implements OnInit {
     }
 
     this.validationMessage.set(null);
+    this.nativeMobile.hapticImpact('medium');
     this.searchSubmitted.emit();
 
     const manualDist = this.isManualDistanceActive() && this.manualDistance() && this.manualDistance()! > 0

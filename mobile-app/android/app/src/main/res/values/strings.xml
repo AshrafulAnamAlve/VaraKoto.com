@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">VaraKoto - গাড়ি ভাড়া কত?</string>
+    <string name="title_activity_main">VaraKoto</string>
+    <string name="package_name">com.varakoto.app</string>
+    <string name="custom_url_scheme">com.varakoto.app</string>
+</resources>

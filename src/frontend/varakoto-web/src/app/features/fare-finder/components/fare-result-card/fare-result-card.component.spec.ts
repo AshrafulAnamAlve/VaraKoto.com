@@ -174,4 +174,13 @@ describe('FareResultCardComponent', () => {
     component.selectTransport('bus');
     expect(switchSpy).toHaveBeenCalledWith('bus');
   });
+
+  it('should trigger onShare and invoke nativeMobile shareFare', async () => {
+    const shareSpy = vi.spyOn(component.nativeMobile, 'shareFare').mockResolvedValue(true);
+    await component.onShare();
+    expect(shareSpy).toHaveBeenCalledWith(expect.objectContaining({
+      title: expect.stringContaining('মিরপুর ১০'),
+      text: expect.stringContaining('ফার্মগেট')
+    }));
+  });
 });

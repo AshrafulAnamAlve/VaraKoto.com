@@ -396,6 +396,17 @@
     transition: all var(--transition-fast);
     padding: 10px 16px;
 
+    &.share-btn {
+      background-color: var(--accent-cta);
+      border: 1.5px solid transparent;
+      color: #FFFFFF;
+
+      &:hover {
+        background-color: var(--accent-cta-hover);
+        box-shadow: 0 4px 12px rgba(255, 106, 26, 0.25);
+      }
+    }
+
     &.modify-btn {
       background-color: var(--bg-surface-elevated);
       border: 1.5px solid var(--border-color);

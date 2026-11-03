@@ -1,0 +1,22 @@
+{
+  "name": "varakoto-mobile-app",
+  "version": "1.0.0",
+  "description": "VaraKoto.com (গাড়ি ভাড়া কত?) – Native Android & iOS Mobile Application Shell",
+  "scripts": {
+    "build:web": "npm --prefix ../src/frontend/varakoto-web run build",
+    "cap:sync": "npx --prefix ../src/frontend/varakoto-web cap sync android",
+    "cap:open": "npx --prefix ../src/frontend/varakoto-web cap open android",
+    "cap:run": "npx --prefix ../src/frontend/varakoto-web cap run android",
+    "mobile:build": "npm run build:web && npm run cap:sync"
+  },
+  "keywords": [
+    "varakoto",
+    "mobile",
+    "capacitor",
+    "android",
+    "ios",
+    "fare-calculator"
+  ],
+  "author": "VaraKoto Team",
+  "license": "MIT"
+}

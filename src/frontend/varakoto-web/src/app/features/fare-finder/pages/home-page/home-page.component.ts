@@ -9,6 +9,7 @@ import { LoadingScreenComponent } from '../../../../shared/components/loading-sc
 import { LogoComponent } from '../../../../shared/components/logo/logo.component';
 import { ThemeService } from '../../../../core/services/theme.service';
 import { FareService } from '../../../../core/services/fare.service';
+import { NativeMobileService } from '../../../../core/services/native-mobile.service';
 import { FareContributionResponseModel, TransportCode } from '../../../../core/models/fare.model';
 
 @Component({
@@ -30,6 +31,7 @@ import { FareContributionResponseModel, TransportCode } from '../../../../core/m
 export class HomePageComponent implements OnInit {
   readonly themeService = inject(ThemeService);
   readonly fareService = inject(FareService);
+  readonly nativeMobile = inject(NativeMobileService);
 
   // View state: 'finder' | 'result'
   readonly currentView = signal<'finder' | 'result'>('finder');
@@ -75,15 +77,20 @@ export class HomePageComponent implements OnInit {
   readonly contributionInitialTransport = signal<TransportCode>('bus');
 
   ngOnInit(): void {
+    // Sync native mobile status bar theme with initial dark/light state
+    this.nativeMobile.updateStatusBarTheme(this.themeService.isDark());
     // Load recent approved contributions for the community section
     this.fareService.loadRecentContributions(6).subscribe();
   }
 
   toggleTheme(): void {
     this.themeService.toggleTheme();
+    this.nativeMobile.updateStatusBarTheme(this.themeService.isDark());
+    this.nativeMobile.hapticSelection();
   }
 
   showFinder(): void {
+    this.nativeMobile.hapticSelection();
     this.currentView.set('finder');
     this.fareService.clearResult();
     if (typeof window !== 'undefined') {
@@ -92,6 +99,7 @@ export class HomePageComponent implements OnInit {
   }
 
   onSearchSubmitted(): void {
+    this.nativeMobile.hapticSuccess();
     this.replayTrigger.update(v => v + 1);
     if (typeof window !== 'undefined' && window.innerWidth <= 960) {
       window.scrollTo({ top: 0, behavior: 'smooth' });

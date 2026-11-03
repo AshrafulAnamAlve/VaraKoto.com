@@ -1,0 +1,657 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<title>VaraKoto – রুট ম্যাপ ডেমো</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#071f1b; --header:#0b3832; --card:#10433a; --panel:#0d3b33; --field:#0a312b; --line:#1d5a4d;
+  --text:#eafff8; --muted:#8fc4b6; --title:#ffc93c; --koto:#ffc93c; --accent:#ff6a1a; --sel:#0b5546;
+  --car:#fff6e5; --glass:#0b4f44; --shadow:0 30px 80px rgba(0,0,0,.45);
+}
+:root[data-theme="light"]{
+  --bg:#fff6e5; --header:#ffffff; --card:#ffffff; --panel:#fff3dc; --field:#ffffff; --line:#ecd9b2;
+  --text:#17302b; --muted:#587770; --title:#0b4f44; --koto:#e5570a; --accent:#ff6a1a; --sel:#ffe6bd;
+  --car:#0b4f44; --glass:#fff6e5; --shadow:0 30px 70px rgba(80,50,0,.14);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);font-family:'Baloo Da 2',system-ui,-apple-system,'Segoe UI',sans-serif;transition:background .3s,color .3s}
+button,input{font-family:inherit}
+svg{display:block}
+
+/* header */
+header{height:64px;background:var(--header);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 clamp(16px,4vw,48px);transition:background .3s}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:26px;letter-spacing:-.5px;line-height:1}
+.brand .koto{color:var(--koto)}
+.brand small{font-size:12px;font-weight:700;letter-spacing:0;color:var(--text);margin-left:2px}
+.hdr-actions{display:flex;gap:12px;align-items:center}
+.pill{display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 16px;border-radius:999px;font-weight:700;font-size:14px;cursor:pointer;transition:transform .15s,background .2s}
+.pill:active{transform:scale(.97)}
+.pill.share{background:rgba(255,106,26,.08);border:1.5px solid var(--accent);color:var(--accent)}
+.pill.theme{background:var(--panel);border:1px solid var(--line);color:var(--text)}
+.pill:focus-visible,.veh button:focus-visible,.cta:focus-visible,.swap:focus-visible,.loc:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* layout */
+main{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(380px,580px);gap:24px;padding:24px;max-width:1500px;margin:0 auto;width:100%}
+
+/* ===== map ===== */
+.map{position:sticky;top:24px;height:calc(100vh - 64px - 48px);min-height:520px;max-height:880px;border-radius:28px;overflow:hidden;background:#000;border:1px solid rgba(255,255,255,.08);box-shadow:var(--shadow)}
+.map canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.vignette{position:absolute;inset:0;pointer-events:none;background:radial-gradient(120% 90% at 50% 45%,transparent 52%,rgba(0,0,0,.7) 100%)}
+.hud{position:absolute;top:16px;left:16px;right:16px;display:flex;justify-content:space-between;pointer-events:none}
+.glass{background:rgba(12,20,18,.62);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.1);color:#d8f3ea}
+.chip{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:999px;font-size:13px;font-weight:600}
+.live-dot{width:8px;height:8px;border-radius:50%;background:#37e6a3;box-shadow:0 0 0 0 rgba(55,230,163,.6);animation:ping 1.8s infinite}
+@keyframes ping{70%{box-shadow:0 0 0 9px rgba(55,230,163,0)}100%{box-shadow:0 0 0 0 rgba(55,230,163,0)}}
+.hint{position:absolute;left:50%;bottom:26px;transform:translateX(-50%);display:flex;align-items:center;gap:10px;padding:10px 18px;border-radius:999px;font-size:15px;font-weight:500;white-space:nowrap;max-width:calc(100% - 32px);transition:opacity .5s,transform .5s}
+.hint.hide{opacity:0;transform:translate(-50%,12px);pointer-events:none}
+.hint i{width:26px;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,#ff6a1a,#fff);animation:slide 1.6s ease-in-out infinite}
+@keyframes slide{0%{transform:scaleX(.2);transform-origin:left}50%{transform:scaleX(1);transform-origin:left}51%{transform-origin:right}100%{transform:scaleX(.2);transform-origin:right}}
+.info{position:absolute;left:16px;right:16px;bottom:16px;border-radius:22px;padding:14px 18px 16px;opacity:0;transform:translateY(26px);pointer-events:none;transition:opacity .6s ease,transform .6s cubic-bezier(.2,.9,.2,1)}
+.info.show{opacity:1;transform:none}
+.info-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+.ends{display:flex;align-items:center;gap:8px;font-size:16px;color:#fff;min-width:0;flex-wrap:wrap}
+.ends b{font-weight:700}
+.e{width:10px;height:10px;border-radius:50%;flex:none}
+.e-o{background:#ff6a1a;box-shadow:0 0 0 3px rgba(255,106,26,.25)}
+.e-d{background:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.22)}
+.vtag{font-size:13px;font-weight:700;padding:3px 12px;border-radius:999px;background:rgba(255,106,26,.16);color:#ffb487;border:1px solid rgba(255,106,26,.35);flex:none}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stats>div{padding:2px 12px;border-left:1px solid rgba(255,255,255,.1)}
+.stats>div:first-child{border-left:0;padding-left:0}
+.stats small{display:block;font-size:12px;color:#93b9ae}
+.stats strong{display:block;font-size:22px;font-weight:800;color:#fff;line-height:1.25}
+.stats .fare strong{color:#ffc93c}
+
+/* ===== card ===== */
+.card{align-self:start;background:var(--card);border:1px solid var(--line);border-radius:28px;padding:clamp(20px,3vw,36px);box-shadow:var(--shadow);transition:background .3s}
+h1{margin:0;text-align:center;color:var(--title);font-size:clamp(24px,2.6vw,31px);line-height:1.3;font-weight:800}
+.sub{margin:8px 0 22px;text-align:center;color:var(--muted);font-size:14.5px}
+.route-box{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:16px 16px 18px}
+.route-box.shake{animation:shake .45s}
+@keyframes shake{20%{transform:translateX(-7px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+.lbl{display:flex;align-items:center;gap:6px;padding-left:8px;font-size:13px;font-weight:600;color:var(--muted)}
+.lbl .od{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.field{position:relative;margin-top:8px}
+.field input{width:100%;height:48px;background:var(--field);border:1px solid var(--line);border-radius:16px;padding:0 46px;color:var(--text);font-size:16px;outline:none;transition:border-color .2s,box-shadow .2s}
+.field input::placeholder{color:var(--muted);opacity:.8}
+.field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,106,26,.22)}
+.field .ic{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+.field .ic.o{color:var(--accent)}
+.loc{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:34px;height:34px;border-radius:10px;border:0;background:transparent;color:var(--muted);cursor:pointer;display:grid;place-items:center}
+.loc:hover{color:var(--accent)}
+.swap{display:grid;place-items:center;width:40px;height:40px;margin:10px auto 6px;border-radius:50%;background:var(--field);border:1px solid var(--line);color:var(--koto);cursor:pointer;transition:transform .35s}
+.swap:hover{transform:rotate(180deg)}
+.sug{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:40;margin:0;padding:6px;list-style:none;background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:0 20px 50px rgba(0,0,0,.4);max-height:250px;overflow:auto;display:none}
+.sug.open{display:block}
+.sug li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 12px;border-radius:12px;cursor:pointer;font-size:16px}
+.sug li small{color:var(--muted);font-size:12px;text-transform:capitalize}
+.sug li[aria-selected="true"],.sug li:hover{background:var(--panel)}
+.vlabel{margin:20px 0 10px;font-size:13.5px;font-weight:600;color:var(--muted)}
+.veh{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.veh button{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 6px 12px;border-radius:18px;background:var(--panel);border:1px solid var(--line);color:var(--text);font-size:15px;font-weight:600;cursor:pointer;transition:background .2s,transform .15s,border-color .2s}
+.veh button:hover{transform:translateY(-2px)}
+.veh button[aria-pressed="true"]{background:var(--sel);border-color:var(--accent);font-weight:800}
+.cta{margin-top:20px;width:100%;height:56px;border:0;border-radius:18px;background:linear-gradient(180deg,#ff7a2c,#ff6014);color:#fff;font-size:20px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;box-shadow:0 10px 30px rgba(255,106,26,.38);transition:transform .15s,box-shadow .2s}
+.cta:hover{box-shadow:0 14px 38px rgba(255,106,26,.5)}
+.cta:active{transform:scale(.985)}
+.msg{min-height:22px;margin:10px 0 0;text-align:center;color:var(--koto);font-size:14px;font-weight:600}
+
+@media (max-width:960px){
+  main{grid-template-columns:1fr;padding:16px;gap:16px}
+  .map{position:relative;top:0;height:420px;min-height:0;border-radius:24px}
+  .stats strong{font-size:18px}
+  .hint{font-size:13px}
+}
+@media (max-width:460px){
+  .veh{grid-template-columns:repeat(2,1fr)}
+  .pill.share span{display:none}
+  .pill.share{padding:0 12px}
+  .info{padding:12px 14px}
+  .stats>div{padding:2px 8px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <svg viewBox="0 0 120 110" width="40" height="37" aria-hidden="true"><rect x="50" y="6" width="30" height="22" rx="6" fill="#ff6a1a"/><path d="M58 14c0-5 14-5 14 0 0 4-7 4-7 8" fill="none" stroke="#fff6e5" stroke-width="3" stroke-linecap="round"/><circle cx="65" cy="25.5" r="1.8" fill="#fff6e5"/><path d="M30 56l15-20q2-6 9-6h28q7 0 10 6l12 20z" fill="var(--car)"/><rect x="8" y="54" width="104" height="34" rx="14" fill="var(--car)"/><path d="M42 54l10-16h14v16zM72 54V38h10l8 16z" fill="var(--glass)"/><rect x="102" y="62" width="8" height="8" rx="3" fill="#ffc93c"/><rect x="10" y="62" width="8" height="8" rx="3" fill="#ff6a1a"/><circle cx="32" cy="90" r="13" fill="#17302b" stroke="var(--car)" stroke-width="3"/><circle cx="90" cy="90" r="13" fill="#17302b" stroke="var(--car)" stroke-width="3"/></svg>
+    <span>Vara<span class="koto">Koto</span><small>.com</small></span>
+  </div>
+  <div class="hdr-actions">
+    <button class="pill share" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg><span>ভাড়া শেয়ার</span></button>
+    <button class="pill theme" id="theme" type="button" aria-pressed="false"><svg id="themeIc" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffc93c" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.4 1.4M17.6 17.6L19 19M5 19l1.4-1.4M17.6 6.4L19 5"/></svg><span id="themeTx">লাইট</span></button>
+  </div>
+</header>
+
+<main>
+  <!-- ============ MAP (left) ============ -->
+  <section class="map" id="stage" aria-label="রুট ম্যাপ">
+    <canvas id="map" role="img" aria-label="শহরের রাস্তার অ্যানিমেটেড ম্যাপ"></canvas>
+    <div class="vignette"></div>
+    <div class="hud"><span class="chip glass"><i class="live-dot"></i>লাইভ রুট ম্যাপ</span></div>
+    <div class="hint glass" id="hint"><i></i>শুরু ও গন্তব্য দিলেই রুট এখানে ফুটে উঠবে</div>
+    <div class="info glass" id="info" aria-live="polite">
+      <div class="info-top">
+        <div class="ends"><span class="e e-o"></span><b id="iFrom">—</b><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#93b9ae" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg><span class="e e-d"></span><b id="iTo">—</b></div>
+        <span class="vtag" id="iVeh">বাস</span>
+      </div>
+      <div class="stats">
+        <div><small>দূরত্ব</small><strong id="iKm">—</strong></div>
+        <div><small>আনুমানিক সময়</small><strong id="iTime">—</strong></div>
+        <div class="fare"><small>আনুমানিক ভাড়া</small><strong id="iFare">—</strong></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FORM (right) ============ -->
+  <section class="card">
+    <h1>কোথায় যাবেন? ভাড়া জেনে নিন সহজেই</h1>
+    <p class="sub">প্রারম্ভিক স্থান ও গন্তব্য নির্বাচন করে যেকোনো বাহনের সঠিক ভাড়ার হিসেব দেখুন</p>
+
+    <div class="route-box" id="routeBox">
+      <label class="lbl" for="from">কোথা থেকে (From)</label>
+      <div class="field">
+        <svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>
+        <input id="from" type="text" autocomplete="off" placeholder="যেমন: মিরপুর ১০, উত্তরা..." role="combobox" aria-expanded="false" aria-controls="fromList" aria-autocomplete="list">
+        <button class="loc" id="loc" type="button" aria-label="আমার অবস্থান ব্যবহার করুন (ডেমো)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="7" width="10" height="10" rx="3"/></svg></button>
+        <ul class="sug" id="fromList" role="listbox" aria-label="শুরুর স্থান"></ul>
+      </div>
+
+      <button class="swap" id="swap" type="button" aria-label="শুরু ও গন্তব্য অদলবদল করুন"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 20V4M8 4L4 8M8 4l4 4M16 4v16M16 20l-4-4M16 20l4-4"/></svg></button>
+
+      <label class="lbl" for="to"><i class="od"></i>কোথায় যাবেন (To)</label>
+      <div class="field">
+        <svg class="ic o" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+        <input id="to" type="text" autocomplete="off" placeholder="যেমন: ফার্মগেট, মতিঝিল, ধানমন্ডি..." role="combobox" aria-expanded="false" aria-controls="toList" aria-autocomplete="list">
+        <ul class="sug" id="toList" role="listbox" aria-label="গন্তব্য"></ul>
+      </div>
+    </div>
+
+    <div class="vlabel" id="vlabel">যানবাহন নির্বাচন করুন:</div>
+    <div class="veh" role="group" aria-labelledby="vlabel">
+      <button type="button" data-v="bus" aria-pressed="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3.5" width="16" height="14" rx="3"/><path d="M4 11h16M7 20v-2.5M17 20v-2.5"/><circle cx="8" cy="14.2" r=".6" fill="currentColor"/><circle cx="16" cy="14.2" r=".6" fill="currentColor"/></svg>বাস</button>
+      <button type="button" data-v="rickshaw" aria-pressed="false"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="17" r="3"/><circle cx="18" cy="17" r="3"/><path d="M6 17l3-7h6l3 7M9 10L8 6H5M12.5 10v7"/></svg>রিকশা</button>
+      <button type="button" data-v="cng" aria-pressed="false"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 15l1.5-5a2.2 2.2 0 0 1 2.1-1.5h6.8a2.2 2.2 0 0 1 2.1 1.5L19 15"/><rect x="4" y="15" width="16" height="4" rx="1.5"/><path d="M7 19v1.5M17 19v1.5"/></svg>সিএনজি</button>
+      <button type="button" data-v="bike" aria-pressed="false"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="17" r="3"/><circle cx="18" cy="17" r="3"/><path d="M6 17l4-7h5l3 7M10 10L9 7H7M13 6h3"/></svg>বাইক</button>
+    </div>
+
+    <button class="cta" id="go" type="button"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg>ভাড়া দেখুন</button>
+    <p class="msg" id="msg" role="status"></p>
+  </section>
+</main>
+
+<script>
+(() => {
+'use strict';
+const $ = s => document.querySelector(s);
+const TAU = Math.PI * 2;
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const easeInOutCubic = t => t < .5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3) / 2;
+const easeInOutSine = t => -(Math.cos(Math.PI * t) - 1) / 2;
+const easeOutBack = t => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); };
+const easeOutBounce = t => { const n = 7.5625, d = 2.75; if (t < 1/d) return n*t*t; if (t < 2/d) return n*(t -= 1.5/d)*t + .75; if (t < 2.5/d) return n*(t -= 2.25/d)*t + .9375; return n*(t -= 2.625/d)*t + .984375; };
+const bn = n => String(n).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]);
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- data ---------- */
+const PLACES = [
+  ['মিরপুর ১০','mirpur 10',.33,.22], ['উত্তরা','uttara',.55,.07], ['গাবতলী','gabtoli',.13,.42],
+  ['মোহাম্মদপুর','mohammadpur',.26,.53], ['ধানমন্ডি','dhanmondi',.38,.60], ['ফার্মগেট','farmgate',.46,.46],
+  ['মহাখালী','mohakhali',.56,.32], ['বনানী','banani',.64,.28], ['গুলশান','gulshan',.71,.37],
+  ['বসুন্ধরা','bashundhara',.87,.38], ['শাহবাগ','shahbag',.51,.57], ['আজিমপুর','azimpur',.42,.71],
+  ['মতিঝিল','motijheel',.60,.67], ['কমলাপুর','kamalapur',.69,.75], ['যাত্রাবাড়ী','jatrabari',.80,.85],
+  ['সায়েদাবাদ','sayedabad',.72,.93]
+].map(([name, en, nx, ny]) => ({ name, en, nx, ny, node: -1 }));
+
+// demo estimates only
+const VEH = {
+  bus:      { name: 'বাস',    speed: 16, base: 10, perKm: 2.6 },
+  rickshaw: { name: 'রিকশা',  speed: 9,  base: 20, perKm: 22 },
+  cng:      { name: 'সিএনজি', speed: 21, base: 40, perKm: 18 },
+  bike:     { name: 'বাইক',   speed: 26, base: 30, perKm: 14 }
+};
+const M_PER_UNIT = 7.5;
+
+/* ---------- procedural road network ---------- */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const rnd = mulberry32(20261103);
+const COLS = 30, ROWS = 22, S = 130;
+const WW = (COLS - 1) * S, WH = (ROWS - 1) * S;
+const nodes = [], edges = [];
+const idx = (c, r) => r * COLS + c;
+for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++)
+  nodes.push({ x: c * S + (rnd() - .5) * S * .42, y: r * S + (rnd() - .5) * S * .42, adj: [], main: false });
+function addEdge(a, b, major) {
+  const A = nodes[a], B = nodes[b], len = Math.hypot(A.x - B.x, A.y - B.y);
+  const e = { a, b, major, len, w: len * (major ? .55 : 1) };
+  edges.push(e); A.adj.push(e); B.adj.push(e);
+}
+for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+  const mr = r % 5 === 2, mc = c % 6 === 3;
+  if (c < COLS - 1 && (mr || rnd() > .1)) addEdge(idx(c, r), idx(c + 1, r), mr);
+  if (r < ROWS - 1 && (mc || rnd() > .1)) addEdge(idx(c, r), idx(c, r + 1), mc);
+  if (c < COLS - 1 && r < ROWS - 1 && rnd() < .07) addEdge(idx(c, r), idx(c + 1, r + 1), false);
+  if (c > 0 && r < ROWS - 1 && rnd() < .05) addEdge(idx(c, r), idx(c - 1, r + 1), false);
+}
+for (let k = 0; k < 18; k++) addEdge(idx(2 + k, 1 + k), idx(3 + k, 2 + k), true);      // diagonal avenue
+for (let k = 0; k < 17; k++) addEdge(idx(27 - k, 2 + k), idx(26 - k, 3 + k), true);    // anti-diagonal avenue
+// main connected component
+(() => { const q = [idx(15, 11)]; nodes[q[0]].main = true;
+  for (let i = 0; i < q.length; i++) for (const e of nodes[q[i]].adj) { const v = e.a === q[i] ? e.b : e.a; if (!nodes[v].main) { nodes[v].main = true; q.push(v); } } })();
+// place -> node
+const taken = new Set();
+for (const p of PLACES) {
+  const x = WW * (.05 + p.nx * .9), y = WH * (.06 + p.ny * .88);
+  let best = -1, bd = Infinity;
+  nodes.forEach((n, i) => { if (!n.main || taken.has(i)) return; const d = (n.x - x) ** 2 + (n.y - y) ** 2; if (d < bd) { bd = d; best = i; } });
+  p.node = best; taken.add(best);
+}
+const minorPath = new Path2D(), majorPath = new Path2D();
+for (const e of edges) { const P = e.major ? majorPath : minorPath, A = nodes[e.a], B = nodes[e.b]; P.moveTo(A.x, A.y); P.lineTo(B.x, B.y); }
+
+function dijkstra(a, b) {
+  const n = nodes.length, dist = new Float32Array(n).fill(Infinity), prev = new Int32Array(n).fill(-1), done = new Uint8Array(n);
+  dist[a] = 0;
+  for (;;) {
+    let u = -1, best = Infinity;
+    for (let i = 0; i < n; i++) if (!done[i] && dist[i] < best) { best = dist[i]; u = i; }
+    if (u < 0 || u === b) break;
+    done[u] = 1;
+    for (const e of nodes[u].adj) { const v = e.a === u ? e.b : e.a, nd = dist[u] + e.w; if (nd < dist[v]) { dist[v] = nd; prev[v] = u; } }
+  }
+  const ids = []; for (let v = b; v !== -1; v = prev[v]) ids.push(v);
+  return ids.reverse();
+}
+function buildPath(ids) {
+  const P = ids.map(i => nodes[i]), pts = [{ x: P[0].x, y: P[0].y }];
+  for (let i = 1; i < P.length - 1; i++) {
+    const a = P[i - 1], b = P[i], c = P[i + 1];
+    const l1 = Math.hypot(b.x - a.x, b.y - a.y), l2 = Math.hypot(c.x - b.x, c.y - b.y);
+    const r1 = Math.min(.42, 34 / l1), r2 = Math.min(.42, 34 / l2);
+    const m1 = { x: b.x + (a.x - b.x) * r1, y: b.y + (a.y - b.y) * r1 }, m2 = { x: b.x + (c.x - b.x) * r2, y: b.y + (c.y - b.y) * r2 };
+    pts.push(m1);
+    for (let s = 1; s <= 8; s++) { const t = s / 8, u = 1 - t; pts.push({ x: u*u*m1.x + 2*u*t*b.x + t*t*m2.x, y: u*u*m1.y + 2*u*t*b.y + t*t*m2.y }); }
+  }
+  const L = P[P.length - 1]; pts.push({ x: L.x, y: L.y });
+  const cum = [0]; for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y));
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  for (const p of pts) { x0 = Math.min(x0, p.x); y0 = Math.min(y0, p.y); x1 = Math.max(x1, p.x); y1 = Math.max(y1, p.y); }
+  let real = 0; for (let i = 1; i < ids.length; i++) real += Math.hypot(P[i].x - P[i - 1].x, P[i].y - P[i - 1].y);
+  return { pts, cum, total: cum[cum.length - 1], real, bounds: { x0, y0, x1, y1, w: x1 - x0, h: y1 - y0, cx: (x0 + x1) / 2, cy: (y0 + y1) / 2 } };
+}
+function pointAt(path, L) {
+  const { pts, cum } = path;
+  if (L <= 0) return pts[0]; if (L >= path.total) return pts[pts.length - 1];
+  let i = 1; while (cum[i] < L) i++;
+  const t = (L - cum[i - 1]) / (cum[i] - cum[i - 1]);
+  return { x: lerp(pts[i - 1].x, pts[i].x, t), y: lerp(pts[i - 1].y, pts[i].y, t) };
+}
+function tracePath(p2d, path, L) {
+  const { pts, cum } = path; p2d.moveTo(pts[0].x, pts[0].y);
+  for (let i = 1; i < pts.length; i++) {
+    if (cum[i] <= L) p2d.lineTo(pts[i].x, pts[i].y);
+    else { const t = (L - cum[i - 1]) / (cum[i] - cum[i - 1]); p2d.lineTo(lerp(pts[i - 1].x, pts[i].x, t), lerp(pts[i - 1].y, pts[i].y, t)); break; }
+  }
+}
+
+/* ---------- ambient traffic ---------- */
+const parts = Array.from({ length: 70 }, () => ({ e: edges[(Math.random() * edges.length) | 0], dir: Math.random() < .5 ? 1 : -1, s: Math.random(), v: 90 + Math.random() * 150 }));
+function stepParticle(p, dt) {
+  p.s += p.v * dt / p.e.len;
+  if (p.s >= 1) {
+    const n = p.dir > 0 ? p.e.b : p.e.a, adj = nodes[n].adj;
+    let e2 = adj[(Math.random() * adj.length) | 0]; if (adj.length > 1 && e2 === p.e) e2 = adj[(Math.random() * adj.length) | 0];
+    p.e = e2; p.dir = e2.a === n ? 1 : -1; p.s = 0;
+  }
+}
+
+/* ---------- canvas + camera ---------- */
+const stage = $('#stage'), canvas = $('#map'), ctx = canvas.getContext('2d');
+let W = 0, H = 0, dpr = 1;
+const cam = { x: WW / 2, y: WH / 2, z: .62 };
+const idleCam = t => ({ x: WW * .5 + Math.sin(t * .07) * WW * .17, y: WH * .5 + Math.cos(t * .05) * WH * .14, z: .62 + .05 * Math.sin(t * .09) });
+let run = null;
+
+function resize() {
+  const r = stage.getBoundingClientRect(); W = r.width; H = r.height;
+  dpr = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+  if (run) run.fit = computeFit(run.path.bounds);
+}
+new ResizeObserver(resize).observe(stage);
+
+function computeFit(b) {
+  const infoH = $('#info').offsetHeight || 100;
+  const padX = Math.min(90, W * .12), padTop = 64, padBot = infoH + 44;
+  const aw = Math.max(120, W - padX * 2), ah = Math.max(120, H - padTop - padBot);
+  const z = clamp(Math.min(aw / Math.max(b.w, 80), ah / Math.max(b.h, 80)), .2, 1.7);
+  const sy = padTop + ah / 2;
+  return { x: b.cx, y: b.cy - (sy - H / 2) / z, z };
+}
+const mixCam = (a, b, k, arc) => ({ x: lerp(a.x, b.x, k), y: lerp(a.y, b.y, k), z: Math.exp(lerp(Math.log(a.z), Math.log(b.z), k) - arc * Math.sin(Math.PI * k)) });
+
+function startRun(from, to) {
+  const ids = dijkstra(from.node, to.node);
+  if (ids.length < 2) return;
+  const path = buildPath(ids);
+  const now = performance.now() / 1000;
+  const o = nodes[from.node], d = nodes[to.node];
+  const R = {
+    from, to, path, o, d, cam0: { x: cam.x, y: cam.y, z: cam.z },
+    camD: { x: d.x, y: d.y, z: 1.9 }, camO: { x: o.x, y: o.y, z: 1.6 },
+    t1: .95, t2: 1.6, t3: 2.6, t4: 5.2, t: 0, prog: 0, infoShown: false,
+    km: path.real * M_PER_UNIT / 1000, t0: now
+  };
+  if (reduce) R.t0 = now - 20;
+  R.fit = computeFit(path.bounds);
+  run = R;
+  $('#hint').classList.add('hide');
+  $('#info').classList.remove('show');
+  $('#iFrom').textContent = from.name; $('#iTo').textContent = to.name;
+  canvas.setAttribute('aria-label', `${from.name} থেকে ${to.name} রুটের ম্যাপ`);
+  setInfo(1);
+}
+function resetRoute() {
+  run = null;
+  $('#info').classList.remove('show');
+  $('#hint').classList.remove('hide');
+  canvas.setAttribute('aria-label', 'শহরের রাস্তার অ্যানিমেটেড ম্যাপ');
+}
+
+function calc() {
+  const v = VEH[state.veh], km = run.km;
+  const minutes = Math.max(3, Math.round(km / v.speed * 60));
+  const fare = Math.max(v.base, Math.round((v.base + v.perKm * km) / 5) * 5);
+  return { km, minutes, fare };
+}
+const fmtTime = m => m < 60 ? `${bn(m)} মিনিট` : `${bn(Math.floor(m / 60))} ঘণ্টা ${bn(m % 60)} মিনিট`;
+function setInfo(k) {
+  if (!run) return;
+  const c = calc();
+  $('#iKm').textContent = `${bn((c.km * k).toFixed(1))} কিমি`;
+  $('#iTime').textContent = fmtTime(Math.round(c.minutes * k));
+  $('#iFare').textContent = `৳ ${bn(Math.round(c.fare * k))}`;
+  $('#iVeh').textContent = VEH[state.veh].name;
+}
+
+function camAt(t, R) {
+  if (t < R.t1) return mixCam(R.cam0, R.camD, easeInOutCubic(clamp(t / R.t1)), .5);
+  if (t < R.t2) return { x: R.camD.x, y: R.camD.y, z: R.camD.z * (1 + .07 * (t - R.t1) / (R.t2 - R.t1)) };
+  if (t < R.t3) return mixCam({ x: R.camD.x, y: R.camD.y, z: R.camD.z * 1.07 }, R.camO, easeInOutCubic(clamp((t - R.t2) / (R.t3 - R.t2))), .7);
+  const u = clamp((t - R.t3) / (R.t4 - R.t3));
+  const head = pointAt(R.path, R.prog * R.path.total), s = easeInOutCubic(u);
+  const z = Math.exp(lerp(Math.log(R.camO.z), Math.log(R.fit.z), easeInOutSine(u)));
+  const c = { x: lerp(head.x, R.fit.x, s), y: lerp(head.y, R.fit.y, s), z };
+  if (u < 1) { // keep the glowing head inside the frame
+    const m = 70, sx = W / 2 + (head.x - c.x) * z, sy = H / 2 + (head.y - c.y) * z;
+    if (sx < m) c.x -= (m - sx) / z; else if (sx > W - m) c.x += (sx - (W - m)) / z;
+    if (sy < m) c.y -= (m - sy) / z; else if (sy > H - m) c.y += (sy - (H - m)) / z;
+  }
+  return c;
+}
+
+function update(now, dt) {
+  if (!reduce) for (const p of parts) stepParticle(p, dt);
+  if (run) {
+    const R = run, t = now - R.t0; R.t = t;
+    R.prog = t < R.t3 ? 0 : easeInOutCubic(clamp((t - R.t3) / (R.t4 - R.t3)));
+    const c = t >= R.t4 ? R.fit : camAt(t, R);
+    cam.x = c.x; cam.y = c.y; cam.z = c.z;
+    if (t > R.t4 + .1) {
+      if (!R.infoShown) { R.infoShown = true; $('#info').classList.add('show'); }
+      const k = easeInOutCubic(clamp((t - R.t4 - .1) / .9));
+      if (k < 1) setInfo(k); else if (!R.infoDone) { R.infoDone = true; setInfo(1); }
+    }
+  } else {
+    const tg = idleCam(now), a = 1 - Math.exp(-dt * 1.8);
+    cam.x += (tg.x - cam.x) * a; cam.y += (tg.y - cam.y) * a;
+    cam.z = Math.exp(lerp(Math.log(cam.z), Math.log(tg.z), a));
+  }
+}
+
+/* ---------- drawing ---------- */
+function reveal(n, rgb, amt) {
+  if (amt < .02) return;
+  const z = cam.z, R = (230 + 110 * Math.min(amt, 1)) / z;
+  const g = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, R);
+  g.addColorStop(0, `rgba(${rgb},${Math.min(.95, .9 * amt)})`);
+  g.addColorStop(.35, `rgba(${rgb},${.4 * amt})`);
+  g.addColorStop(1, `rgba(${rgb},0)`);
+  ctx.strokeStyle = g;
+  ctx.lineWidth = 1.5 / z; ctx.stroke(minorPath);
+  ctx.lineWidth = 2.6 / z; ctx.stroke(majorPath);
+}
+const toScreen = p => ({ x: W / 2 + (p.x - cam.x) * cam.z, y: H / 2 + (p.y - cam.y) * cam.z });
+
+function drawLight(sp, amt, now) {
+  if (amt < .02) return;
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  const R = 70 + 120 * amt;
+  let g = ctx.createRadialGradient(sp.x, sp.y, 0, sp.x, sp.y, R);
+  g.addColorStop(0, `rgba(255,255,255,${.95 * amt})`); g.addColorStop(.18, `rgba(255,250,235,${.55 * amt})`);
+  g.addColorStop(.5, `rgba(255,240,210,${.14 * amt})`); g.addColorStop(1, 'rgba(255,240,210,0)');
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(sp.x, sp.y, R, 0, TAU); ctx.fill();
+  const bh = 280 * amt;
+  g = ctx.createLinearGradient(0, sp.y, 0, sp.y - bh);
+  g.addColorStop(0, `rgba(255,255,255,${.75 * amt})`); g.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(sp.x - 6, sp.y); ctx.lineTo(sp.x - 1.6, sp.y - bh); ctx.lineTo(sp.x + 1.6, sp.y - bh); ctx.lineTo(sp.x + 6, sp.y); ctx.fill();
+  g = ctx.createLinearGradient(0, sp.y, 0, sp.y - bh * .8);
+  g.addColorStop(0, `rgba(255,245,225,${.22 * amt})`); g.addColorStop(1, 'rgba(255,245,225,0)');
+  ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(sp.x - 26, sp.y); ctx.lineTo(sp.x - 7, sp.y - bh * .8); ctx.lineTo(sp.x + 7, sp.y - bh * .8); ctx.lineTo(sp.x + 26, sp.y); ctx.fill();
+  const fl = 190 * amt;
+  g = ctx.createLinearGradient(sp.x - fl, 0, sp.x + fl, 0);
+  g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(.5, `rgba(255,255,255,${.9 * amt})`); g.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = g; ctx.fillRect(sp.x - fl, sp.y - 1, fl * 2, 2);
+  for (let i = 0; i < 2; i++) {
+    const ph = (now * .7 + i * .5) % 1, r = 12 + ph * 120 * Math.min(amt, 1);
+    ctx.strokeStyle = `rgba(255,255,255,${(1 - ph) * .5 * Math.min(amt, 1)})`; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.ellipse(sp.x, sp.y, r, r * .45, 0, 0, TAU); ctx.stroke();
+  }
+  ctx.restore();
+}
+function drawOrigin(sp, k, now) {
+  ctx.save();
+  for (let i = 0; i < 2; i++) {
+    const ph = (now * .8 + i * .5) % 1, r = 10 + ph * 36;
+    ctx.strokeStyle = `rgba(255,106,26,${(1 - ph) * .65 * k})`; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.ellipse(sp.x, sp.y, r, r * .55, 0, 0, TAU); ctx.stroke();
+  }
+  const s = easeOutBack(clamp(k));
+  ctx.shadowColor = 'rgba(255,106,26,.9)'; ctx.shadowBlur = 18;
+  ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(sp.x, sp.y, 10 * s, 0, TAU); ctx.fill();
+  ctx.shadowBlur = 0; ctx.fillStyle = '#ff6a1a'; ctx.beginPath(); ctx.arc(sp.x, sp.y, 6.5 * s, 0, TAU); ctx.fill();
+  ctx.restore();
+}
+function drawPin(sp, k) {
+  const b = easeOutBounce(clamp(k)), off = -(1 - b) * 110;
+  ctx.save(); ctx.translate(sp.x, sp.y);
+  ctx.globalAlpha = clamp(k * 1.6); ctx.fillStyle = 'rgba(0,0,0,.6)';
+  ctx.beginPath(); ctx.ellipse(0, 0, 11 * (.6 + .4 * b), 4.5 * (.6 + .4 * b), 0, 0, TAU); ctx.fill(); ctx.globalAlpha = 1;
+  ctx.translate(0, off);
+  ctx.beginPath(); ctx.moveTo(0, 0); ctx.bezierCurveTo(-6, -10, -17, -19, -17, -31); ctx.arc(0, -31, 17, Math.PI, 0, false); ctx.bezierCurveTo(17, -19, 6, -10, 0, 0); ctx.closePath();
+  const g = ctx.createLinearGradient(0, -48, 0, 0); g.addColorStop(0, '#ff9a52'); g.addColorStop(1, '#ff5a0a');
+  ctx.shadowColor = 'rgba(255,106,26,.8)'; ctx.shadowBlur = 20; ctx.fillStyle = g; ctx.fill();
+  ctx.shadowBlur = 0; ctx.lineWidth = 3; ctx.strokeStyle = '#fff'; ctx.stroke();
+  ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(0, -31, 6.5, 0, TAU); ctx.fill();
+  ctx.restore();
+}
+function chip(x, y, text, dot, alpha) {
+  if (alpha < .02) return;
+  ctx.save(); ctx.font = '600 14px "Baloo Da 2", system-ui, sans-serif';
+  const w = ctx.measureText(text).width + 36, h = 30;
+  const cx = clamp(x, w / 2 + 10, W - w / 2 - 10), cy = Math.max(y, 46), rx = cx - w / 2, ry = cy - h / 2;
+  ctx.globalAlpha = alpha; ctx.fillStyle = 'rgba(8,14,13,.85)';
+  ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(rx, ry, w, h, 15); else ctx.rect(rx, ry, w, h); ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,.18)'; ctx.lineWidth = 1; ctx.stroke();
+  ctx.fillStyle = dot; ctx.beginPath(); ctx.arc(rx + 15, cy, 4.5, 0, TAU); ctx.fill();
+  ctx.fillStyle = '#fff'; ctx.textBaseline = 'middle'; ctx.textAlign = 'left'; ctx.fillText(text, rx + 27, cy + 1);
+  ctx.restore();
+}
+
+function draw(now) {
+  const z = cam.z;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
+  const bg = ctx.createRadialGradient(W * .5, H * .45, 0, W * .5, H * .45, Math.max(W, H) * .75);
+  bg.addColorStop(0, '#08130f'); bg.addColorStop(1, '#000');
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+
+  ctx.setTransform(dpr * z, 0, 0, dpr * z, dpr * (W / 2 - cam.x * z), dpr * (H / 2 - cam.y * z));
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  ctx.lineWidth = 1.1 / z; ctx.strokeStyle = 'rgba(40,120,102,.30)'; ctx.stroke(minorPath);
+  ctx.lineWidth = 2.4 / z; ctx.strokeStyle = 'rgba(58,160,136,.50)'; ctx.stroke(majorPath);
+
+  const R = run; let t = 0, aO = 0, aD = 0;
+  if (R) {
+    t = R.t;
+    const late = t > R.t4 ? clamp((t - R.t4) / 1.2) : 0;
+    aD = clamp((easeInOutSine(clamp((t - .3) / .55)) * .85 + Math.exp(-Math.pow((t - .9) / .16, 2)) * .5) * lerp(1, .5, late), 0, 1.2);
+    aO = easeInOutSine(clamp((t - R.t2 - .1) / .6)) * lerp(1, .6, late);
+    ctx.globalCompositeOperation = 'lighter';
+    reveal(R.o, '255,140,70', aO);
+    reveal(R.d, '255,255,255', aD);
+    ctx.globalCompositeOperation = 'source-over';
+  }
+
+  // ambient traffic
+  for (const p of parts) {
+    const A = nodes[p.e.a], B = nodes[p.e.b], k = p.dir > 0 ? p.s : 1 - p.s, x = lerp(A.x, B.x, k), y = lerp(A.y, B.y, k);
+    ctx.fillStyle = 'rgba(255,201,60,.16)'; ctx.beginPath(); ctx.arc(x, y, 4.5 / z, 0, TAU); ctx.fill();
+    ctx.fillStyle = 'rgba(255,236,176,.9)'; ctx.beginPath(); ctx.arc(x, y, 1.5 / z, 0, TAU); ctx.fill();
+  }
+
+  // route
+  if (R && R.prog > 0) {
+    const L = R.path.total * R.prog, rp = new Path2D(); tracePath(rp, R.path, L);
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.strokeStyle = 'rgba(255,106,26,.16)'; ctx.lineWidth = 22 / z; ctx.stroke(rp);
+    ctx.strokeStyle = 'rgba(255,106,26,.38)'; ctx.lineWidth = 9 / z; ctx.stroke(rp);
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.strokeStyle = '#ff8a3d'; ctx.lineWidth = 3.6 / z; ctx.stroke(rp);
+    if (R.prog >= .999) {
+      ctx.setLineDash([16 / z, 30 / z]); ctx.lineDashOffset = -now * 80 / z;
+      ctx.strokeStyle = 'rgba(255,255,255,.92)'; ctx.lineWidth = 2 / z; ctx.stroke(rp); ctx.setLineDash([]);
+    } else {
+      const h = pointAt(R.path, L), g = ctx.createRadialGradient(h.x, h.y, 0, h.x, h.y, 26 / z);
+      g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(.25, 'rgba(255,230,190,.7)'); g.addColorStop(1, 'rgba(255,140,60,0)');
+      ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = g; ctx.beginPath(); ctx.arc(h.x, h.y, 26 / z, 0, TAU); ctx.fill();
+      ctx.globalCompositeOperation = 'source-over';
+    }
+  }
+
+  // screen-space overlay
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  if (z > .4) {
+    const a = clamp((z - .4) / .4) * (R ? .3 : .55);
+    ctx.font = '600 13px "Baloo Da 2", system-ui, sans-serif'; ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+    for (const p of PLACES) {
+      if (R && (p === R.from || p === R.to)) continue;
+      const s = toScreen(nodes[p.node]); if (s.x < -80 || s.x > W + 80 || s.y < -20 || s.y > H + 20) continue;
+      ctx.fillStyle = `rgba(255,255,255,${a})`; ctx.beginPath(); ctx.arc(s.x, s.y, 2.5, 0, TAU); ctx.fill();
+      ctx.fillText(p.name, s.x + 8, s.y + 1);
+    }
+  }
+  if (R) {
+    const so = toScreen(R.o), sd = toScreen(R.d);
+    drawLight(sd, aD, now);
+    const ko = clamp((t - R.t2 - .3) / .5);
+    if (ko > 0) { drawOrigin(so, ko, now); chip(so.x, so.y - 32, R.from.name, '#ff6a1a', clamp((ko - .5) * 2)); }
+    const kp = clamp((t - (R.t4 - .2)) / .6);
+    if (kp > 0) { drawPin(sd, kp); chip(sd.x, sd.y - 76, R.to.name, '#ffffff', clamp((kp - .8) * 5)); }
+  }
+}
+
+let last = performance.now() / 1000;
+function frame(ms) {
+  const now = ms / 1000, dt = Math.min(.05, now - last); last = now;
+  update(now, dt); draw(now); requestAnimationFrame(frame);
+}
+resize();
+{ const c = idleCam(0); cam.x = c.x; cam.y = c.y; cam.z = c.z; }
+requestAnimationFrame(frame);
+
+/* ---------- form ---------- */
+const state = { from: null, to: null, veh: 'bus' };
+const msgEl = $('#msg'); let msgTimer = 0;
+function say(text) {
+  msgEl.textContent = text; clearTimeout(msgTimer); msgTimer = setTimeout(() => msgEl.textContent = '', 2800);
+  const b = $('#routeBox'); b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake');
+}
+function maybeRun() {
+  if (!state.from || !state.to) return;
+  if (state.from === state.to) { say('শুরু ও গন্তব্য আলাদা হতে হবে'); return; }
+  startRun(state.from, state.to);
+}
+function setupField(key, input, list) {
+  let items = [], active = -1;
+  const other = () => state[key === 'from' ? 'to' : 'from'];
+  function mark() { [...list.children].forEach((li, i) => li.setAttribute('aria-selected', i === active)); if (active >= 0) input.setAttribute('aria-activedescendant', list.children[active].id); }
+  function close() { list.classList.remove('open'); input.setAttribute('aria-expanded', 'false'); }
+  function render() {
+    const q = input.value.trim().toLowerCase(), o = other();
+    items = PLACES.filter(p => p !== o && (!q || p.name.includes(q) || p.en.includes(q))).slice(0, 8);
+    list.textContent = '';
+    items.forEach((p, i) => {
+      const li = document.createElement('li'); li.setAttribute('role', 'option'); li.id = `${key}-opt-${i}`;
+      const a = document.createElement('span'); a.textContent = p.name; const b = document.createElement('small'); b.textContent = p.en;
+      li.append(a, b); li.addEventListener('mousedown', e => { e.preventDefault(); pick(p); }); list.appendChild(li);
+    });
+    active = items.length ? 0 : -1; mark();
+    list.classList.toggle('open', items.length > 0); input.setAttribute('aria-expanded', String(items.length > 0));
+  }
+  function pick(p) { state[key] = p; input.value = p.name; close(); maybeRun(); }
+  input.addEventListener('input', () => {
+    state[key] = null; if (run) resetRoute();
+    const exact = PLACES.find(p => p.name === input.value.trim() && p !== other());
+    if (exact) { pick(exact); return; }
+    render();
+  });
+  input.addEventListener('focus', render);
+  input.addEventListener('blur', () => setTimeout(close, 120));
+  input.addEventListener('keydown', e => {
+    if (e.key === 'ArrowDown') { e.preventDefault(); if (!list.classList.contains('open')) render(); active = Math.min(items.length - 1, active + 1); mark(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); active = Math.max(0, active - 1); mark(); }
+    else if (e.key === 'Enter') { if (list.classList.contains('open') && items[active]) { e.preventDefault(); pick(items[active]); } else $('#go').click(); }
+    else if (e.key === 'Escape') close();
+  });
+  return pick;
+}
+const pickFrom = setupField('from', $('#from'), $('#fromList'));
+const pickTo = setupField('to', $('#to'), $('#toList'));
+
+$('#loc').addEventListener('click', () => pickFrom(state.to && state.to.en === 'mirpur 10' ? PLACES[1] : PLACES[0]));
+$('#swap').addEventListener('click', () => {
+  const a = state.from, b = state.to; state.from = b; state.to = a;
+  $('#from').value = b ? b.name : ''; $('#to').value = a ? a.name : '';
+  if (state.from && state.to) maybeRun(); else if (run) resetRoute();
+});
+$('#go').addEventListener('click', () => {
+  if (!state.from) { say('আগে শুরুর স্থান নির্বাচন করুন'); $('#from').focus(); return; }
+  if (!state.to) { say('এখন গন্তব্য নির্বাচন করুন'); $('#to').focus(); return; }
+  maybeRun();
+});
+document.querySelectorAll('.veh button').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('.veh button').forEach(x => x.setAttribute('aria-pressed', x === b));
+  state.veh = b.dataset.v; setInfo(1);
+}));
+$('#theme').addEventListener('click', () => {
+  const light = document.documentElement.dataset.theme !== 'light';
+  document.documentElement.dataset.theme = light ? 'light' : 'dark';
+  $('#theme').setAttribute('aria-pressed', String(light)); $('#themeTx').textContent = light ? 'ডার্ক' : 'লাইট';
+});
+})();
+</script>
+</body>
+</html>

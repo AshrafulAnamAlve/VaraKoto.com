@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Output, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FareService } from '../../../../core/services/fare.service';
+import { NativeMobileService } from '../../../../core/services/native-mobile.service';
 import { FareBreakdownModel, TransportCode } from '../../../../core/models/fare.model';
 
 @Component({
@@ -12,6 +13,7 @@ import { FareBreakdownModel, TransportCode } from '../../../../core/models/fare.
 })
 export class FareResultCardComponent {
   readonly fareService = inject(FareService);
+  readonly nativeMobile = inject(NativeMobileService);
 
   @Output() modifySearch = new EventEmitter<void>();
   @Output() contributeFare = new EventEmitter<{ fromLocation?: string; toLocation?: string; transport?: string }>();
@@ -32,19 +34,36 @@ export class FareResultCardComponent {
   });
 
   selectTransport(code: string): void {
+    this.nativeMobile.hapticSelection();
     this.fareService.setSelectedTransport(code as TransportCode);
   }
 
   onModify(): void {
+    this.nativeMobile.hapticSelection();
     this.modifySearch.emit();
   }
 
   onContribute(): void {
+    this.nativeMobile.hapticSelection();
     const res = this.result();
     this.contributeFare.emit({
       fromLocation: res?.fromLocation?.nameBn || res?.fromLocation?.nameEn,
       toLocation: res?.toLocation?.nameBn || res?.toLocation?.nameEn,
       transport: this.primaryFare()?.transportCode
+    });
+  }
+
+  async onShare(): Promise<void> {
+    this.nativeMobile.hapticSelection();
+    const res = this.result();
+    const fare = this.primaryFare();
+    if (!res || !fare) return;
+    const fromName = res.fromLocation?.nameBn || res.fromLocation?.displayName || res.fromLocation?.nameEn || '';
+    const toName = res.toLocation?.nameBn || res.toLocation?.displayName || res.toLocation?.nameEn || '';
+    await this.nativeMobile.shareFare({
+      title: `ভাড়া কত: ${fromName} থেকে ${toName}`,
+      text: `${fromName} থেকে ${toName} পর্যন্ত ${fare.transportNameBn} আনুমানিক ভাড়া ${fare.fareDisplayBn} (দূরত্ব: ${this.distanceBn()} কিমি, আনুমানিক সময়: ~${this.durationBn()} মিনিট)। বিস্তারিত জেনে নিন VaraKoto.com এ:`,
+      url: typeof window !== 'undefined' ? window.location.href : 'https://ashrafulanamalve.github.io/VaraKoto.com/'
     });
   }
 }
