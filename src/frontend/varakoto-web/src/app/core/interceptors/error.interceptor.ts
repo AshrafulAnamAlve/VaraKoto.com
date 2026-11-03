@@ -19,7 +19,17 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       } else if (error.status === 404) {
         friendlyMessage = error.error?.messageBn || error.error?.message || 'অনুরোধকৃত তথ্যটি পাওয়া যায়নি।';
       } else if (error.status === 400) {
-        friendlyMessage = error.error?.messageBn || error.error?.message || 'প্রদত্ত তথ্যে ভুল রয়েছে।';
+        if (error.error?.messageBn) {
+          friendlyMessage = error.error.messageBn;
+        } else if (error.error?.message && typeof error.error.message === 'string') {
+          friendlyMessage = error.error.message;
+        } else if (error.error?.errors && typeof error.error.errors === 'object') {
+          const firstKey = Object.keys(error.error.errors)[0];
+          const firstVal = error.error.errors[firstKey];
+          friendlyMessage = Array.isArray(firstVal) && firstVal.length > 0 ? firstVal[0] : 'প্রদত্ত তথ্যে ভুল রয়েছে। অনুগ্রহ করে তথ্য পরীক্ষা করুন।';
+        } else {
+          friendlyMessage = 'প্রদত্ত তথ্যে ভুল রয়েছে। অনুগ্রহ করে তথ্য পরীক্ষা করুন।';
+        }
       } else if (error.status === 401) {
         friendlyMessage = error.error?.messageBn || 'অনুমতি নেই। পুনরায় লগইন করুন।';
       } else if (error.status >= 500) {

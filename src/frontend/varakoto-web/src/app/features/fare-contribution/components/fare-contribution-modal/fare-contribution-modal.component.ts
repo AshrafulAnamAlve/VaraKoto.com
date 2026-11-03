@@ -1,6 +1,8 @@
-import { Component, effect, inject, input, output, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, effect, inject, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { FareService } from '../../../../core/services/fare.service';
 import { LocationService } from '../../../../core/services/location.service';
 import { FareContributionRequestModel, FareContributionResponseModel, TransportCode } from '../../../../core/models/fare.model';
@@ -13,7 +15,7 @@ import { LocationDto } from '../../../../core/models/location.model';
   templateUrl: './fare-contribution-modal.component.html',
   styleUrls: ['./fare-contribution-modal.component.scss']
 })
-export class FareContributionModalComponent {
+export class FareContributionModalComponent implements OnInit, OnDestroy {
   private readonly fareService = inject(FareService);
   private readonly locationService = inject(LocationService);
 
@@ -30,6 +32,17 @@ export class FareContributionModalComponent {
   // State Signals
   readonly fromText = signal<string>('');
   readonly toText = signal<string>('');
+  readonly selectedFrom = signal<LocationDto | null>(null);
+  readonly selectedTo = signal<LocationDto | null>(null);
+
+  // Autocomplete Suggestions
+  readonly fromSuggestions = signal<LocationDto[]>([]);
+  readonly toSuggestions = signal<LocationDto[]>([]);
+  readonly isSearchingFrom = signal<boolean>(false);
+  readonly isSearchingTo = signal<boolean>(false);
+  readonly showFromDropdown = signal<boolean>(false);
+  readonly showToDropdown = signal<boolean>(false);
+
   readonly transportCode = signal<TransportCode>('bus');
   readonly actualFare = signal<number | null>(null);
   readonly travelDate = signal<string>(new Date().toISOString().split('T')[0]);
@@ -37,6 +50,10 @@ export class FareContributionModalComponent {
   readonly isSubmitting = signal<boolean>(false);
   readonly errorMessage = signal<string | null>(null);
   readonly successData = signal<FareContributionResponseModel | null>(null);
+
+  private readonly fromSearchSubject = new Subject<string>();
+  private readonly toSearchSubject = new Subject<string>();
+  private readonly subs: Subscription[] = [];
 
   readonly transports: { code: TransportCode; labelBn: string; icon: string }[] = [
     { code: 'bus', labelBn: 'বাস', icon: '🚌' },
@@ -48,8 +65,16 @@ export class FareContributionModalComponent {
   constructor() {
     effect(() => {
       if (this.isOpen()) {
-        this.fromText.set(this.initialFrom());
-        this.toText.set(this.initialTo());
+        const from = this.initialFrom();
+        const to = this.initialTo();
+        this.fromText.set(from);
+        this.toText.set(to);
+        this.selectedFrom.set(null);
+        this.selectedTo.set(null);
+        this.fromSuggestions.set([]);
+        this.toSuggestions.set([]);
+        this.showFromDropdown.set(false);
+        this.showToDropdown.set(false);
         this.transportCode.set(this.initialTransport() || 'bus');
         this.actualFare.set(null);
         this.errorMessage.set(null);
@@ -58,22 +83,147 @@ export class FareContributionModalComponent {
     });
   }
 
+  ngOnInit(): void {
+    // Debounced search for Origin recommendations
+    const fromSub = this.fromSearchSubject.pipe(
+      debounceTime(250),
+      distinctUntilChanged(),
+      switchMap((term) => {
+        if (!term || term.trim().length < 2) {
+          this.isSearchingFrom.set(false);
+          return [];
+        }
+        this.isSearchingFrom.set(true);
+        return this.locationService.search(term, 6);
+      })
+    ).subscribe((results) => {
+      this.fromSuggestions.set(results);
+      this.isSearchingFrom.set(false);
+      this.showFromDropdown.set(results.length > 0);
+    });
+
+    // Debounced search for Destination recommendations
+    const toSub = this.toSearchSubject.pipe(
+      debounceTime(250),
+      distinctUntilChanged(),
+      switchMap((term) => {
+        if (!term || term.trim().length < 2) {
+          this.isSearchingTo.set(false);
+          return [];
+        }
+        this.isSearchingTo.set(true);
+        return this.locationService.search(term, 6);
+      })
+    ).subscribe((results) => {
+      this.toSuggestions.set(results);
+      this.isSearchingTo.set(false);
+      this.showToDropdown.set(results.length > 0);
+    });
+
+    this.subs.push(fromSub, toSub);
+  }
+
+  ngOnDestroy(): void {
+    this.subs.forEach(s => s.unsubscribe());
+  }
+
+  onFromInput(value: string): void {
+    this.fromText.set(value);
+    this.errorMessage.set(null);
+    if (this.selectedFrom() && this.selectedFrom()?.displayName !== value && this.selectedFrom()?.nameBn !== value) {
+      this.selectedFrom.set(null);
+    }
+    this.fromSearchSubject.next(value);
+  }
+
+  onToInput(value: string): void {
+    this.toText.set(value);
+    this.errorMessage.set(null);
+    if (this.selectedTo() && this.selectedTo()?.displayName !== value && this.selectedTo()?.nameBn !== value) {
+      this.selectedTo.set(null);
+    }
+    this.toSearchSubject.next(value);
+  }
+
+  selectFrom(loc: LocationDto): void {
+    this.selectedFrom.set(loc);
+    this.fromText.set(loc.nameBn || loc.displayName);
+    this.showFromDropdown.set(false);
+    this.errorMessage.set(null);
+  }
+
+  selectTo(loc: LocationDto): void {
+    this.selectedTo.set(loc);
+    this.toText.set(loc.nameBn || loc.displayName);
+    this.showToDropdown.set(false);
+    this.errorMessage.set(null);
+  }
+
+  clearFrom(): void {
+    this.fromText.set('');
+    this.selectedFrom.set(null);
+    this.fromSuggestions.set([]);
+    this.showFromDropdown.set(false);
+  }
+
+  clearTo(): void {
+    this.toText.set('');
+    this.selectedTo.set(null);
+    this.toSuggestions.set([]);
+    this.showToDropdown.set(false);
+  }
+
+  closeDropdowns(): void {
+    setTimeout(() => {
+      this.showFromDropdown.set(false);
+      this.showToDropdown.set(false);
+    }, 220);
+  }
+
   selectTransport(code: TransportCode): void {
     this.transportCode.set(code);
   }
 
   onSubmit(): void {
-    const from = this.fromText().trim();
-    const to = this.toText().trim();
+    let from = this.selectedFrom();
+    let to = this.selectedTo();
+    const fromVal = this.fromText().trim();
+    const toVal = this.toText().trim();
     const fare = this.actualFare();
 
-    if (!from) {
+    if (!fromVal) {
       this.errorMessage.set('কোথা থেকে যাত্রা করেছেন লিখুন');
       return;
     }
 
-    if (!to) {
+    if (!toVal) {
       this.errorMessage.set('গন্তব্য স্থান লিখুন');
+      return;
+    }
+
+    // Auto-resolve from suggestions if user typed without clicking dropdown item
+    if (!from && this.fromSuggestions().length > 0) {
+      const match = this.fromSuggestions().find(s => 
+        s.nameBn.toLowerCase().includes(fromVal.toLowerCase()) || 
+        s.nameEn.toLowerCase().includes(fromVal.toLowerCase()) ||
+        fromVal.toLowerCase().includes(s.nameBn.toLowerCase())
+      ) || this.fromSuggestions()[0];
+      from = match;
+      this.selectedFrom.set(match);
+    }
+
+    if (!to && this.toSuggestions().length > 0) {
+      const match = this.toSuggestions().find(s => 
+        s.nameBn.toLowerCase().includes(toVal.toLowerCase()) || 
+        s.nameEn.toLowerCase().includes(toVal.toLowerCase()) ||
+        toVal.toLowerCase().includes(s.nameBn.toLowerCase())
+      ) || this.toSuggestions()[0];
+      to = match;
+      this.selectedTo.set(match);
+    }
+
+    if (fromVal.toLowerCase() === toVal.toLowerCase()) {
+      this.errorMessage.set('যাত্রার স্থান এবং গন্তব্য ভিন্ন হতে হবে');
       return;
     }
 
@@ -87,12 +237,23 @@ export class FareContributionModalComponent {
       return;
     }
 
+    if (fare > 5000) {
+      this.errorMessage.set('ভাড়া ৫,০০০ টাকার বেশি হতে পারে না');
+      return;
+    }
+
     this.isSubmitting.set(true);
     this.errorMessage.set(null);
 
     const request: FareContributionRequestModel = {
-      fromName: from,
-      toName: to,
+      fromLocationId: from?.id,
+      fromLatitude: from?.latitude,
+      fromLongitude: from?.longitude,
+      fromName: from?.displayName || fromVal,
+      toLocationId: to?.id,
+      toLatitude: to?.latitude,
+      toLongitude: to?.longitude,
+      toName: to?.displayName || toVal,
       transportCode: this.transportCode(),
       actualFarePaid: fare,
       travelDate: this.travelDate() ? new Date(this.travelDate()).toISOString() : null
@@ -106,7 +267,8 @@ export class FareContributionModalComponent {
       },
       error: (err) => {
         this.isSubmitting.set(false);
-        this.errorMessage.set(err.message || 'ভাড়া জমা দেওয়া যায়নি। কিছুক্ষণ পর আবার চেষ্টা করুন।');
+        const errorMsg = err?.message || 'ভাড়া জমা দেওয়া যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।';
+        this.errorMessage.set(errorMsg);
       }
     });
   }

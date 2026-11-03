@@ -65,7 +65,7 @@ export class FareService {
         this.latestResult.set(result);
       }),
       catchError((error) => {
-        const errorMsg = error.error?.message || 'ভাড়া হিসেব করা যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।';
+        const errorMsg = error?.friendlyMessage || error.error?.messageBn || error.error?.message || error.message || 'ভাড়া হিসেব করা যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।';
         this.calculationError.set(errorMsg);
         return throwError(() => new Error(errorMsg));
       }),
@@ -122,7 +122,7 @@ export class FareService {
   contributeFare(request: FareContributionRequestModel): Observable<FareContributionResponseModel> {
     return this.http.post<FareContributionResponseModel>(`${this.apiUrl}/contribute`, request).pipe(
       catchError((error) => {
-        const errorMsg = error.error?.message || 'ভাড়া জমা দেওয়া যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।';
+        const errorMsg = error?.friendlyMessage || error.error?.messageBn || error.error?.message || error.message || 'ভাড়া জমা দেওয়া যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।';
         return throwError(() => new Error(errorMsg));
       })
     );

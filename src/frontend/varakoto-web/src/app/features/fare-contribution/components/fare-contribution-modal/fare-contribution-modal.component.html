@@ -52,37 +52,105 @@
             <p class="modal-subtitle">আপনার দেওয়া তথ্যের মাধ্যমে সহযাত্রীরা বাস্তবসম্মত ভাড়ার ধারণা পাবেন</p>
           </div>
 
+          <!-- Error Alert Banner -->
+          @if (errorMessage()) {
+            <div class="error-banner" role="alert">
+              <span class="alert-icon">⚠️</span>
+              <span>{{ errorMessage() }}</span>
+            </div>
+          }
+
           <form class="modal-form" (ngSubmit)="onSubmit()">
             <!-- From Location -->
-            <div class="form-group">
-              <label for="contrib-from" class="form-label">কোথা থেকে (From)</label>
-              <input
-                id="contrib-from"
-                type="text"
-                class="form-input"
-                placeholder="যেমন: মিরপুর ১০, উত্তরা..."
-                [ngModel]="fromText()"
-                (ngModelChange)="fromText.set($event)"
-                name="fromLocation"
-                autocomplete="off"
-                required
-              />
+            <div class="form-group location-group">
+              <label for="contrib-from" class="form-label">
+                <span class="label-dot origin-dot"></span>
+                <span>কোথা থেকে যাত্রা করেছেন (From)</span>
+              </label>
+
+              <div class="input-wrapper">
+                <span class="field-icon origin-icon">🟢</span>
+                <input
+                  id="contrib-from"
+                  type="text"
+                  class="form-input location-input"
+                  placeholder="যেমন: মিরপুর ১০, উত্তরা, ধানমন্ডি..."
+                  [ngModel]="fromText()"
+                  (ngModelChange)="onFromInput($event)"
+                  (focus)="showFromDropdown.set(fromSuggestions().length > 0)"
+                  (blur)="closeDropdowns()"
+                  name="fromLocation"
+                  autocomplete="off"
+                  required
+                />
+                @if (fromText()) {
+                  <button type="button" class="clear-btn" (click)="clearFrom()" title="মুছে ফেলুন">✕</button>
+                }
+              </div>
+
+              <!-- From Autocomplete Dropdown -->
+              @if (showFromDropdown() && fromSuggestions().length > 0) {
+                <ul class="suggestions-list" role="listbox">
+                  @for (loc of fromSuggestions(); track loc.id || loc.displayName) {
+                    <li class="suggestion-item" (mousedown)="selectFrom(loc)">
+                      <span class="suggest-icon">{{ loc.isHub ? '🏷️' : '📍' }}</span>
+                      <div class="suggest-details">
+                        <span class="suggest-name">{{ loc.nameBn || loc.displayName }}</span>
+                        <span class="suggest-meta">{{ loc.nameEn }} {{ loc.district ? '• ' + loc.district : '' }}</span>
+                      </div>
+                      @if (loc.isHub) {
+                        <span class="hub-pill">প্রধান হাব</span>
+                      }
+                    </li>
+                  }
+                </ul>
+              }
             </div>
 
             <!-- To Location -->
-            <div class="form-group">
-              <label for="contrib-to" class="form-label">কোথায় গিয়েছিলেন (To)</label>
-              <input
-                id="contrib-to"
-                type="text"
-                class="form-input"
-                placeholder="যেমন: ফার্মগেট, মতিঝিল..."
-                [ngModel]="toText()"
-                (ngModelChange)="toText.set($event)"
-                name="toLocation"
-                autocomplete="off"
-                required
-              />
+            <div class="form-group location-group">
+              <label for="contrib-to" class="form-label">
+                <span class="label-dot dest-dot"></span>
+                <span>কোথায় গিয়েছিলেন (To)</span>
+              </label>
+
+              <div class="input-wrapper">
+                <span class="field-icon dest-icon">🏁</span>
+                <input
+                  id="contrib-to"
+                  type="text"
+                  class="form-input location-input"
+                  placeholder="যেমন: ফার্মগেট, মতিঝিল, গুলশান ১..."
+                  [ngModel]="toText()"
+                  (ngModelChange)="onToInput($event)"
+                  (focus)="showToDropdown.set(toSuggestions().length > 0)"
+                  (blur)="closeDropdowns()"
+                  name="toLocation"
+                  autocomplete="off"
+                  required
+                />
+                @if (toText()) {
+                  <button type="button" class="clear-btn" (click)="clearTo()" title="মুছে ফেলুন">✕</button>
+                }
+              </div>
+
+              <!-- To Autocomplete Dropdown -->
+              @if (showToDropdown() && toSuggestions().length > 0) {
+                <ul class="suggestions-list" role="listbox">
+                  @for (loc of toSuggestions(); track loc.id || loc.displayName) {
+                    <li class="suggestion-item" (mousedown)="selectTo(loc)">
+                      <span class="suggest-icon">{{ loc.isHub ? '🏷️' : '📍' }}</span>
+                      <div class="suggest-details">
+                        <span class="suggest-name">{{ loc.nameBn || loc.displayName }}</span>
+                        <span class="suggest-meta">{{ loc.nameEn }} {{ loc.district ? '• ' + loc.district : '' }}</span>
+                      </div>
+                      @if (loc.isHub) {
+                        <span class="hub-pill">প্রধান হাব</span>
+                      }
+                    </li>
+                  }
+                </ul>
+              }
             </div>
 
             <!-- Transport Selection -->
@@ -103,62 +171,41 @@
               </div>
             </div>
 
-            <!-- Actual Fare Paid Input -->
+            <!-- Actual Fare Paid -->
             <div class="form-group">
-              <label for="contrib-fare" class="form-label">প্রকৃতপক্ষে কত ভাড়া দিয়েছেন? (৳)</label>
+              <label for="contrib-fare" class="form-label">প্রকৃত পরিশোধিত ভাড়া (টাকায়)</label>
               <div class="fare-input-box">
                 <span class="currency-tag">৳</span>
                 <input
                   id="contrib-fare"
                   type="number"
+                  class="fare-number-input"
+                  placeholder="যেমন: ৫০, ১২০..."
                   min="10"
                   max="5000"
-                  step="5"
-                  class="fare-number-input"
-                  placeholder="যেমন: ৫০, ১৫০..."
+                  step="1"
                   [ngModel]="actualFare()"
                   (ngModelChange)="actualFare.set($event)"
                   name="actualFare"
                   required
                 />
               </div>
+              <span class="field-hint">আপনি চালককে আসলে যত টাকা ভাড়া দিয়েছেন</span>
             </div>
 
-            <!-- Travel Date (Optional) -->
-            <div class="form-group">
-              <label for="contrib-date" class="form-label">ভ্রমণের তারিখ (ঐচ্ছিক)</label>
-              <input
-                id="contrib-date"
-                type="date"
-                class="form-input date-input"
-                [ngModel]="travelDate()"
-                (ngModelChange)="travelDate.set($event)"
-                name="travelDate"
-              />
-            </div>
-
-            <!-- Error Notice -->
-            @if (errorMessage()) {
-              <div class="error-notice">
-                <span>⚠️ {{ errorMessage() }}</span>
-              </div>
-            }
-
-            <!-- Submit CTA -->
-            <div class="modal-actions">
-              <button
-                type="submit"
-                class="btn-primary submit-btn"
-                [disabled]="isSubmitting()"
-              >
-                @if (isSubmitting()) {
-                  <span class="btn-spinner"></span>
-                  <span>যাচাই করা হচ্ছে...</span>
-                } @else {
-                  <span>ভাড়া জমা দিন</span>
-                }
-              </button>
-            </div>
+            <!-- Submit Button -->
+            <button
+              type="submit"
+              class="btn-primary submit-btn"
+              [disabled]="isSubmitting() || !actualFare()"
+            >
+              @if (isSubmitting()) {
+                <span class="spinner-sm"></span>
+                <span>যাচাই করা হচ্ছে...</span>
+              } @else {
+                <span>তথ্য জমা দিন</span>
+              }
+            </button>
           </form>
         </div>
       }

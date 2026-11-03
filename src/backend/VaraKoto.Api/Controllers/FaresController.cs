@@ -36,17 +36,17 @@ public class FaresController : ControllerBase
             return BadRequest(new { message = "অনুরোধ সঠিক নয় (Request body cannot be null)." });
         }
 
-        var hasOrigin = request.FromLocationId.HasValue || (request.FromLatitude.HasValue && request.FromLongitude.HasValue);
-        var hasDestination = request.ToLocationId.HasValue || (request.ToLatitude.HasValue && request.ToLongitude.HasValue);
+        var hasOrigin = request.FromLocationId.HasValue || (request.FromLatitude.HasValue && request.FromLongitude.HasValue) || !string.IsNullOrWhiteSpace(request.FromName);
+        var hasDestination = request.ToLocationId.HasValue || (request.ToLatitude.HasValue && request.ToLongitude.HasValue) || !string.IsNullOrWhiteSpace(request.ToName);
 
         if (!hasOrigin)
         {
-            return BadRequest(new { message = "যাত্রার প্রারম্ভিক স্থান নির্বাচন করুন (Origin location is required)." });
+            return BadRequest(new { message = "যাত্রার প্রারম্ভিক স্থান নির্বাচন করুন (Origin location is required).", messageBn = "যাত্রার প্রারম্ভিক স্থান নির্বাচন করুন।" });
         }
 
         if (!hasDestination)
         {
-            return BadRequest(new { message = "গন্তব্য স্থান নির্বাচন করুন (Destination location is required)." });
+            return BadRequest(new { message = "গন্তব্য স্থান নির্বাচন করুন (Destination location is required).", messageBn = "গন্তব্য স্থান নির্বাচন করুন।" });
         }
 
         try
@@ -56,11 +56,11 @@ public class FaresController : ControllerBase
         }
         catch (ArgumentException ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(new { message = ex.Message, messageBn = ex.Message });
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(new { message = ex.Message, messageBn = ex.Message });
         }
         catch (Exception ex)
         {
@@ -160,16 +160,16 @@ public class FaresController : ControllerBase
         }
         catch (ArgumentException ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(new { message = ex.Message, messageBn = ex.Message });
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(new { message = ex.Message, messageBn = ex.Message });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unexpected error submitting community fare.");
-            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "ভাড়া জমা দিতে সমস্যা হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন।" });
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "ভাড়া জমা দিতে সমস্যা হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন।", messageBn = "ভাড়া জমা দিতে সমস্যা হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন।" });
         }
     }
 

@@ -180,8 +180,8 @@ export class FareFinderCardComponent implements OnInit {
   }
 
   onFindFare(): void {
-    const from = this.selectedFrom();
-    const to = this.selectedTo();
+    let from = this.selectedFrom();
+    let to = this.selectedTo();
     const fromText = this.fromQuery().trim();
     const toText = this.toQuery().trim();
 
@@ -193,6 +193,27 @@ export class FareFinderCardComponent implements OnInit {
     if (!toText) {
       this.validationMessage.set('কোথায় যাবেন (Destination) নির্বাচন করুন');
       return;
+    }
+
+    // Auto-resolve from suggestions if user typed text without selecting from dropdown
+    if (!from && this.fromSuggestions().length > 0) {
+      const match = this.fromSuggestions().find(s => 
+        s.nameBn.toLowerCase().includes(fromText.toLowerCase()) || 
+        s.nameEn.toLowerCase().includes(fromText.toLowerCase()) ||
+        fromText.toLowerCase().includes(s.nameBn.toLowerCase())
+      ) || this.fromSuggestions()[0];
+      from = match;
+      this.selectedFrom.set(match);
+    }
+
+    if (!to && this.toSuggestions().length > 0) {
+      const match = this.toSuggestions().find(s => 
+        s.nameBn.toLowerCase().includes(toText.toLowerCase()) || 
+        s.nameEn.toLowerCase().includes(toText.toLowerCase()) ||
+        toText.toLowerCase().includes(s.nameBn.toLowerCase())
+      ) || this.toSuggestions()[0];
+      to = match;
+      this.selectedTo.set(match);
     }
 
     if (from && to && from.id && to.id && from.id === to.id) {
@@ -210,14 +231,18 @@ export class FareFinderCardComponent implements OnInit {
     this.fareService.calculateFare({
       fromLocationId: from?.id,
       toLocationId: to?.id,
-      fromName: fromText,
+      fromName: from?.displayName || fromText,
       fromLatitude: from?.latitude,
       fromLongitude: from?.longitude,
-      toName: toText,
+      toName: to?.displayName || toText,
       toLatitude: to?.latitude,
       toLongitude: to?.longitude,
       transportCode: this.fareService.selectedTransport()
-    }).subscribe();
+    }).subscribe({
+      error: (err) => {
+        this.validationMessage.set(err.message || 'ভাড়া নির্ধারণ করা সম্ভব হয়নি। পরিচিত কোনো স্থানের নাম লিখে চেষ্টা করুন।');
+      }
+    });
   }
 
   closeDropdowns(): void {

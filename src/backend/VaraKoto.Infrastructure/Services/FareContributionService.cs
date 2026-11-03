@@ -301,8 +301,9 @@ public class FareContributionService : IFareContributionService
 
         if (!string.IsNullOrWhiteSpace(name))
         {
+            var cleanName = name.Trim();
             var match = await _context.Locations
-                .FirstOrDefaultAsync(l => l.NameBn.Contains(name) || l.NameEn.Contains(name), cancellationToken);
+                .FirstOrDefaultAsync(l => l.NameBn.Contains(cleanName) || l.NameEn.Contains(cleanName) || cleanName.Contains(l.NameBn) || cleanName.Contains(l.NameEn), cancellationToken);
 
             if (match != null)
             {
@@ -320,8 +321,29 @@ public class FareContributionService : IFareContributionService
                     Source = "Database"
                 };
             }
+
+            // Fallback: search geocoding via _locationService
+            try
+            {
+                var searchResults = await _locationService.SearchLocationsAsync(cleanName, 1, cancellationToken);
+                var topMatch = searchResults.FirstOrDefault();
+                if (topMatch != null)
+                {
+                    return await _locationService.GetOrCreateLocationAsync(
+                        topMatch.Latitude,
+                        topMatch.Longitude,
+                        topMatch.NameEn,
+                        topMatch.NameBn,
+                        cancellationToken);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to resolve location '{Name}' via geocoding", cleanName);
+            }
         }
 
-        throw new ArgumentException($"{label} location could not be determined. Please provide a location ID, coordinates, or recognizable name.");
+        var labelBn = label == "Origin" ? "যাত্রার প্রারম্ভিক স্থান" : "গন্তব্য স্থান";
+        throw new ArgumentException($"{labelBn} নির্ধারণ করা সম্ভব হয়নি। অনুগ্রহ করে ড্রপডাউন তালিকা থেকে একটি স্থান বেছে নিন। ({label} location could not be determined. Please select from the suggestions dropdown).");
     }
 }
