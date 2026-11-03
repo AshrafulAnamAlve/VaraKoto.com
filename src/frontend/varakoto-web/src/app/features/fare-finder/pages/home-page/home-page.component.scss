@@ -24,9 +24,11 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 12px;
 
     @media (max-width: 600px) {
-      padding: 10px 16px;
+      padding: 8px 12px;
+      gap: 8px;
     }
   }
 
@@ -35,6 +37,7 @@
     align-items: center;
     cursor: pointer;
     outline: none;
+    flex-shrink: 0;
     transition: transform var(--transition-fast);
 
     &:hover {
@@ -45,12 +48,18 @@
   .header-right {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
+    flex-shrink: 0;
+
+    @media (max-width: 480px) {
+      gap: 6px;
+    }
   }
 
   .contribute-header-btn {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 6px;
     height: 40px;
     padding: 0 14px;
@@ -62,10 +71,12 @@
     font-size: 14px;
     font-weight: 700;
     cursor: pointer;
+    white-space: nowrap;
     transition: all var(--transition-fast);
 
     .btn-icon {
       font-size: 15px;
+      line-height: 1;
     }
 
     &:hover {
@@ -78,10 +89,22 @@
       transform: translateY(1px);
     }
 
-    @media (max-width: 480px) {
+    @media (max-width: 520px) {
+      height: 36px;
       padding: 0 10px;
+      font-size: 13px;
+    }
+
+    @media (max-width: 420px) {
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      border-radius: 50%;
       .btn-text {
-        font-size: 13px;
+        display: none;
+      }
+      .btn-icon {
+        font-size: 16px;
       }
     }
   }
@@ -89,6 +112,7 @@
   .theme-toggle-btn {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
     height: 40px;
     padding: 0 14px;
@@ -100,6 +124,7 @@
     font-size: 14px;
     font-weight: 700;
     cursor: pointer;
+    white-space: nowrap;
     transition: all var(--transition-fast);
 
     &:hover {
@@ -111,8 +136,18 @@
       transform: translateY(1px);
     }
 
-    .theme-text {
-      @media (max-width: 420px) {
+    @media (max-width: 520px) {
+      height: 36px;
+      padding: 0 10px;
+      font-size: 13px;
+    }
+
+    @media (max-width: 420px) {
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      border-radius: 50%;
+      .theme-text {
         display: none;
       }
     }

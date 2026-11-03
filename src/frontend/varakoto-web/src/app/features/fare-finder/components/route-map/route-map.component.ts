@@ -433,6 +433,11 @@ export class RouteMapComponent implements OnInit, OnDestroy {
 
     if (this.run) {
       this.run.fit = this.computeFit(this.run.path.bounds);
+      if (this.run.t >= this.run.t4) {
+        this.cam.x = this.run.fit.x;
+        this.cam.y = this.run.fit.y;
+        this.cam.z = this.run.fit.z;
+      }
     }
   }
 
@@ -600,15 +605,30 @@ export class RouteMapComponent implements OnInit, OnDestroy {
   }
 
   private computeFit(b: BoundingBox): CameraState {
-    const infoH = 110;
-    const padX = Math.min(90, this.W * 0.12);
-    const padTop = 64;
-    const padBot = infoH + 44;
-    const aw = Math.max(120, this.W - padX * 2);
-    const ah = Math.max(120, this.H - padTop - padBot);
-    const z = clamp(Math.min(aw / Math.max(b.w, 80), ah / Math.max(b.h, 80)), 0.2, 1.7);
-    const sy = padTop + ah / 2;
-    return { x: b.cx, y: b.cy - (sy - this.H / 2) / z, z };
+    const isMobile = this.W < 600;
+    // Destination pin extends 76px above destination node, plus name chip headroom.
+    // Top HUD chip occupies top 44px.
+    const padTop = isMobile ? 85 : 90;
+    // The bottom glass card occupies ~100px on mobile, ~120px on desktop.
+    // padBot ensures the origin/destination marker and road line are never obscured by the glass info card.
+    const padBot = isMobile ? 140 : 155;
+    // padX prevents name chips from touching the left/right canvas borders.
+    const padX = isMobile ? Math.max(45, this.W * 0.12) : Math.max(70, this.W * 0.12);
+
+    const aw = Math.max(100, this.W - padX * 2);
+    const ah = Math.max(100, this.H - padTop - padBot);
+
+    // Zoom level: allow z to scale down to 0.05 so routes across the entire city fit completely without cutoff.
+    const fitW = Math.max(b.w, 120);
+    const fitH = Math.max(b.h, 120);
+    const z = clamp(Math.min(aw / fitW, ah / fitH), 0.05, isMobile ? 1.25 : 1.5);
+
+    // Vertical center of the unobstructed viewing area
+    const visibleCenterY = padTop + ah / 2;
+    // Align route center (b.cx, b.cy) with screen center (W/2, visibleCenterY)
+    const camY = b.cy - (visibleCenterY - this.H / 2) / z;
+
+    return { x: b.cx, y: camY, z };
   }
 
   private mixCam(a: CameraState, b: CameraState, k: number, arc: number): CameraState {

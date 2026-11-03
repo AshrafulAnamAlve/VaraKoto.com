@@ -205,6 +205,29 @@
   .brand-name {
     font-size: 28px;
   }
+
+  @media (max-width: 520px) {
+    gap: 8px;
+    .vk-logo-car {
+      width: 36px;
+      height: 33px;
+    }
+    .brand-name {
+      font-size: 22px;
+      letter-spacing: -0.5px;
+    }
+  }
+
+  @media (max-width: 380px) {
+    gap: 6px;
+    .vk-logo-car {
+      width: 30px;
+      height: 27px;
+    }
+    .brand-name {
+      font-size: 19px;
+    }
+  }
 }
 
 .vk-logo-container.icon-only {
