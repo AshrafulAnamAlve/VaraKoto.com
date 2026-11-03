@@ -15,5 +15,6 @@ public class FareContributionRequestDto
 
     public string TransportCode { get; set; } = "bus"; // bus, rickshaw, cng, bike
     public decimal ActualFarePaid { get; set; }
+    public decimal? ManualDistanceKm { get; set; }
     public DateTime? TravelDate { get; set; }
 }

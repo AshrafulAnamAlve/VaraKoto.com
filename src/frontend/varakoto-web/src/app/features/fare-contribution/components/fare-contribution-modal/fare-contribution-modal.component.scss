@@ -134,7 +134,26 @@
 
   .location-input {
     padding-left: 36px;
-    padding-right: 36px;
+    padding-right: 64px;
+  }
+
+  .map-btn {
+    position: absolute;
+    right: 36px;
+    background: transparent;
+    border: none;
+    font-size: 15px;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform var(--transition-fast);
+
+    &:hover {
+      transform: scale(1.15);
+    }
   }
 
   .clear-btn {
@@ -230,6 +249,124 @@
       [data-theme="dark"] & {
         background: rgba(52, 211, 153, 0.2);
         color: #34D399;
+      }
+    }
+  }
+
+  .empty-suggestion-box {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background-color: var(--bg-surface-elevated);
+    border-radius: var(--radius-sm);
+
+    .empty-header {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .empty-action-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+
+      .empty-action-pill {
+        background: var(--bg-surface);
+        border: 1px solid var(--border-subtle);
+        border-radius: 16px;
+        padding: 4px 10px;
+        font-family: inherit;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--vk-green);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+
+        &:hover {
+          background-color: var(--vk-green);
+          color: #ffffff;
+          border-color: var(--vk-green);
+        }
+      }
+    }
+  }
+}
+
+/* Manual Distance Toggle & Panel */
+.manual-distance-toggle-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  .distance-toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 6px 10px;
+    background: transparent;
+    border: 1px dashed var(--border-subtle);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: var(--vk-green);
+    cursor: pointer;
+
+    &:hover {
+      background-color: var(--bg-subtle);
+    }
+
+    .toggle-indicator {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+  }
+
+  .manual-distance-panel {
+    background: var(--bg-surface-elevated);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    .distance-field-label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .distance-input-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .manual-distance-input {
+        width: 110px;
+        height: 38px;
+        padding: 0 10px;
+        background: var(--bg-surface);
+        border: 1.5px solid var(--border-subtle);
+        border-radius: var(--radius-sm);
+        font-family: inherit;
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        outline: none;
+
+        &:focus {
+          border-color: var(--vk-green);
+        }
+      }
+
+      .km-unit-badge {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: var(--text-muted);
       }
     }
   }

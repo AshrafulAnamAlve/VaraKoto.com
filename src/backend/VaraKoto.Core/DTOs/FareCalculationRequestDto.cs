@@ -19,6 +19,11 @@ public class FareCalculationRequestDto
     public string? TransportCode { get; set; } = "bus";
 
     /// <summary>
+    /// Optional manual road distance in kilometers (for custom/unlisted places)
+    /// </summary>
+    public decimal? ManualDistanceKm { get; set; }
+
+    /// <summary>
     /// Whether to return calculations for all active transport types
     /// </summary>
     public bool IncludeAllTransports { get; set; } = true;

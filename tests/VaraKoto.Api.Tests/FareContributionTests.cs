@@ -296,6 +296,29 @@ public class FareContributionTests : IDisposable
         Assert.Equal("Pending", response.Status);
     }
 
+        [Fact]
+    public async Task SubmitFare_WithManualDistance_AndCustomPlaces_ShouldSucceed()
+    {
+        var calcService = new FareCalculationService(_context, new FakeLocationService(), new FakeRouteService(6m, 18m), NullLogger<FareCalculationService>.Instance);
+        var contribService = new FareContributionService(_context, new FakeLocationService(), new FakeRouteService(6m, 18m), calcService, NullLogger<FareContributionService>.Instance);
+
+        var request = new FareContributionRequestDto
+        {
+            FromName = "নতুন চরাঞ্চল",
+            ToName = "উপজেলা বাজার",
+            ManualDistanceKm = 6.0m,
+            TransportCode = "bus",
+            ActualFarePaid = 30m
+        };
+
+        var result = await contribService.SubmitFareAsync(request, "127.0.0.1", "TestAgent", CancellationToken.None);
+
+        Assert.NotNull(result);
+        Assert.Equal("Pending", result.Status);
+        Assert.Equal(30m, result.SubmittedFare);
+        Assert.Contains("সফলভাবে জমা হয়েছে", result.MessageBn);
+    }
+
     public void Dispose()
     {
         _context.Dispose();

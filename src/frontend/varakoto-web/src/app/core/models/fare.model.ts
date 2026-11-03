@@ -38,6 +38,7 @@ export interface FareCalculationRequestModel {
   toLongitude?: number | null;
   toName?: string | null;
   transportCode?: string;
+  manualDistanceKm?: number | null;
   includeAllTransports?: boolean;
 }
 
@@ -79,6 +80,7 @@ export interface FareContributionRequestModel {
   toLongitude?: number | null;
   transportCode: string;
   actualFarePaid: number;
+  manualDistanceKm?: number | null;
   travelDate?: string | null;
 }
 

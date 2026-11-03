@@ -389,6 +389,32 @@ public class FareCalculationTests : IDisposable
         Assert.NotNull(badRequestResult.Value);
     }
 
+        [Fact]
+    public async Task CalculateFare_WithManualDistanceKm_ShouldSucceedForUnlistedPlaces()
+    {
+        var calcService = new FareCalculationService(
+            _context, 
+            new FakeLocationService(), 
+            new FakeRouteService(10.0m, 30m), 
+            NullLogger<FareCalculationService>.Instance);
+
+        var request = new FareCalculationRequestDto
+        {
+            FromName = "অজানা কোনো গ্রাম",
+            ToName = "দূরের কোনো হাট",
+            ManualDistanceKm = 8.5m,
+            TransportCode = "bus"
+        };
+
+        var result = await calcService.CalculateFareAsync(request, CancellationToken.None);
+
+        Assert.NotNull(result);
+        Assert.Equal(8.5m, result.DistanceKm);
+        Assert.Equal("Manual", result.DistanceSource);
+        Assert.NotNull(result.PrimaryFare);
+        Assert.True(result.PrimaryFare.EstimatedMinFare > 0);
+    }
+
     public void Dispose()
     {
         _context.Dispose();

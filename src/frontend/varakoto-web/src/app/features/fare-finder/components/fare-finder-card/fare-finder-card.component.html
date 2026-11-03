@@ -31,7 +31,7 @@
             autocomplete="off"
             [ngModel]="fromQuery()"
             (ngModelChange)="onFromInput($event)"
-            (focus)="showFromDropdown.set(fromSuggestions().length > 0)"
+            (focus)="showFromDropdown.set(true)"
             (blur)="closeDropdowns()"
             name="fromLocation"
           />
@@ -58,6 +58,16 @@
             }
           </button>
 
+          <!-- Map Pin Button -->
+          <button
+            type="button"
+            class="map-btn"
+            (click)="openMapPicker('from')"
+            title="ম্যাপে পিন করুন (Pick on Map)"
+          >
+            📍
+          </button>
+
           <!-- Clear Button -->
           @if (fromQuery()) {
             <button type="button" class="clear-btn" (click)="clearFrom()" title="মুছে ফেলুন">✕</button>
@@ -65,7 +75,7 @@
         </div>
 
         <!-- Origin Autocomplete Dropdown -->
-        @if (showFromDropdown() && fromSuggestions().length > 0) {
+        @if (showFromDropdown()) {
           <ul class="suggestions-list" role="listbox">
             @for (loc of fromSuggestions(); track loc.id || loc.displayName) {
               <li class="suggestion-item" (mousedown)="selectFrom(loc)">
@@ -77,6 +87,20 @@
                 @if (loc.isHub) {
                   <span class="hub-pill">বাস স্ট্যান্ড / হাব</span>
                 }
+              </li>
+            }
+
+            @if (fromSuggestions().length === 0 && !isSearchingFrom() && fromQuery().length >= 2) {
+              <li class="empty-suggestion-box">
+                <div class="empty-header">🔍 ম্যাপে সরাসরি এই নামটি পাওয়া যায়নি</div>
+                <div class="empty-action-row">
+                  <button type="button" class="empty-action-pill" (mousedown)="openMapPicker('from')">
+                    📍 ম্যাপে পিন করুন
+                  </button>
+                  <button type="button" class="empty-action-pill" (mousedown)="enableManualDistance()">
+                    📏 দূরত্ব লিখে হিসাব
+                  </button>
+                </div>
               </li>
             }
           </ul>
@@ -123,10 +147,20 @@
             autocomplete="off"
             [ngModel]="toQuery()"
             (ngModelChange)="onToInput($event)"
-            (focus)="showToDropdown.set(toSuggestions().length > 0)"
+            (focus)="showToDropdown.set(true)"
             (blur)="closeDropdowns()"
             name="toLocation"
           />
+
+          <!-- Map Pin Button -->
+          <button
+            type="button"
+            class="map-btn"
+            (click)="openMapPicker('to')"
+            title="ম্যাপে পিন করুন (Pick on Map)"
+          >
+            📍
+          </button>
 
           <!-- Clear Button -->
           @if (toQuery()) {
@@ -135,7 +169,7 @@
         </div>
 
         <!-- Destination Autocomplete Dropdown -->
-        @if (showToDropdown() && toSuggestions().length > 0) {
+        @if (showToDropdown()) {
           <ul class="suggestions-list" role="listbox">
             @for (loc of toSuggestions(); track loc.id || loc.displayName) {
               <li class="suggestion-item" (mousedown)="selectTo(loc)">
@@ -149,9 +183,58 @@
                 }
               </li>
             }
+
+            @if (toSuggestions().length === 0 && !isSearchingTo() && toQuery().length >= 2) {
+              <li class="empty-suggestion-box">
+                <div class="empty-header">🔍 ম্যাপে সরাসরি এই নামটি পাওয়া যায়নি</div>
+                <div class="empty-action-row">
+                  <button type="button" class="empty-action-pill" (mousedown)="openMapPicker('to')">
+                    📍 ম্যাপে পিন করুন
+                  </button>
+                  <button type="button" class="empty-action-pill" (mousedown)="enableManualDistance()">
+                    📏 দূরত্ব লিখে হিসাব
+                  </button>
+                </div>
+              </li>
+            }
           </ul>
         }
       </div>
+    </div>
+
+    <!-- Manual Distance Toggle Section -->
+    <div class="manual-distance-toggle-wrapper">
+      <button
+        type="button"
+        class="distance-toggle-btn"
+        (click)="toggleManualDistance()"
+      >
+        <span class="toggle-label">📏 সরাসরি আনুমানিক দূরত্ব (কিমি) দিয়ে হিসাব করতে চান?</span>
+        <span class="toggle-indicator">{{ isManualDistanceActive() ? '▲ বন্ধ করুন' : '▼ চালু করুন' }}</span>
+      </button>
+
+      @if (isManualDistanceActive()) {
+        <div class="manual-distance-panel">
+          <label class="distance-field-label">আনুমানিক দূরত্ব (কিলোমিটার):</label>
+          <div class="distance-input-row">
+            <input
+              type="number"
+              step="0.1"
+              min="0.5"
+              max="500"
+              class="manual-distance-input"
+              placeholder="যেমন: ৪.৫"
+              [ngModel]="manualDistance()"
+              (ngModelChange)="manualDistance.set($event)"
+              name="manualKm"
+            />
+            <span class="km-unit-badge">কিমি (KM)</span>
+          </div>
+          <p class="distance-help-text">
+            💡 প্রত্যন্ত বা অপরিচিত এলাকার ক্ষেত্রে দূরত্ব জানা থাকলে সরাসরি কিলোমিটার লিখে নির্ভুল সরকারি ভাড়ার হিসেব দেখতে পারেন।
+          </p>
+        </div>
+      }
     </div>
 
     <!-- GPS Error Message -->
@@ -193,16 +276,12 @@
         >
           <div class="transport-icon-box">
             <svg viewBox="0 0 48 48" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <!-- City Bus Silhouette -->
               <rect x="8" y="8" width="32" height="28" rx="5" fill="none"></rect>
               <line x1="8" y1="22" x2="40" y2="22"></line>
               <line x1="24" y1="8" x2="24" y2="22"></line>
-              <!-- Route display -->
               <rect x="15" y="11" width="18" height="4" rx="1" fill="currentColor" opacity="0.3"></rect>
-              <!-- Headlights -->
               <circle cx="14" cy="30" r="2" fill="currentColor"></circle>
               <circle cx="34" cy="30" r="2" fill="currentColor"></circle>
-              <!-- Wheels -->
               <circle cx="15" cy="38" r="3" fill="currentColor"></circle>
               <circle cx="33" cy="38" r="3" fill="currentColor"></circle>
             </svg>
@@ -221,12 +300,9 @@
         >
           <div class="transport-icon-box">
             <svg viewBox="0 0 48 48" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <!-- Rickshaw Hood & Wheels -->
               <circle cx="12" cy="36" r="6" fill="none"></circle>
               <circle cx="36" cy="36" r="6" fill="none"></circle>
-              <!-- Passenger Canopy Hood -->
               <path d="M26 14 C 28 8, 38 8, 40 16 L 38 26 L 24 26 Z" fill="none"></path>
-              <!-- Frame & Pedals -->
               <line x1="12" y1="36" x2="24" y2="26"></line>
               <line x1="24" y1="26" x2="36" y2="36"></line>
               <line x1="12" y1="36" x2="16" y2="22"></line>
@@ -247,13 +323,9 @@
         >
           <div class="transport-icon-box">
             <svg viewBox="0 0 48 48" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <!-- CNG Auto-Rickshaw Outline -->
               <path d="M10 34 L 10 24 L 18 10 L 32 10 L 38 22 L 38 34 Z" fill="none"></path>
-              <!-- Windshield -->
               <path d="M18 12 L 20 22 L 34 22 L 31 12 Z" fill="none"></path>
-              <!-- Headlight -->
               <circle cx="10" cy="27" r="1.5" fill="currentColor"></circle>
-              <!-- Wheels -->
               <circle cx="14" cy="37" r="4.5" fill="currentColor"></circle>
               <circle cx="34" cy="37" r="4.5" fill="currentColor"></circle>
             </svg>
@@ -272,13 +344,10 @@
         >
           <div class="transport-icon-box">
             <svg viewBox="0 0 48 48" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <!-- Motorcycle -->
               <circle cx="12" cy="34" r="6" fill="none"></circle>
               <circle cx="36" cy="34" r="6" fill="none"></circle>
-              <!-- Tank & Chassis -->
               <path d="M12 34 L 20 24 L 28 24 L 36 34" fill="none"></path>
               <path d="M20 24 L 24 16 L 28 16" fill="none"></path>
-              <!-- Handlebar & Headlight -->
               <line x1="28" y1="16" x2="33" y2="20"></line>
               <line x1="33" y1="16" x2="31" y2="20"></line>
             </svg>
@@ -310,4 +379,14 @@
       </button>
     </div>
   </form>
+
+  <!-- Interactive Map Picker Modal -->
+  <app-map-picker-modal
+    [isOpen]="isMapPickerOpen()"
+    [title]="mapPickerTitle()"
+    [fieldLabel]="mapPickerField() === 'from' ? 'যাত্রার শুরুর স্থান' : 'গন্তব্য স্থান'"
+    [initialName]="mapPickerField() === 'from' ? fromQuery() : toQuery()"
+    (locationSelected)="onLocationPickedFromMap($event)"
+    (closed)="isMapPickerOpen.set(false)"
+  ></app-map-picker-modal>
 </div>

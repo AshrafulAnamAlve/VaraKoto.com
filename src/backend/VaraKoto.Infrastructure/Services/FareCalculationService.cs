@@ -29,6 +29,8 @@ public class FareCalculationService : IFareCalculationService
 
     public async Task<FareCalculationResultDto> CalculateFareAsync(FareCalculationRequestDto request, CancellationToken cancellationToken = default)
     {
+        var isManualDistance = request.ManualDistanceKm.HasValue && request.ManualDistanceKm.Value > 0;
+
         // 1. Resolve Origin Location
         var fromLoc = await ResolveLocationAsync(
             request.FromLocationId, 
@@ -36,6 +38,7 @@ public class FareCalculationService : IFareCalculationService
             request.FromLongitude, 
             request.FromName, 
             "Origin", 
+            isManualDistance,
             cancellationToken);
 
         // 2. Resolve Destination Location
@@ -45,6 +48,7 @@ public class FareCalculationService : IFareCalculationService
             request.ToLongitude, 
             request.ToName, 
             "Destination", 
+            isManualDistance,
             cancellationToken);
 
         // 3. Validate origin and destination are distinct
@@ -53,25 +57,39 @@ public class FareCalculationService : IFareCalculationService
             throw new InvalidOperationException("যাত্রার স্থান এবং গন্তব্য ভিন্ন হতে হবে (Origin and destination must be different locations).");
         }
 
-        var coordDistSq = (fromLoc.Latitude - toLoc.Latitude) * (fromLoc.Latitude - toLoc.Latitude) +
-                          (fromLoc.Longitude - toLoc.Longitude) * (fromLoc.Longitude - toLoc.Longitude);
-        if (coordDistSq < 0.000001m) // ~30 meters
+        decimal distanceKm;
+        decimal durationMinutes;
+        string distanceSource;
+
+        if (isManualDistance)
         {
-            throw new InvalidOperationException("যাত্রার স্থান এবং গন্তব্য অতি কাছাকাছি (Origin and destination are too close to each other).");
+            distanceKm = Math.Round(request.ManualDistanceKm!.Value, 2);
+            durationMinutes = Math.Max(5m, Math.Round(distanceKm * 3.0m, 0));
+            distanceSource = "Manual";
         }
+        else
+        {
+            var coordDistSq = (fromLoc.Latitude - toLoc.Latitude) * (fromLoc.Latitude - toLoc.Latitude) +
+                              (fromLoc.Longitude - toLoc.Longitude) * (fromLoc.Longitude - toLoc.Longitude);
+            if (coordDistSq < 0.000001m) // ~30 meters
+            {
+                throw new InvalidOperationException("যাত্রার স্থান এবং গন্তব্য অতি কাছাকাছি (Origin and destination are too close to each other).");
+            }
 
-        // 4. Calculate Road Distance & Travel Duration
-        var routeResult = await _routeService.CalculateDistanceAsync(
-            fromLoc.Latitude, 
-            fromLoc.Longitude, 
-            toLoc.Latitude, 
-            toLoc.Longitude, 
-            fromLoc.Id > 0 ? fromLoc.Id : null, 
-            toLoc.Id > 0 ? toLoc.Id : null, 
-            cancellationToken);
+            // 4. Calculate Road Distance & Travel Duration
+            var routeResult = await _routeService.CalculateDistanceAsync(
+                fromLoc.Latitude, 
+                fromLoc.Longitude, 
+                toLoc.Latitude, 
+                toLoc.Longitude, 
+                fromLoc.Id > 0 ? fromLoc.Id : null, 
+                toLoc.Id > 0 ? toLoc.Id : null, 
+                cancellationToken);
 
-        var distanceKm = routeResult.DistanceKm;
-        var durationMinutes = routeResult.DurationMinutes;
+            distanceKm = routeResult.DistanceKm;
+            durationMinutes = routeResult.DurationMinutes;
+            distanceSource = routeResult.Source;
+        }
 
         // 5. Calculate Fare Breakdowns for all active transport types
         var allFares = await CalculateAllFaresForDistanceAsync(
@@ -93,7 +111,7 @@ public class FareCalculationService : IFareCalculationService
             ToLocation = toLoc,
             DistanceKm = distanceKm,
             EstimatedDurationMinutes = durationMinutes,
-            DistanceSource = routeResult.Source,
+            DistanceSource = distanceSource,
             PrimaryFare = primaryFare,
             AllFares = allFares.ToList(),
             CalculatedAt = DateTime.UtcNow
@@ -462,6 +480,7 @@ public class FareCalculationService : IFareCalculationService
         decimal? longitude, 
         string? name, 
         string label, 
+        bool allowCustomFallback,
         CancellationToken cancellationToken)
     {
         if (locationId.HasValue && locationId.Value > 0)
@@ -539,9 +558,49 @@ public class FareCalculationService : IFareCalculationService
             {
                 _logger.LogWarning(ex, "Failed to resolve location '{Name}' via geocoding", cleanName);
             }
+
+            // Fallback: Match by district/thana keywords in cleanName
+            var hubKeywords = await _context.Locations.Where(l => l.IsHub).ToListAsync(cancellationToken);
+            var matchedHub = hubKeywords.FirstOrDefault(h => 
+                cleanName.Contains(h.NameBn, StringComparison.OrdinalIgnoreCase) || 
+                cleanName.Contains(h.NameEn, StringComparison.OrdinalIgnoreCase) ||
+                (!string.IsNullOrEmpty(h.District) && cleanName.Contains(h.District, StringComparison.OrdinalIgnoreCase)) ||
+                (!string.IsNullOrEmpty(h.Thana) && cleanName.Contains(h.Thana, StringComparison.OrdinalIgnoreCase)));
+
+            if (matchedHub != null)
+            {
+                return new LocationDto
+                {
+                    Id = matchedHub.Id,
+                    NameEn = cleanName,
+                    NameBn = cleanName,
+                    DisplayName = $"{cleanName} ({matchedHub.NameBn} এর কাছে)",
+                    Latitude = matchedHub.Latitude,
+                    Longitude = matchedHub.Longitude,
+                    District = matchedHub.District,
+                    Thana = matchedHub.Thana,
+                    IsHub = false,
+                    Source = "HubFallback"
+                };
+            }
+
+            if (allowCustomFallback)
+            {
+                return new LocationDto
+                {
+                    Id = 0,
+                    NameEn = cleanName,
+                    NameBn = cleanName,
+                    DisplayName = cleanName,
+                    Latitude = 23.8103m,
+                    Longitude = 90.4125m,
+                    District = "বাংলাদেশ",
+                    Source = "CustomManual"
+                };
+            }
         }
 
         var labelBn = label == "Origin" ? "যাত্রার প্রারম্ভিক স্থান" : "গন্তব্য স্থান";
-        throw new ArgumentException($"{labelBn} নির্ধারণ করা সম্ভব হয়নি। অনুগ্রহ করে ড্রপডাউন তালিকা থেকে একটি স্থান বেছে নিন। ({label} location could not be determined. Please select from the suggestions dropdown).");
+        throw new ArgumentException($"'{name ?? labelBn}' ম্যাপে চিহ্নিত করা সম্ভব হয়নি। অনুগ্রহ করে ড্রপডাউন থেকে বাছাই করুন, ম্যাপে পিন করুন অথবা আনুমানিক দূরত্ব লিখুন। ({label} could not be determined. Please select from suggestions, pin on map, or enter manual distance).");
     }
 }

@@ -73,14 +73,17 @@ public class FareContributionService : IFareContributionService
             .FirstOrDefaultAsync(t => t.Code == transportCode && t.IsActive, cancellationToken)
             ?? throw new ArgumentException($"যানবাহনের কোড সঠিক নয় (Invalid transport code '{transportCode}').");
 
-        // 4. Resolve Locations
+        var isManualDistance = request.ManualDistanceKm.HasValue && request.ManualDistanceKm.Value > 0;
+
+        // 4. Resolve Locations (allowing custom location creation if unlisted)
         var fromLoc = await ResolveLocationAsync(
             request.FromLocationId, 
             request.FromLatitude, 
             request.FromLongitude, 
             request.FromName, 
             "Origin", 
-            cancellationToken);
+            allowCreateCustom: true,
+            cancellationToken: cancellationToken);
 
         var toLoc = await ResolveLocationAsync(
             request.ToLocationId, 
@@ -88,7 +91,8 @@ public class FareContributionService : IFareContributionService
             request.ToLongitude, 
             request.ToName, 
             "Destination", 
-            cancellationToken);
+            allowCreateCustom: true,
+            cancellationToken: cancellationToken);
 
         if (fromLoc.Id > 0 && toLoc.Id > 0 && fromLoc.Id == toLoc.Id)
         {
@@ -111,17 +115,36 @@ public class FareContributionService : IFareContributionService
         }
 
         // 5. Calculate Road Distance
-        var routeResult = await _routeService.CalculateDistanceAsync(
-            fromLoc.Latitude, 
-            fromLoc.Longitude, 
-            toLoc.Latitude, 
-            toLoc.Longitude, 
-            fromLoc.Id > 0 ? fromLoc.Id : null, 
-            toLoc.Id > 0 ? toLoc.Id : null, 
-            cancellationToken);
+        decimal distanceKm;
+        decimal durationMinutes;
 
-        var distanceKm = routeResult.DistanceKm;
-        var durationMinutes = routeResult.DurationMinutes;
+        if (isManualDistance)
+        {
+            distanceKm = Math.Round(request.ManualDistanceKm!.Value, 2);
+            durationMinutes = Math.Max(5m, Math.Round(distanceKm * 3.0m, 0));
+        }
+        else
+        {
+            try
+            {
+                var routeResult = await _routeService.CalculateDistanceAsync(
+                    fromLoc.Latitude, 
+                    fromLoc.Longitude, 
+                    toLoc.Latitude, 
+                    toLoc.Longitude, 
+                    fromLoc.Id > 0 ? fromLoc.Id : null, 
+                    toLoc.Id > 0 ? toLoc.Id : null, 
+                    cancellationToken);
+
+                distanceKm = routeResult.DistanceKm;
+                durationMinutes = routeResult.DurationMinutes;
+            }
+            catch
+            {
+                distanceKm = 5.0m;
+                durationMinutes = 15m;
+            }
+        }
 
         // 6. Outlier Detection & Moderation
         decimal maxCeiling = transport.Code switch
@@ -264,6 +287,7 @@ public class FareContributionService : IFareContributionService
         decimal? longitude, 
         string? name, 
         string label, 
+        bool allowCreateCustom,
         CancellationToken cancellationToken)
     {
         if (locationId.HasValue && locationId.Value > 0)
@@ -341,9 +365,62 @@ public class FareContributionService : IFareContributionService
             {
                 _logger.LogWarning(ex, "Failed to resolve location '{Name}' via geocoding", cleanName);
             }
+
+            // Fallback: Match by district/thana keywords in cleanName
+            var hubKeywords = await _context.Locations.Where(l => l.IsHub).ToListAsync(cancellationToken);
+            var matchedHub = hubKeywords.FirstOrDefault(h => 
+                cleanName.Contains(h.NameBn, StringComparison.OrdinalIgnoreCase) || 
+                cleanName.Contains(h.NameEn, StringComparison.OrdinalIgnoreCase) ||
+                (!string.IsNullOrEmpty(h.District) && cleanName.Contains(h.District, StringComparison.OrdinalIgnoreCase)) ||
+                (!string.IsNullOrEmpty(h.Thana) && cleanName.Contains(h.Thana, StringComparison.OrdinalIgnoreCase)));
+
+            if (matchedHub != null)
+            {
+                return new LocationDto
+                {
+                    Id = matchedHub.Id,
+                    NameEn = cleanName,
+                    NameBn = cleanName,
+                    DisplayName = $"{cleanName} ({matchedHub.NameBn} এর কাছে)",
+                    Latitude = matchedHub.Latitude,
+                    Longitude = matchedHub.Longitude,
+                    District = matchedHub.District,
+                    Thana = matchedHub.Thana,
+                    IsHub = false,
+                    Source = "HubFallback"
+                };
+            }
+
+            if (allowCreateCustom)
+            {
+                var customLoc = new Location
+                {
+                    NameEn = cleanName,
+                    NameBn = cleanName,
+                    Latitude = 23.8103m,
+                    Longitude = 90.4125m,
+                    District = "নতুন/কাস্টম এলাকা",
+                    IsHub = false
+                };
+                _context.Locations.Add(customLoc);
+                await _context.SaveChangesAsync(cancellationToken);
+
+                return new LocationDto
+                {
+                    Id = customLoc.Id,
+                    NameEn = customLoc.NameEn,
+                    NameBn = customLoc.NameBn,
+                    DisplayName = $"{customLoc.NameBn} (নতুন এলাকা)",
+                    Latitude = customLoc.Latitude,
+                    Longitude = customLoc.Longitude,
+                    District = customLoc.District,
+                    IsHub = false,
+                    Source = "CustomContribution"
+                };
+            }
         }
 
         var labelBn = label == "Origin" ? "যাত্রার প্রারম্ভিক স্থান" : "গন্তব্য স্থান";
-        throw new ArgumentException($"{labelBn} নির্ধারণ করা সম্ভব হয়নি। অনুগ্রহ করে ড্রপডাউন তালিকা থেকে একটি স্থান বেছে নিন। ({label} location could not be determined. Please select from the suggestions dropdown).");
+        throw new ArgumentException($"'{name ?? labelBn}' ম্যাপে চিহ্নিত করা সম্ভব হয়নি। অনুগ্রহ করে ড্রপডাউন থেকে বাছাই করুন, ম্যাপে পিন করুন অথবা আনুমানিক দূরত্ব লিখুন। ({label} location could not be determined. Please select from suggestions, pin on map, or enter manual distance).");
     }
 }

@@ -77,19 +77,30 @@
                   placeholder="যেমন: মিরপুর ১০, উত্তরা, ধানমন্ডি..."
                   [ngModel]="fromText()"
                   (ngModelChange)="onFromInput($event)"
-                  (focus)="showFromDropdown.set(fromSuggestions().length > 0)"
+                  (focus)="showFromDropdown.set(true)"
                   (blur)="closeDropdowns()"
                   name="fromLocation"
                   autocomplete="off"
                   required
                 />
+
+                <!-- Map Pin Button -->
+                <button
+                  type="button"
+                  class="map-btn"
+                  (click)="openMapPicker('from')"
+                  title="ম্যাপে পিন করুন (Pick on Map)"
+                >
+                  📍
+                </button>
+
                 @if (fromText()) {
                   <button type="button" class="clear-btn" (click)="clearFrom()" title="মুছে ফেলুন">✕</button>
                 }
               </div>
 
               <!-- From Autocomplete Dropdown -->
-              @if (showFromDropdown() && fromSuggestions().length > 0) {
+              @if (showFromDropdown()) {
                 <ul class="suggestions-list" role="listbox">
                   @for (loc of fromSuggestions(); track loc.id || loc.displayName) {
                     <li class="suggestion-item" (mousedown)="selectFrom(loc)">
@@ -101,6 +112,20 @@
                       @if (loc.isHub) {
                         <span class="hub-pill">প্রধান হাব</span>
                       }
+                    </li>
+                  }
+
+                  @if (fromSuggestions().length === 0 && !isSearchingFrom() && fromText().length >= 2) {
+                    <li class="empty-suggestion-box">
+                      <div class="empty-header">🔍 ম্যাপে সরাসরি এই নামটি পাওয়া যায়নি</div>
+                      <div class="empty-action-row">
+                        <button type="button" class="empty-action-pill" (mousedown)="openMapPicker('from')">
+                          📍 ম্যাপে পিন করুন
+                        </button>
+                        <button type="button" class="empty-action-pill" (mousedown)="enableManualDistance()">
+                          📏 দূরত্ব লিখুন
+                        </button>
+                      </div>
                     </li>
                   }
                 </ul>
@@ -123,19 +148,30 @@
                   placeholder="যেমন: ফার্মগেট, মতিঝিল, গুলশান ১..."
                   [ngModel]="toText()"
                   (ngModelChange)="onToInput($event)"
-                  (focus)="showToDropdown.set(toSuggestions().length > 0)"
+                  (focus)="showToDropdown.set(true)"
                   (blur)="closeDropdowns()"
                   name="toLocation"
                   autocomplete="off"
                   required
                 />
+
+                <!-- Map Pin Button -->
+                <button
+                  type="button"
+                  class="map-btn"
+                  (click)="openMapPicker('to')"
+                  title="ম্যাপে পিন করুন (Pick on Map)"
+                >
+                  📍
+                </button>
+
                 @if (toText()) {
                   <button type="button" class="clear-btn" (click)="clearTo()" title="মুছে ফেলুন">✕</button>
                 }
               </div>
 
               <!-- To Autocomplete Dropdown -->
-              @if (showToDropdown() && toSuggestions().length > 0) {
+              @if (showToDropdown()) {
                 <ul class="suggestions-list" role="listbox">
                   @for (loc of toSuggestions(); track loc.id || loc.displayName) {
                     <li class="suggestion-item" (mousedown)="selectTo(loc)">
@@ -149,7 +185,53 @@
                       }
                     </li>
                   }
+
+                  @if (toSuggestions().length === 0 && !isSearchingTo() && toText().length >= 2) {
+                    <li class="empty-suggestion-box">
+                      <div class="empty-header">🔍 ম্যাপে সরাসরি এই নামটি পাওয়া যায়নি</div>
+                      <div class="empty-action-row">
+                        <button type="button" class="empty-action-pill" (mousedown)="openMapPicker('to')">
+                          📍 ম্যাপে পিন করুন
+                        </button>
+                        <button type="button" class="empty-action-pill" (mousedown)="enableManualDistance()">
+                          📏 দূরত্ব লিখুন
+                        </button>
+                      </div>
+                    </li>
+                  }
                 </ul>
+              }
+            </div>
+
+            <!-- Manual Distance Section -->
+            <div class="manual-distance-toggle-wrapper">
+              <button
+                type="button"
+                class="distance-toggle-btn"
+                (click)="toggleManualDistance()"
+              >
+                <span class="toggle-label">📏 সরাসরি আনুমানিক দূরত্ব (কিমি) জানাতে চান?</span>
+                <span class="toggle-indicator">{{ isManualDistanceActive() ? '▲ বন্ধ করুন' : '▼ চালু করুন' }}</span>
+              </button>
+
+              @if (isManualDistanceActive()) {
+                <div class="manual-distance-panel">
+                  <label class="distance-field-label">আনুমানিক দূরত্ব (কিলোমিটার):</label>
+                  <div class="distance-input-row">
+                    <input
+                      type="number"
+                      step="0.1"
+                      min="0.5"
+                      max="500"
+                      class="manual-distance-input"
+                      placeholder="যেমন: ৩.৫"
+                      [ngModel]="manualDistance()"
+                      (ngModelChange)="manualDistance.set($event)"
+                      name="contribKm"
+                    />
+                    <span class="km-unit-badge">কিমি (KM)</span>
+                  </div>
+                </div>
               }
             </div>
 
@@ -210,5 +292,15 @@
         </div>
       }
     </div>
+
+    <!-- Map Picker Modal -->
+    <app-map-picker-modal
+      [isOpen]="isMapPickerOpen()"
+      [title]="mapPickerTitle()"
+      [fieldLabel]="mapPickerField() === 'from' ? 'যাত্রার শুরুর স্থান' : 'গন্তব্য স্থান'"
+      [initialName]="mapPickerField() === 'from' ? fromText() : toText()"
+      (locationSelected)="onLocationPickedFromMap($event)"
+      (closed)="isMapPickerOpen.set(false)"
+    ></app-map-picker-modal>
   </div>
 }

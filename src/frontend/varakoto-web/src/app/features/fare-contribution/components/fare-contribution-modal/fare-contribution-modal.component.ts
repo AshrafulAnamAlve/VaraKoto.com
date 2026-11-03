@@ -7,11 +7,12 @@ import { FareService } from '../../../../core/services/fare.service';
 import { LocationService } from '../../../../core/services/location.service';
 import { FareContributionRequestModel, FareContributionResponseModel, TransportCode } from '../../../../core/models/fare.model';
 import { LocationDto } from '../../../../core/models/location.model';
+import { MapPickerModalComponent, SelectedMapLocation } from '../../../../shared/components/map-picker-modal/map-picker-modal.component';
 
 @Component({
   selector: 'app-fare-contribution-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MapPickerModalComponent],
   templateUrl: './fare-contribution-modal.component.html',
   styleUrls: ['./fare-contribution-modal.component.scss']
 })
@@ -43,6 +44,15 @@ export class FareContributionModalComponent implements OnInit, OnDestroy {
   readonly showFromDropdown = signal<boolean>(false);
   readonly showToDropdown = signal<boolean>(false);
 
+  // Map Picker Modal Signals
+  readonly isMapPickerOpen = signal<boolean>(false);
+  readonly mapPickerField = signal<'from' | 'to'>('from');
+  readonly mapPickerTitle = signal<string>('ম্যাপ থেকে স্থান নির্বাচন করুন');
+
+  // Manual Distance Option
+  readonly isManualDistanceActive = signal<boolean>(false);
+  readonly manualDistance = signal<number | null>(null);
+
   readonly transportCode = signal<TransportCode>('bus');
   readonly actualFare = signal<number | null>(null);
   readonly travelDate = signal<string>(new Date().toISOString().split('T')[0]);
@@ -58,33 +68,31 @@ export class FareContributionModalComponent implements OnInit, OnDestroy {
   readonly transports: { code: TransportCode; labelBn: string; icon: string }[] = [
     { code: 'bus', labelBn: 'বাস', icon: '🚌' },
     { code: 'rickshaw', labelBn: 'রিকশা', icon: '🛺' },
-    { code: 'cng', labelBn: 'সিএনজি', icon: '🛺💨' },
+    { code: 'cng', labelBn: 'সিএনজি', icon: '🛺' },
     { code: 'bike', labelBn: 'বাইক', icon: '🏍️' }
   ];
 
   constructor() {
     effect(() => {
-      if (this.isOpen()) {
-        const from = this.initialFrom();
-        const to = this.initialTo();
-        this.fromText.set(from);
-        this.toText.set(to);
-        this.selectedFrom.set(null);
-        this.selectedTo.set(null);
-        this.fromSuggestions.set([]);
-        this.toSuggestions.set([]);
-        this.showFromDropdown.set(false);
-        this.showToDropdown.set(false);
-        this.transportCode.set(this.initialTransport() || 'bus');
-        this.actualFare.set(null);
+      const from = this.initialFrom();
+      const to = this.initialTo();
+      const tr = this.initialTransport();
+      const open = this.isOpen();
+
+      if (open) {
+        if (from) this.fromText.set(from);
+        if (to) this.toText.set(to);
+        if (tr) this.transportCode.set(tr);
         this.errorMessage.set(null);
         this.successData.set(null);
+        this.actualFare.set(null);
+        this.showFromDropdown.set(false);
+        this.showToDropdown.set(false);
       }
     });
   }
 
   ngOnInit(): void {
-    // Debounced search for Origin recommendations
     const fromSub = this.fromSearchSubject.pipe(
       debounceTime(250),
       distinctUntilChanged(),
@@ -99,10 +107,9 @@ export class FareContributionModalComponent implements OnInit, OnDestroy {
     ).subscribe((results) => {
       this.fromSuggestions.set(results);
       this.isSearchingFrom.set(false);
-      this.showFromDropdown.set(results.length > 0);
+      this.showFromDropdown.set(true);
     });
 
-    // Debounced search for Destination recommendations
     const toSub = this.toSearchSubject.pipe(
       debounceTime(250),
       distinctUntilChanged(),
@@ -117,7 +124,7 @@ export class FareContributionModalComponent implements OnInit, OnDestroy {
     ).subscribe((results) => {
       this.toSuggestions.set(results);
       this.isSearchingTo.set(false);
-      this.showToDropdown.set(results.length > 0);
+      this.showToDropdown.set(true);
     });
 
     this.subs.push(fromSub, toSub);
@@ -173,11 +180,50 @@ export class FareContributionModalComponent implements OnInit, OnDestroy {
     this.showToDropdown.set(false);
   }
 
+  openMapPicker(field: 'from' | 'to'): void {
+    this.mapPickerField.set(field);
+    this.mapPickerTitle.set(field === 'from' ? 'যাত্রার শুরুর স্থান ম্যাপে নির্বাচন করুন 📍' : 'গন্তব্য স্থান ম্যাপে নির্বাচন করুন 🏁');
+    this.isMapPickerOpen.set(true);
+    this.showFromDropdown.set(false);
+    this.showToDropdown.set(false);
+  }
+
+  onLocationPickedFromMap(loc: SelectedMapLocation): void {
+    const locDto: LocationDto = {
+      nameEn: loc.name,
+      nameBn: loc.name,
+      displayName: loc.displayName,
+      latitude: loc.latitude,
+      longitude: loc.longitude,
+      isHub: false,
+      source: 'MapPicker'
+    };
+
+    if (this.mapPickerField() === 'from') {
+      this.selectedFrom.set(locDto);
+      this.fromText.set(loc.name);
+    } else {
+      this.selectedTo.set(locDto);
+      this.toText.set(loc.name);
+    }
+    this.errorMessage.set(null);
+  }
+
+  toggleManualDistance(): void {
+    this.isManualDistanceActive.update(v => !v);
+  }
+
+  enableManualDistance(): void {
+    this.isManualDistanceActive.set(true);
+    this.showFromDropdown.set(false);
+    this.showToDropdown.set(false);
+  }
+
   closeDropdowns(): void {
     setTimeout(() => {
       this.showFromDropdown.set(false);
       this.showToDropdown.set(false);
-    }, 220);
+    }, 250);
   }
 
   selectTransport(code: TransportCode): void {
@@ -245,6 +291,10 @@ export class FareContributionModalComponent implements OnInit, OnDestroy {
     this.isSubmitting.set(true);
     this.errorMessage.set(null);
 
+    const manualDist = this.isManualDistanceActive() && this.manualDistance() && this.manualDistance()! > 0
+      ? this.manualDistance()!
+      : undefined;
+
     const request: FareContributionRequestModel = {
       fromLocationId: from?.id,
       fromLatitude: from?.latitude,
@@ -256,6 +306,7 @@ export class FareContributionModalComponent implements OnInit, OnDestroy {
       toName: to?.displayName || toVal,
       transportCode: this.transportCode(),
       actualFarePaid: fare,
+      manualDistanceKm: manualDist,
       travelDate: this.travelDate() ? new Date(this.travelDate()).toISOString() : null
     };
 

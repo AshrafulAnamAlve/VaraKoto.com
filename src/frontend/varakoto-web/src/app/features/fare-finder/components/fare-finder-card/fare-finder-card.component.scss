@@ -178,6 +178,24 @@
     }
   }
 
+  .map-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 8px 10px;
+    font-size: 16px;
+    border-radius: var(--radius-sm);
+    transition: background-color var(--transition-fast), transform var(--transition-fast);
+
+    &:hover {
+      background-color: var(--bg-subtle);
+      transform: scale(1.15);
+    }
+  }
+
   .clear-btn {
     display: flex;
     align-items: center;
@@ -288,6 +306,133 @@
       padding: 3px 8px;
       border-radius: var(--radius-full);
       white-space: nowrap;
+    }
+  }
+
+  .empty-suggestion-box {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background-color: var(--bg-surface-elevated);
+    border-radius: var(--radius-sm);
+
+    .empty-header {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .empty-action-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+
+      .empty-action-pill {
+        background: var(--bg-surface);
+        border: 1px solid var(--border-subtle);
+        border-radius: 20px;
+        padding: 5px 12px;
+        font-family: inherit;
+        font-size: 12.5px;
+        font-weight: 600;
+        color: var(--vk-green);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+
+        &:hover {
+          background-color: var(--vk-green);
+          color: #ffffff;
+          border-color: var(--vk-green);
+        }
+      }
+    }
+  }
+}
+
+/* Manual Distance Toggle & Panel */
+.manual-distance-toggle-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  .distance-toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 8px 12px;
+    background: transparent;
+    border: 1px dashed var(--border-subtle);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--vk-green);
+    cursor: pointer;
+    transition: background-color var(--transition-fast);
+
+    &:hover {
+      background-color: var(--bg-subtle);
+    }
+
+    .toggle-indicator {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+  }
+
+  .manual-distance-panel {
+    background-color: var(--bg-surface-elevated);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    animation: fadeIn 0.2s ease-out;
+
+    .distance-field-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .distance-input-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+
+      .manual-distance-input {
+        width: 140px;
+        height: 42px;
+        padding: 0 12px;
+        background: var(--bg-surface);
+        border: 1.5px solid var(--border-subtle);
+        border-radius: var(--radius-sm);
+        font-family: inherit;
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--text-primary);
+        outline: none;
+
+        &:focus {
+          border-color: var(--vk-green);
+        }
+      }
+
+      .km-unit-badge {
+        font-size: 13.5px;
+        font-weight: 700;
+        color: var(--text-muted);
+      }
+    }
+
+    .distance-help-text {
+      margin: 0;
+      font-size: 12.5px;
+      color: var(--text-muted);
+      line-height: 1.4;
     }
   }
 }

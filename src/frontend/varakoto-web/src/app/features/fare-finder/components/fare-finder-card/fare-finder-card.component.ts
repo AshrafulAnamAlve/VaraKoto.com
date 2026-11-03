@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, effect } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
@@ -7,11 +7,12 @@ import { LocationService } from '../../../../core/services/location.service';
 import { FareService } from '../../../../core/services/fare.service';
 import { LocationDto } from '../../../../core/models/location.model';
 import { TransportCode } from '../../../../core/models/fare.model';
+import { MapPickerModalComponent, SelectedMapLocation } from '../../../../shared/components/map-picker-modal/map-picker-modal.component';
 
 @Component({
   selector: 'app-fare-finder-card',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MapPickerModalComponent],
   templateUrl: './fare-finder-card.component.html',
   styleUrls: ['./fare-finder-card.component.scss']
 })
@@ -37,6 +38,15 @@ export class FareFinderCardComponent implements OnInit {
   readonly isDetectingGps = signal<boolean>(false);
   readonly gpsError = signal<string | null>(null);
   readonly validationMessage = signal<string | null>(null);
+
+  // Map Picker Modal Signals
+  readonly isMapPickerOpen = signal<boolean>(false);
+  readonly mapPickerField = signal<'from' | 'to'>('from');
+  readonly mapPickerTitle = signal<string>('ম্যাপ থেকে স্থান নির্বাচন করুন');
+
+  // Manual Distance Option
+  readonly isManualDistanceActive = signal<boolean>(false);
+  readonly manualDistance = signal<number | null>(null);
 
   // Search Debouncers
   private readonly fromSearchSubject = new Subject<string>();
@@ -66,7 +76,7 @@ export class FareFinderCardComponent implements OnInit {
     ).subscribe((results) => {
       this.fromSuggestions.set(results);
       this.isSearchingFrom.set(false);
-      this.showFromDropdown.set(results.length > 0);
+      this.showFromDropdown.set(true);
     });
 
     // Setup debounced location search for Destination
@@ -84,7 +94,7 @@ export class FareFinderCardComponent implements OnInit {
     ).subscribe((results) => {
       this.toSuggestions.set(results);
       this.isSearchingTo.set(false);
-      this.showToDropdown.set(results.length > 0);
+      this.showToDropdown.set(true);
     });
   }
 
@@ -134,6 +144,45 @@ export class FareFinderCardComponent implements OnInit {
     this.toSuggestions.set([]);
   }
 
+  openMapPicker(field: 'from' | 'to'): void {
+    this.mapPickerField.set(field);
+    this.mapPickerTitle.set(field === 'from' ? 'যাত্রার শুরুর স্থান ম্যাপে নির্বাচন করুন 📍' : 'গন্তব্য স্থান ম্যাপে নির্বাচন করুন 🏁');
+    this.isMapPickerOpen.set(true);
+    this.showFromDropdown.set(false);
+    this.showToDropdown.set(false);
+  }
+
+  onLocationPickedFromMap(loc: SelectedMapLocation): void {
+    const locDto: LocationDto = {
+      nameEn: loc.name,
+      nameBn: loc.name,
+      displayName: loc.displayName,
+      latitude: loc.latitude,
+      longitude: loc.longitude,
+      isHub: false,
+      source: 'MapPicker'
+    };
+
+    if (this.mapPickerField() === 'from') {
+      this.selectedFrom.set(locDto);
+      this.fromQuery.set(loc.name);
+    } else {
+      this.selectedTo.set(locDto);
+      this.toQuery.set(loc.name);
+    }
+    this.validationMessage.set(null);
+  }
+
+  toggleManualDistance(): void {
+    this.isManualDistanceActive.update(v => !v);
+  }
+
+  enableManualDistance(): void {
+    this.isManualDistanceActive.set(true);
+    this.showFromDropdown.set(false);
+    this.showToDropdown.set(false);
+  }
+
   swapLocations(): void {
     const tempQuery = this.fromQuery();
     const tempSelected = this.selectedFrom();
@@ -165,12 +214,12 @@ export class FareFinderCardComponent implements OnInit {
         if (loc) {
           this.selectFrom(loc);
         } else {
-          this.gpsError.set('লোকেশন সনাক্ত করা সম্ভব হয়নি। নাম লিখে সার্চ করুন।');
+          this.gpsError.set('লোকেশন সনাক্ত করা সম্ভব হয়নি। নাম লিখে সার্চ করুন বা ম্যাপে পিন করুন।');
         }
       },
       error: () => {
         this.isDetectingGps.set(false);
-        this.gpsError.set('লোকেশন পারমিশন দেওয়া হয়নি। ম্যানুয়ালি নাম লিখুন।');
+        this.gpsError.set('লোকেশন পারমিশন দেওয়া হয়নি। ম্যানুয়ালি নাম লিখুন বা ম্যাপে পিন করুন।');
       }
     });
   }
@@ -228,6 +277,10 @@ export class FareFinderCardComponent implements OnInit {
 
     this.validationMessage.set(null);
 
+    const manualDist = this.isManualDistanceActive() && this.manualDistance() && this.manualDistance()! > 0
+      ? this.manualDistance()!
+      : undefined;
+
     this.fareService.calculateFare({
       fromLocationId: from?.id,
       toLocationId: to?.id,
@@ -237,10 +290,11 @@ export class FareFinderCardComponent implements OnInit {
       toName: to?.displayName || toText,
       toLatitude: to?.latitude,
       toLongitude: to?.longitude,
-      transportCode: this.fareService.selectedTransport()
+      transportCode: this.fareService.selectedTransport(),
+      manualDistanceKm: manualDist
     }).subscribe({
       error: (err) => {
-        this.validationMessage.set(err.message || 'ভাড়া নির্ধারণ করা সম্ভব হয়নি। পরিচিত কোনো স্থানের নাম লিখে চেষ্টা করুন।');
+        this.validationMessage.set(err.message || 'ভাড়া নির্ধারণ করা সম্ভব হয়নি। ম্যাপ থেকে পিন করুন অথবা আনুমানিক দূরত্ব লিখুন।');
       }
     });
   }
@@ -250,6 +304,6 @@ export class FareFinderCardComponent implements OnInit {
     setTimeout(() => {
       this.showFromDropdown.set(false);
       this.showToDropdown.set(false);
-    }, 200);
+    }, 250);
   }
 }
