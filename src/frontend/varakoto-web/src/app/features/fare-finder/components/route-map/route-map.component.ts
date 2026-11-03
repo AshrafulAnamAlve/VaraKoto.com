@@ -657,6 +657,7 @@ export class RouteMapComponent implements OnInit, OnDestroy {
 
   /* ----------------- Route Execution & State ----------------- */
   startRun(fromName: string, toName: string): void {
+    this.resize();
     const fromLoc = this.resolveNode(fromName);
     const toLoc = this.resolveNode(toName, fromLoc.node);
 

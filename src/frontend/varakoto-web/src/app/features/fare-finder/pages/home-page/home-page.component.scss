@@ -162,6 +162,17 @@
     @media (max-width: 960px) {
       position: relative;
       top: 0;
+      display: none;
+    }
+  }
+
+  /* When fare calculation result is ready, reveal the map on mobile above result card */
+  .main-container.has-result {
+    .map-column {
+      @media (max-width: 960px) {
+        display: block;
+        animation: mobileMapReveal 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+      }
     }
   }
 
@@ -171,6 +182,17 @@
     gap: 24px;
     min-width: 0;
     width: 100%;
+  }
+}
+
+@keyframes mobileMapReveal {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 

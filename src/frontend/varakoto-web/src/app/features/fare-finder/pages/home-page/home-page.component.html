@@ -59,7 +59,7 @@
 
   <!-- Main Fare Content Area -->
   <main class="app-main">
-    <div class="main-container">
+    <div class="main-container" [class.has-result]="fareService.latestResult() !== null">
       <div class="main-layout-grid">
         <!-- Animated Route Map Panel (LEFT) -->
         <div class="map-column">

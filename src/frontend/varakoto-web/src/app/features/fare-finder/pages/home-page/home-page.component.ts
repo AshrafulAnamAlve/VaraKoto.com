@@ -86,10 +86,16 @@ export class HomePageComponent implements OnInit {
   showFinder(): void {
     this.currentView.set('finder');
     this.fareService.clearResult();
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }
 
   onSearchSubmitted(): void {
     this.replayTrigger.update(v => v + 1);
+    if (typeof window !== 'undefined' && window.innerWidth <= 960) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }
 
   openContributionModal(from?: string, to?: string, transport?: string): void {
