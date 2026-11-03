@@ -59,15 +59,33 @@
 
   <!-- Main Fare Content Area -->
   <main class="app-main">
-    <div class="main-container">
+    <div class="main-container" [class.result-mode]="fareService.latestResult() !== null">
       @if (fareService.latestResult()) {
-        <!-- Fare Result View -->
-        <app-fare-result-card
-          (modifySearch)="showFinder()"
-          (contributeFare)="handleContribute($event)"
-        ></app-fare-result-card>
+        <!-- Fare Result View with Animated Route Map -->
+        <div class="result-layout-grid">
+          <!-- Animated Route Map Panel (LEFT) -->
+          <div class="map-column">
+            <app-route-map
+              [from]="resultFrom()"
+              [to]="resultTo()"
+              [vehicle]="resultVehicle()"
+              [distanceKm]="resultDistanceKm()"
+              [durationMinutes]="resultDurationMinutes()"
+              [fareAmount]="resultFareAmount()"
+              [fareDisplayBn]="resultFareDisplayBn()"
+            ></app-route-map>
+          </div>
+
+          <!-- Fare Result Details Card (RIGHT) -->
+          <div class="result-card-column">
+            <app-fare-result-card
+              (modifySearch)="showFinder()"
+              (contributeFare)="handleContribute($event)"
+            ></app-fare-result-card>
+          </div>
+        </div>
       } @else {
-        <!-- Fare Finder Search View -->
+        <!-- Fare Finder Search View (Original clean centered UI) -->
         <app-fare-finder-card></app-fare-finder-card>
       }
 

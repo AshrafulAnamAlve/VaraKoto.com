@@ -1,6 +1,7 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { RouteMapComponent } from '../../components/route-map/route-map.component';
 import { FareFinderCardComponent } from '../../components/fare-finder-card/fare-finder-card.component';
 import { FareResultCardComponent } from '../../components/fare-result-card/fare-result-card.component';
 import { FareContributionModalComponent } from '../../../fare-contribution/components/fare-contribution-modal/fare-contribution-modal.component';
@@ -16,6 +17,7 @@ import { FareContributionResponseModel, TransportCode } from '../../../../core/m
   imports: [
     CommonModule,
     RouterModule,
+    RouteMapComponent,
     FareFinderCardComponent,
     FareResultCardComponent,
     FareContributionModalComponent,
@@ -31,6 +33,39 @@ export class HomePageComponent implements OnInit {
 
   // View state: 'finder' | 'result'
   readonly currentView = signal<'finder' | 'result'>('finder');
+
+  // Route Map Data (computed directly from the calculated fare result)
+  readonly resultFrom = computed(() => {
+    const res = this.fareService.latestResult();
+    return res?.fromLocation?.nameBn || res?.fromLocation?.displayName || res?.fromLocation?.nameEn || '';
+  });
+
+  readonly resultTo = computed(() => {
+    const res = this.fareService.latestResult();
+    return res?.toLocation?.nameBn || res?.toLocation?.displayName || res?.toLocation?.nameEn || '';
+  });
+
+  readonly resultDistanceKm = computed(() => {
+    return this.fareService.latestResult()?.distanceKm ?? null;
+  });
+
+  readonly resultDurationMinutes = computed(() => {
+    return this.fareService.latestResult()?.estimatedDurationMinutes ?? null;
+  });
+
+  readonly resultFareAmount = computed(() => {
+    const primary = this.fareService.latestResult()?.primaryFare;
+    if (!primary) return null;
+    return primary.exactFare ?? primary.estimatedMinFare;
+  });
+
+  readonly resultFareDisplayBn = computed(() => {
+    return this.fareService.latestResult()?.primaryFare?.fareDisplayBn ?? '';
+  });
+
+  readonly resultVehicle = computed(() => {
+    return this.fareService.selectedTransport();
+  });
 
   // Contribution Modal State
   readonly isContributionModalOpen = signal<boolean>(false);

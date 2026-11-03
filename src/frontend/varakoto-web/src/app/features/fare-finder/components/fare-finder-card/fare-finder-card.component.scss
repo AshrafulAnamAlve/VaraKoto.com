@@ -484,14 +484,15 @@
 }
 
 .transport-option {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 12px 6px;
+  padding: 13px 6px 11px;
   background-color: var(--bg-surface-elevated);
-  border: 1.5px solid var(--border-subtle);
+  border: 2px solid var(--border-subtle);
   border-radius: var(--radius-md);
   color: var(--text-muted);
   cursor: pointer;
@@ -499,20 +500,49 @@
   outline: none;
 
   &:hover {
-    border-color: var(--vk-green);
+    border-color: #FF6A1A;
     background-color: var(--bg-subtle);
     color: var(--text-primary);
+    transform: translateY(-2px);
   }
 
   &.selected {
-    background-color: var(--vk-green);
-    border-color: var(--vk-green);
-    color: #FFFFFF;
-    box-shadow: 0 4px 12px rgba(11, 79, 68, 0.25);
+    border-color: #FF6A1A !important;
+    background: linear-gradient(180deg, rgba(255, 106, 26, 0.22) 0%, rgba(255, 106, 26, 0.08) 100%) !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 0 0 2.5px #FF6A1A, 0 8px 24px rgba(255, 106, 26, 0.35) !important;
+    transform: translateY(-2px);
+
+    .transport-icon-box {
+      color: #FFC93C;
+      filter: drop-shadow(0 2px 6px rgba(255, 201, 60, 0.5));
+    }
 
     .transport-name {
+      color: #FFFFFF !important;
+      font-weight: 800;
+      letter-spacing: 0.3px;
+    }
+
+    // High-visibility check badge indicator
+    &::after {
+      content: '✓';
+      position: absolute;
+      top: -7px;
+      right: -7px;
+      width: 22px;
+      height: 22px;
+      background: #FF6A1A;
       color: #FFFFFF;
-      font-weight: 700;
+      font-size: 13px;
+      font-weight: 900;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+      border: 2px solid var(--bg-surface);
+      z-index: 2;
     }
   }
 
@@ -520,6 +550,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: transform var(--transition-fast), color var(--transition-fast);
   }
 
   .transport-name {
@@ -527,6 +558,22 @@
     font-weight: 600;
     font-family: inherit;
     transition: color var(--transition-fast);
+  }
+}
+
+:host-context([data-theme="light"]) .transport-option.selected {
+  background: linear-gradient(180deg, #FFEBD4 0%, #FFDFBA 100%) !important;
+  border-color: #E5570A !important;
+  box-shadow: 0 0 0 2.5px #E5570A, 0 8px 20px rgba(229, 87, 10, 0.28) !important;
+
+  .transport-icon-box {
+    color: #C94605;
+    filter: drop-shadow(0 2px 4px rgba(201, 70, 5, 0.3));
+  }
+
+  .transport-name {
+    color: #17302B !important;
+    font-weight: 800;
   }
 }
 

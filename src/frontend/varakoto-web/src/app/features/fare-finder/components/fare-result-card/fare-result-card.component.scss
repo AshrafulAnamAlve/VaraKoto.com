@@ -305,23 +305,47 @@
     transition: all var(--transition-fast);
     outline: none;
 
+    position: relative;
+
     &:hover {
-      border-color: var(--vk-green);
+      border-color: #FF6A1A;
       background-color: var(--bg-subtle);
+      transform: translateY(-2px);
     }
 
     &.active {
-      border-color: var(--vk-green);
-      background-color: rgba(11, 79, 68, 0.12);
-      box-shadow: 0 0 0 2px var(--vk-green);
+      border-color: #FF6A1A !important;
+      background: linear-gradient(180deg, rgba(255, 106, 26, 0.22) 0%, rgba(255, 106, 26, 0.08) 100%) !important;
+      box-shadow: 0 0 0 2.5px #FF6A1A, 0 8px 24px rgba(255, 106, 26, 0.35) !important;
+      transform: translateY(-2px);
+
+      &::after {
+        content: '✓';
+        position: absolute;
+        top: -6px;
+        right: -6px;
+        width: 20px;
+        height: 20px;
+        background: #FF6A1A;
+        color: #FFFFFF;
+        font-size: 12px;
+        font-weight: 900;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+        border: 2px solid var(--bg-surface);
+        z-index: 2;
+      }
 
       .comp-name {
-        color: var(--vk-green);
+        color: #FFC93C;
         font-weight: 800;
       }
 
       .comp-amount {
-        color: var(--vk-green);
+        color: #FF6A1A;
         font-weight: 800;
       }
     }

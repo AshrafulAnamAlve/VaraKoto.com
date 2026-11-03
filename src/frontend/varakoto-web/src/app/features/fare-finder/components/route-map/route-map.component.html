@@ -1,0 +1,39 @@
+<section class="map" #stage [attr.aria-label]="ariaLabel()">
+  <canvas #mapCanvas role="img" [attr.aria-label]="canvasAriaLabel()"></canvas>
+  <div class="vignette" aria-hidden="true"></div>
+
+  <div class="hud" aria-hidden="true">
+    <span class="chip glass">
+      <i class="live-dot"></i>লাইভ রুট ম্যাপ
+    </span>
+  </div>
+
+  <div class="info glass" [class.show]="isInfoShown()" aria-live="polite">
+    <div class="info-top">
+      <div class="ends">
+        <span class="e e-o"></span>
+        <b>{{ displayFrom() || '—' }}</b>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#93b9ae" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M5 12h14M13 6l6 6-6 6"/>
+        </svg>
+        <span class="e e-d"></span>
+        <b>{{ displayTo() || '—' }}</b>
+      </div>
+      <span class="vtag">{{ vehicleNameBn() }}</span>
+    </div>
+    <div class="stats">
+      <div>
+        <small>দূরত্ব</small>
+        <strong>{{ displayKm() }}</strong>
+      </div>
+      <div>
+        <small>আনুমানিক সময়</small>
+        <strong>{{ displayDuration() }}</strong>
+      </div>
+      <div class="fare">
+        <small>আনুমানিক ভাড়া</small>
+        <strong>{{ displayFare() }}</strong>
+      </div>
+    </div>
+  </div>
+</section>
