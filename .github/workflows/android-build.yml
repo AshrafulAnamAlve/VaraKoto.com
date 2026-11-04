@@ -1,13 +1,9 @@
-name: Build Android Mobile App (APK)
+name: Build and Release Android App (APK)
 
 on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths:
-      - 'mobile-app/**'
-      - 'src/frontend/**'
-      - '.github/workflows/android-build.yml'
 
 permissions:
   contents: write
@@ -24,6 +20,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -38,7 +36,10 @@ jobs:
 
       - name: Build Web Application
         working-directory: src/frontend/varakoto-web
-        run: npx ng build --configuration production
+        run: |
+          npx ng build --configuration production --base-href /VaraKoto.com/
+          cp dist/varakoto-web/browser/index.html dist/varakoto-web/browser/404.html
+          touch dist/varakoto-web/browser/.nojekyll
 
       - name: Set up Java JDK 21
         uses: actions/setup-java@v4
@@ -46,7 +47,7 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: Accept Android SDK Licenses
+      - name: Accept Android SDK Licenses & Install Components
         run: |
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
           $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-35" "build-tools;35.0.0" || true
@@ -62,12 +63,24 @@ jobs:
         working-directory: mobile-app/android
         env:
           ANDROID_HOME: /usr/local/lib/android/sdk
-        run: ./gradlew assembleDebug --stacktrace
+        run: |
+          ./gradlew assembleDebug --stacktrace 2>&1 | tee gradle-build.log || {
+            echo "## ❌ Gradle Build Error Log" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            tail -n 120 gradle-build.log >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            exit 1
+          }
 
       - name: Prepare APK Output
         run: |
           mkdir -p dist-apk
           cp mobile-app/android/app/build/outputs/apk/debug/app-debug.apk dist-apk/VaraKoto.apk
+          mkdir -p src/frontend/varakoto-web/dist/varakoto-web/browser/downloads
+          cp dist-apk/VaraKoto.apk src/frontend/varakoto-web/dist/varakoto-web/browser/downloads/varakoto.apk
+          cp dist-apk/VaraKoto.apk src/frontend/varakoto-web/dist/varakoto-web/browser/downloads/VaraKoto.apk
+          echo "## ✅ Android APK Build Success" >> $GITHUB_STEP_SUMMARY
+          echo "APK Size: $(du -h dist-apk/VaraKoto.apk | cut -f1)" >> $GITHUB_STEP_SUMMARY
 
       - name: Upload Debug APK Artifact
         uses: actions/upload-artifact@v4
@@ -83,15 +96,26 @@ jobs:
           tag_name: v1.0.0
           name: VaraKoto Android App v1.0.0
           body: |
-            ### 🚗 VaraKoto.com অ্যান্ড্রয়েড মোবাইল অ্যাপ্লিকেশন (অফিসিয়াল APK)
+            ### 🚗 VaraKoto.com অফিসিয়াল অ্যান্ড্রয়েড মোবাইল অ্যাপ্লিকেশন (APK)
             
             - **ভার্সন**: v1.0.0
             - **সাপোর্ট**: Android 7.0+ (Nougat থেকে Android 15/16)
             - **ফিচারস**:
               - ⚡ রিয়েলটাইম ৫-সেকেন্ড ক্যানভাস রোড অ্যানিমেশন (৬০ FPS)
-              - 🚌 বাস, রিকশা, সিএনজি ও বাইক ভাড়া ক্যালকুলেটর
+              - 🚌 বাস, রিকশা, সিএনজি ও বাইক সঠিক ভাড়া ক্যালকুলেটর
               - 📍 হাই-অ্যাকিউরেসি জিপিএস কারেন্ট লোকেশন ডিটেকশন
               - 📳 বাটন ও ভেইকল সিলেকশনে নেটিভ টাচ হ্যাপটিক্স
               - 📲 হোয়াটসঅ্যাপ ও বন্ধুদের সাথে সরাসরি ভাড়া শেয়ার
               - 🌓 প্রিমিয়াম ডার্ক ও লাইট থিম
           files: dist-apk/VaraKoto.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Deploy to GitHub Pages (gh-pages branch)
+        uses: peaceiris/actions-gh-pages@v4
+        if: github.ref == 'refs/heads/main'
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: src/frontend/varakoto-web/dist/varakoto-web/browser
+          destination_dir: ''
+          keep_files: false
