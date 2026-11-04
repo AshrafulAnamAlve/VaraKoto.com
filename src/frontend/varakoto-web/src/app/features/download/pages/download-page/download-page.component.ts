@@ -17,7 +17,7 @@ export class DownloadPageComponent {
   readonly nativeMobile = inject(NativeMobileService);
 
   readonly appVersion = 'v1.0.0';
-  readonly appSize = '~15 MB';
+  readonly appSize = '~5.1 MB';
   readonly minAndroid = 'Android 7.0+';
 
   // Direct APK download link hosted in the web app
