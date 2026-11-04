@@ -71,31 +71,25 @@ jobs:
             echo '```' >> $GITHUB_STEP_SUMMARY
             exit 1
           }
-          echo "### Gradle Build Output Files:"
-          find app/build/outputs -type f || true
-
-      - name: Prepare APK Output
-        run: |
-          mkdir -p dist-apk
-          APK_FILE=$(find mobile-app/android/app/build -type f -name "*.apk" | head -n 1)
-          if [ -z "$APK_FILE" ]; then
-            echo "Searching all of mobile-app for APK..."
-            APK_FILE=$(find mobile-app -type f -name "*.apk" | head -n 1)
-          fi
-          if [ -z "$APK_FILE" ]; then
-            echo "::error::No APK file found in mobile-app!"
-            find . -type f | grep -E "outputs|apk" || true
+          echo "=== Searching for APK in $(pwd) ==="
+          find . -name "*.apk"
+          APK_PATH=$(find . -name "*.apk" -type f | head -n 1)
+          if [ -z "$APK_PATH" ]; then
+            echo "::error::No APK file generated!"
+            echo "Listing all files in app/build:"
+            find app/build -type f || true
             exit 1
           fi
-          echo "Found real compiled APK at: $APK_FILE"
-          ls -lh "$APK_FILE"
-          cp "$APK_FILE" dist-apk/VaraKoto.apk
-          mkdir -p src/frontend/varakoto-web/dist/varakoto-web/browser/downloads
-          cp dist-apk/VaraKoto.apk src/frontend/varakoto-web/dist/varakoto-web/browser/downloads/varakoto.apk
-          cp dist-apk/VaraKoto.apk src/frontend/varakoto-web/dist/varakoto-web/browser/downloads/VaraKoto.apk
+          echo "Found compiled APK at: $APK_PATH"
+          mkdir -p ../../dist-apk
+          cp "$APK_PATH" ../../dist-apk/VaraKoto.apk
+          mkdir -p ../../src/frontend/varakoto-web/dist/varakoto-web/browser/downloads
+          cp "$APK_PATH" ../../src/frontend/varakoto-web/dist/varakoto-web/browser/downloads/varakoto.apk
+          cp "$APK_PATH" ../../src/frontend/varakoto-web/dist/varakoto-web/browser/downloads/VaraKoto.apk
           echo "## ✅ Real Android APK Compiled Successfully" >> $GITHUB_STEP_SUMMARY
-          echo "- **Location**: $APK_FILE" >> $GITHUB_STEP_SUMMARY
-          echo "- **Size**: $(du -h dist-apk/VaraKoto.apk | cut -f1)" >> $GITHUB_STEP_SUMMARY
+          echo "- **File**: VaraKoto.apk" >> $GITHUB_STEP_SUMMARY
+          echo "- **Original Path**: $APK_PATH" >> $GITHUB_STEP_SUMMARY
+          echo "- **Size**: $(du -h ../../dist-apk/VaraKoto.apk | cut -f1)" >> $GITHUB_STEP_SUMMARY
 
       - name: Upload Debug APK Artifact
         uses: actions/upload-artifact@v4
