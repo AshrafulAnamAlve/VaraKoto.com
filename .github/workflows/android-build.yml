@@ -64,32 +64,38 @@ jobs:
         env:
           ANDROID_HOME: /usr/local/lib/android/sdk
         run: |
-          ./gradlew :app:assembleDebug --stacktrace 2>&1 | tee gradle-build.log || {
-            echo "## ❌ Gradle Build Error Log" >> $GITHUB_STEP_SUMMARY
-            echo '```' >> $GITHUB_STEP_SUMMARY
-            tail -n 120 gradle-build.log >> $GITHUB_STEP_SUMMARY
-            echo '```' >> $GITHUB_STEP_SUMMARY
-            exit 1
-          }
-          echo "=== Searching for APK in $(pwd) ==="
-          find . -name "*.apk"
-          APK_PATH=$(find . -name "*.apk" -type f | head -n 1)
+          ./gradlew assembleDebug --no-build-cache --rerun-tasks --stacktrace 2>&1 | tee gradle.log
+          echo "### Gradle Tasks Executed:" >> $GITHUB_STEP_SUMMARY
+          grep -E "> Task :" gradle.log | tail -n 30 >> $GITHUB_STEP_SUMMARY || true
+          echo "### All files in app/build/outputs:" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          find app/build/outputs -type f >> $GITHUB_STEP_SUMMARY 2>&1 || true
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          
+          APK_PATH=$(find . -path "*/build/*" -name "*.apk" | head -n 1)
           if [ -z "$APK_PATH" ]; then
-            echo "::error::No APK file generated!"
-            echo "Listing all files in app/build:"
-            find app/build -type f || true
+            echo "Searching whole directory for any apk..."
+            APK_PATH=$(find . -name "*.apk" | head -n 1)
+          fi
+          
+          echo "Selected APK: $APK_PATH"
+          if [ -n "$APK_PATH" ]; then
+            mkdir -p ../../dist-apk
+            cp "$APK_PATH" ../../dist-apk/VaraKoto.apk
+            mkdir -p ../../src/frontend/varakoto-web/dist/varakoto-web/browser/downloads
+            cp "$APK_PATH" ../../src/frontend/varakoto-web/dist/varakoto-web/browser/downloads/varakoto.apk
+            cp "$APK_PATH" ../../src/frontend/varakoto-web/dist/varakoto-web/browser/downloads/VaraKoto.apk
+            echo "## ✅ Real Android APK Compiled Successfully" >> $GITHUB_STEP_SUMMARY
+            echo "- **File**: VaraKoto.apk" >> $GITHUB_STEP_SUMMARY
+            echo "- **Original Path**: $APK_PATH" >> $GITHUB_STEP_SUMMARY
+            echo "- **Size**: $(du -h ../../dist-apk/VaraKoto.apk | cut -f1)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## ❌ No APK Found. All files in app/build:" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            find app/build -type f | head -n 50 >> $GITHUB_STEP_SUMMARY || true
+            echo '```' >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
-          echo "Found compiled APK at: $APK_PATH"
-          mkdir -p ../../dist-apk
-          cp "$APK_PATH" ../../dist-apk/VaraKoto.apk
-          mkdir -p ../../src/frontend/varakoto-web/dist/varakoto-web/browser/downloads
-          cp "$APK_PATH" ../../src/frontend/varakoto-web/dist/varakoto-web/browser/downloads/varakoto.apk
-          cp "$APK_PATH" ../../src/frontend/varakoto-web/dist/varakoto-web/browser/downloads/VaraKoto.apk
-          echo "## ✅ Real Android APK Compiled Successfully" >> $GITHUB_STEP_SUMMARY
-          echo "- **File**: VaraKoto.apk" >> $GITHUB_STEP_SUMMARY
-          echo "- **Original Path**: $APK_PATH" >> $GITHUB_STEP_SUMMARY
-          echo "- **Size**: $(du -h ../../dist-apk/VaraKoto.apk | cut -f1)" >> $GITHUB_STEP_SUMMARY
 
       - name: Upload Debug APK Artifact
         uses: actions/upload-artifact@v4
