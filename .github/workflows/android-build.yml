@@ -36,7 +36,7 @@ jobs:
       - name: Build Web Application
         working-directory: src/frontend/varakoto-web
         run: |
-          npx ng build --configuration production --base-href /VaraKoto.com/
+          npx ng build --configuration production --base-href ./
           cp dist/varakoto-web/browser/index.html dist/varakoto-web/browser/404.html
           touch dist/varakoto-web/browser/.nojekyll
 

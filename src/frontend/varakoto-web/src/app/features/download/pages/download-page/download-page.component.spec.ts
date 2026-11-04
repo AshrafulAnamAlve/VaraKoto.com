@@ -37,7 +37,7 @@ describe('DownloadPageComponent', () => {
     expect(compiled.querySelector('.app-title')?.textContent).toContain('ভাড়া কত?');
     expect(compiled.querySelector('.app-tagline')?.textContent).toContain('অ্যান্ড্রয়েড মোবাইল অ্যাপ্লিকেশন');
     expect(compiled.textContent).toContain('v1.0.0');
-    expect(compiled.textContent).toContain('~5.1 MB');
+    expect(compiled.textContent).toContain('~9.7 MB');
   });
 
   it('should have direct download and mirror links configured', () => {
