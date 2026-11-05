@@ -12,11 +12,11 @@
       </div>
 
       <div class="header-right">
-        <!-- Desktop App Download Header Button (Hidden on native app and on mobile viewport) -->
+        <!-- App Download Header Button (Always visible on Web across desktop, tablet, and mobile; hidden only in installed native app) -->
         @if (!nativeMobile.isNative) {
           <a
             routerLink="/download"
-            class="download-header-btn desktop-only"
+            class="download-header-btn"
             title="VaraKoto অ্যান্ড্রয়েড অ্যাপ ডাউনলোড করুন"
           >
             <span class="btn-icon">📲</span>
@@ -87,6 +87,27 @@
   <!-- Main Fare Content Area (Untouched core section) -->
   <main class="app-main">
     <div class="main-container" [class.has-result]="fareService.latestResult() !== null">
+      <!-- Prominent Web App Download Banner (Visible on Web only, hidden in native app) -->
+      @if (!nativeMobile.isNative) {
+        <div class="web-download-banner">
+          <div class="banner-inner">
+            <div class="banner-left">
+              <span class="banner-badge">নতুন</span>
+              <span class="banner-icon">📱</span>
+              <div class="banner-text">
+                <strong class="banner-title">VaraKoto অফিসিয়াল অ্যান্ড্রয়েড অ্যাপ এখন লাইভ!</strong>
+                <span class="banner-desc">মোবাইলে আরও দ্রুত ও সহজে নির্ভরযোগ্য ভাড়া জানতে অ্যাপটি ইনস্টল করুন</span>
+              </div>
+            </div>
+            <a routerLink="/download" class="banner-cta-btn" title="VaraKoto APK ডাউনলোড">
+              <span class="btn-icon">📲</span>
+              <span>অ্যাপ ডাউনলোড (APK)</span>
+              <span class="btn-arrow">➔</span>
+            </a>
+          </div>
+        </div>
+      }
+
       <div class="main-layout-grid">
         <!-- Animated Route Map Panel (LEFT) -->
         <div class="map-column">
@@ -175,14 +196,35 @@
             </section>
           }
 
-          <!-- Mobile Native App Info Card / Credit (Visible on mobile instead of website footer) -->
-          <div class="mobile-app-credit mobile-only">
-            <div class="credit-badge">
-              <span class="pulse-dot"></span>
-              <span>VaraKoto v1.0.0</span>
+          <!-- Mobile Web App Download Card (Prominently visible when viewing website in a mobile browser) -->
+          @if (!nativeMobile.isNative) {
+            <div class="mobile-web-download-card mobile-only">
+              <div class="card-inner">
+                <div class="card-top">
+                  <div class="card-app-icon">📲</div>
+                  <div class="card-info">
+                    <strong class="card-title">VaraKoto মোবাইল অ্যাপ ডাউনলোড করুন</strong>
+                    <span class="card-desc">সরাসরি ফোন থেকে এক ক্লিকে বাস, সিএনজি, রিকশা ও বাইক ভাড়া চেক করুন</span>
+                  </div>
+                </div>
+                <a routerLink="/download" class="card-download-btn">
+                  <span class="btn-icon">📥</span>
+                  <span>ডাউনলোড করুন (APK ইনস্টল) ➔</span>
+                </a>
+              </div>
             </div>
-            <p class="credit-desc">বাস, রিকশা, সিএনজি ও বাইক ভাড়ার ওপেন প্ল্যাটফর্ম</p>
-          </div>
+          }
+
+          <!-- Mobile Native App Info Card / Credit (Visible only in installed native app) -->
+          @if (nativeMobile.isNative) {
+            <div class="mobile-app-credit mobile-only">
+              <div class="credit-badge">
+                <span class="pulse-dot"></span>
+                <span>VaraKoto v1.0.0</span>
+              </div>
+              <p class="credit-desc">বাস, রিকশা, সিএনজি ও বাইক ভাড়ার ওপেন প্ল্যাটফর্ম</p>
+            </div>
+          }
         </div>
       </div>
     </div>
@@ -191,6 +233,13 @@
   <!-- Clean Minimalist Footer (Desktop Web only; hidden on mobile) -->
   <footer class="app-footer desktop-only">
     <div class="footer-inner">
+      <div class="footer-download-row">
+        <a routerLink="/download" class="footer-download-btn" title="VaraKoto মোবাইল অ্যাপ ডাউনলোড">
+          <span class="btn-icon">📲</span>
+          <span>VaraKoto অফিসিয়াল অ্যান্ড্রয়েড অ্যাপ ডাউনলোড করুন</span>
+          <span class="footer-apk-badge">APK v1.0.0</span>
+        </a>
+      </div>
       <p class="footer-text">
         <strong>VaraKoto.com (গাড়ি ভাড়া কত?)</strong> — সহজ ও স্বচ্ছ পরিবহন ভাড়া অনুসন্ধান
       </p>
