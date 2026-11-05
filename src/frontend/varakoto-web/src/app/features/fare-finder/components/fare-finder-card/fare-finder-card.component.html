@@ -9,7 +9,7 @@
     <!-- Locations Input Cluster -->
     <div class="locations-cluster">
       <!-- 1. Origin Input Field -->
-      <div class="input-group origin-group">
+      <div class="input-group origin-group" [class.has-dropdown-open]="showFromDropdown()">
         <label for="origin-input" class="field-label">
           <span class="label-dot origin-dot"></span>
           <span>কোথা থেকে (From)</span>
@@ -27,11 +27,11 @@
             id="origin-input"
             type="text"
             class="location-input"
-            placeholder="যেমন: মিরপুর ১০, উত্তরা..."
+            placeholder="যেমন: মিরপুর ১০, ফার্মগেট, উত্তরা..."
             autocomplete="off"
             [ngModel]="fromQuery()"
             (ngModelChange)="onFromInput($event)"
-            (focus)="showFromDropdown.set(true)"
+            (focus)="onFromFocus()"
             (blur)="closeDropdowns()"
             name="fromLocation"
           />
@@ -74,18 +74,29 @@
           }
         </div>
 
-        <!-- Origin Autocomplete Dropdown -->
+        <!-- Origin Autocomplete & Recommended Dropdown -->
         @if (showFromDropdown()) {
           <ul class="suggestions-list" role="listbox">
+            @if (!fromQuery() || fromQuery().trim().length < 2) {
+              <li class="recommendation-header">
+                <span class="rec-icon">⭐</span>
+                <span class="rec-title">জনপ্রিয় বাস স্ট্যান্ড ও স্থান (Recommended)</span>
+              </li>
+            }
+
             @for (loc of fromSuggestions(); track loc.id || loc.displayName) {
-              <li class="suggestion-item" (mousedown)="selectFrom(loc)">
-                <span class="suggest-icon">📍</span>
+              <li
+                class="suggestion-item"
+                (pointerdown)="onSelectFromPointerDown($event, loc)"
+                (click)="selectFrom(loc)"
+              >
+                <span class="suggest-icon">{{ loc.isHub ? '🚏' : '📍' }}</span>
                 <div class="suggest-details">
                   <span class="suggest-name">{{ loc.nameBn || loc.displayName }}</span>
                   <span class="suggest-meta">{{ loc.nameEn }} {{ loc.district ? '• ' + loc.district : '' }}</span>
                 </div>
                 @if (loc.isHub) {
-                  <span class="hub-pill">বাস স্ট্যান্ড / হাব</span>
+                  <span class="hub-pill">বাস হাব</span>
                 }
               </li>
             }
@@ -94,10 +105,10 @@
               <li class="empty-suggestion-box">
                 <div class="empty-header">🔍 ম্যাপে সরাসরি এই নামটি পাওয়া যায়নি</div>
                 <div class="empty-action-row">
-                  <button type="button" class="empty-action-pill" (mousedown)="openMapPicker('from')">
+                  <button type="button" class="empty-action-pill" (pointerdown)="openMapPicker('from')" (click)="openMapPicker('from')">
                     📍 ম্যাপে পিন করুন
                   </button>
-                  <button type="button" class="empty-action-pill" (mousedown)="enableManualDistance()">
+                  <button type="button" class="empty-action-pill" (pointerdown)="enableManualDistance()" (click)="enableManualDistance()">
                     📏 দূরত্ব লিখে হিসাব
                   </button>
                 </div>
@@ -125,7 +136,7 @@
       </div>
 
       <!-- 2. Destination Input Field -->
-      <div class="input-group destination-group">
+      <div class="input-group destination-group" [class.has-dropdown-open]="showToDropdown()">
         <label for="destination-input" class="field-label">
           <span class="label-dot dest-dot"></span>
           <span>কোথায় যাবেন (To)</span>
@@ -147,7 +158,7 @@
             autocomplete="off"
             [ngModel]="toQuery()"
             (ngModelChange)="onToInput($event)"
-            (focus)="showToDropdown.set(true)"
+            (focus)="onToFocus()"
             (blur)="closeDropdowns()"
             name="toLocation"
           />
@@ -168,18 +179,29 @@
           }
         </div>
 
-        <!-- Destination Autocomplete Dropdown -->
+        <!-- Destination Autocomplete & Recommended Dropdown -->
         @if (showToDropdown()) {
           <ul class="suggestions-list" role="listbox">
+            @if (!toQuery() || toQuery().trim().length < 2) {
+              <li class="recommendation-header">
+                <span class="rec-icon">⭐</span>
+                <span class="rec-title">জনপ্রিয় বাস স্ট্যান্ড ও স্থান (Recommended)</span>
+              </li>
+            }
+
             @for (loc of toSuggestions(); track loc.id || loc.displayName) {
-              <li class="suggestion-item" (mousedown)="selectTo(loc)">
-                <span class="suggest-icon">🏁</span>
+              <li
+                class="suggestion-item"
+                (pointerdown)="onSelectToPointerDown($event, loc)"
+                (click)="selectTo(loc)"
+              >
+                <span class="suggest-icon">{{ loc.isHub ? '🚏' : '🏁' }}</span>
                 <div class="suggest-details">
                   <span class="suggest-name">{{ loc.nameBn || loc.displayName }}</span>
                   <span class="suggest-meta">{{ loc.nameEn }} {{ loc.district ? '• ' + loc.district : '' }}</span>
                 </div>
                 @if (loc.isHub) {
-                  <span class="hub-pill">বাস স্ট্যান্ড / হাব</span>
+                  <span class="hub-pill">বাস হাব</span>
                 }
               </li>
             }
@@ -188,10 +210,10 @@
               <li class="empty-suggestion-box">
                 <div class="empty-header">🔍 ম্যাপে সরাসরি এই নামটি পাওয়া যায়নি</div>
                 <div class="empty-action-row">
-                  <button type="button" class="empty-action-pill" (mousedown)="openMapPicker('to')">
+                  <button type="button" class="empty-action-pill" (pointerdown)="openMapPicker('to')" (click)="openMapPicker('to')">
                     📍 ম্যাপে পিন করুন
                   </button>
-                  <button type="button" class="empty-action-pill" (mousedown)="enableManualDistance()">
+                  <button type="button" class="empty-action-pill" (pointerdown)="enableManualDistance()" (click)="enableManualDistance()">
                     📏 দূরত্ব লিখে হিসাব
                   </button>
                 </div>
@@ -237,15 +259,20 @@
       }
     </div>
 
-    <!-- GPS Error Message -->
+    <!-- GPS Error Message with direct Map Picker button -->
     @if (gpsError()) {
       <div class="alert-notice gps-alert">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10"></circle>
-          <line x1="12" y1="8" x2="12" y2="12"></line>
-          <line x1="12" y1="16" x2="12.01" y2="16"></line>
-        </svg>
-        <span>{{ gpsError() }}</span>
+        <div class="alert-content">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <span class="alert-text">{{ gpsError() }}</span>
+        </div>
+        <button type="button" class="alert-map-action-btn" (click)="openMapPicker('from')">
+          📍 ম্যাপে স্থান পিন করুন
+        </button>
       </div>
     }
 

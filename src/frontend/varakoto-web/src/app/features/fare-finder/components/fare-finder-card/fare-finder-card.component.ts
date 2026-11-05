@@ -65,42 +65,88 @@ export class FareFinderCardComponent implements OnInit {
     { code: 'bike', nameEn: 'Bike', nameBn: 'বাইক' }
   ];
 
+  // Popular Recommended Transit Hubs in Bangladesh (Instant one-tap selection)
+  readonly popularHubs: LocationDto[] = [
+    { id: 1, nameEn: 'Mirpur 10', nameBn: 'মিরপুর ১০', displayName: 'মিরপুর ১০, ঢাকা', latitude: 23.8069, longitude: 90.3687, district: 'Dhaka', thana: 'Mirpur', isHub: true, source: 'Hub' },
+    { id: 2, nameEn: 'Farmgate', nameBn: 'ফার্মগেট', displayName: 'ফার্মগেট, ঢাকা', latitude: 23.7561, longitude: 90.3872, district: 'Dhaka', thana: 'Tejgaon', isHub: true, source: 'Hub' },
+    { id: 3, nameEn: 'Uttara House Building', nameBn: 'উত্তরা হাউস বিল্ডিং', displayName: 'উত্তরা, ঢাকা', latitude: 23.8759, longitude: 90.3984, district: 'Dhaka', thana: 'Uttara', isHub: true, source: 'Hub' },
+    { id: 4, nameEn: 'Motijheel', nameBn: 'মতিঝিল', displayName: 'মতিঝিল, ঢাকা', latitude: 23.7330, longitude: 90.4172, district: 'Dhaka', thana: 'Motijheel', isHub: true, source: 'Hub' },
+    { id: 5, nameEn: 'Mohakhali', nameBn: 'মহাখালী', displayName: 'মহাখালী, ঢাকা', latitude: 23.7776, longitude: 90.4054, district: 'Dhaka', thana: 'Mohakhali', isHub: true, source: 'Hub' },
+    { id: 6, nameEn: 'Shahbagh', nameBn: 'শাহবাগ', displayName: 'শাহবাগ, ঢাকা', latitude: 23.7388, longitude: 90.3955, district: 'Dhaka', thana: 'Shahbagh', isHub: true, source: 'Hub' },
+    { id: 7, nameEn: 'Dhanmondi 27', nameBn: 'ধানমন্ডি ২৭', displayName: 'ধানমন্ডি, ঢাকা', latitude: 23.7542, longitude: 90.3768, district: 'Dhaka', thana: 'Dhanmondi', isHub: true, source: 'Hub' },
+    { id: 8, nameEn: 'Gulshan 2', nameBn: 'গুলশান ২', displayName: 'গুলশান, ঢাকা', latitude: 23.7949, longitude: 90.4143, district: 'Dhaka', thana: 'Gulshan', isHub: true, source: 'Hub' },
+    { id: 12, nameEn: 'Gabtoli', nameBn: 'গাবতলী বাস টার্মিনাল', displayName: 'গাবতলী, ঢাকা', latitude: 23.7820, longitude: 90.3475, district: 'Dhaka', thana: 'Mirpur', isHub: true, source: 'Hub' },
+    { id: 13, nameEn: 'Sayedabad', nameBn: 'সায়েদাবাদ বাস টার্মিনাল', displayName: 'সায়েদাবাদ, ঢাকা', latitude: 23.7153, longitude: 90.4284, district: 'Dhaka', thana: 'Jatrabari', isHub: true, source: 'Hub' }
+  ];
+
   ngOnInit(): void {
     // Setup debounced location search for Origin
     this.fromSearchSubject.pipe(
-      debounceTime(250),
+      debounceTime(200),
       distinctUntilChanged(),
       switchMap((term) => {
-        if (!term || term.trim().length < 2) {
+        const query = term ? term.trim() : '';
+        if (query.length === 0) {
           this.isSearchingFrom.set(false);
+          this.fromSuggestions.set(this.popularHubs);
           return [];
         }
         this.isSearchingFrom.set(true);
-        return this.locationService.search(term, 6);
+        return this.locationService.search(query, 8);
       })
     ).subscribe((results) => {
-      this.fromSuggestions.set(results);
+      if (results && results.length > 0) {
+        this.fromSuggestions.set(results);
+      } else if (this.fromQuery().trim().length === 0) {
+        this.fromSuggestions.set(this.popularHubs);
+      } else {
+        this.fromSuggestions.set([]);
+      }
       this.isSearchingFrom.set(false);
       this.showFromDropdown.set(true);
     });
 
     // Setup debounced location search for Destination
     this.toSearchSubject.pipe(
-      debounceTime(250),
+      debounceTime(200),
       distinctUntilChanged(),
       switchMap((term) => {
-        if (!term || term.trim().length < 2) {
+        const query = term ? term.trim() : '';
+        if (query.length === 0) {
           this.isSearchingTo.set(false);
+          this.toSuggestions.set(this.popularHubs);
           return [];
         }
         this.isSearchingTo.set(true);
-        return this.locationService.search(term, 6);
+        return this.locationService.search(query, 8);
       })
     ).subscribe((results) => {
-      this.toSuggestions.set(results);
+      if (results && results.length > 0) {
+        this.toSuggestions.set(results);
+      } else if (this.toQuery().trim().length === 0) {
+        this.toSuggestions.set(this.popularHubs);
+      } else {
+        this.toSuggestions.set([]);
+      }
       this.isSearchingTo.set(false);
       this.showToDropdown.set(true);
     });
+  }
+
+  onFromFocus(): void {
+    this.showFromDropdown.set(true);
+    this.showToDropdown.set(false);
+    if (!this.fromQuery() || this.fromQuery().trim().length < 2) {
+      this.fromSuggestions.set(this.popularHubs);
+    }
+  }
+
+  onToFocus(): void {
+    this.showToDropdown.set(true);
+    this.showFromDropdown.set(false);
+    if (!this.toQuery() || this.toQuery().trim().length < 2) {
+      this.toSuggestions.set(this.popularHubs);
+    }
   }
 
   onFromInput(value: string): void {
@@ -108,6 +154,9 @@ export class FareFinderCardComponent implements OnInit {
     this.validationMessage.set(null);
     if (this.selectedFrom() && this.selectedFrom()?.displayName !== value) {
       this.selectedFrom.set(null);
+    }
+    if (!value || value.trim().length === 0) {
+      this.fromSuggestions.set(this.popularHubs);
     }
     this.fromSearchSubject.next(value);
   }
@@ -118,7 +167,20 @@ export class FareFinderCardComponent implements OnInit {
     if (this.selectedTo() && this.selectedTo()?.displayName !== value) {
       this.selectedTo.set(null);
     }
+    if (!value || value.trim().length === 0) {
+      this.toSuggestions.set(this.popularHubs);
+    }
     this.toSearchSubject.next(value);
+  }
+
+  onSelectFromPointerDown(event: Event, loc: LocationDto): void {
+    event.preventDefault();
+    this.selectFrom(loc);
+  }
+
+  onSelectToPointerDown(event: Event, loc: LocationDto): void {
+    event.preventDefault();
+    this.selectTo(loc);
   }
 
   selectFrom(loc: LocationDto): void {
@@ -238,9 +300,10 @@ export class FareFinderCardComponent implements OnInit {
           this.nativeMobile.hapticSuccess();
         }
       },
-      error: () => {
+      error: (err: any) => {
         this.isDetectingGps.set(false);
-        this.gpsError.set('লোকেশন পারমিশন দেওয়া হয়নি। ম্যানুয়ালি নাম লিখুন বা ম্যাপে পিন করুন।');
+        const errMsg = err?.message || 'জিপিএস সংযোগ পাওয়া যায়নি। ফোনের লোকেশন অন করুন অথবা নিচে ম্যাপে স্থান পিন করুন।';
+        this.gpsError.set(errMsg);
       }
     });
   }
@@ -327,10 +390,10 @@ export class FareFinderCardComponent implements OnInit {
   }
 
   closeDropdowns(): void {
-    // Delay hiding dropdown slightly so click events on suggestion items register
+    // Generous delay for mobile touch taps to complete before hiding
     setTimeout(() => {
       this.showFromDropdown.set(false);
       this.showToDropdown.set(false);
-    }, 250);
+    }, 350);
   }
 }

@@ -98,28 +98,34 @@ export class NativeMobileService {
         if (!isGranted(perm)) {
           const req = await Geolocation.requestPermissions();
           if (!isGranted(req)) {
-            throw new Error('লোকেশন ব্যবহারের অনুমতি দেওয়া হয়নি (Location permission denied)');
+            throw new Error('ফোনের সেটিংসে গিয়ে VaraKoto অ্যাপের লোকেশন পারমিশন অন করুন');
           }
         }
 
-        // First attempt high accuracy (GPS satellites)
+        // 1. Try high accuracy with cached position support
         try {
           const pos: Position = await Geolocation.getCurrentPosition({
             enableHighAccuracy: true,
-            timeout: 7000,
-            maximumAge: 10000
+            timeout: 10000,
+            maximumAge: 300000 // Accept positions up to 5 min old for instant return
           });
 
           return {
             latitude: pos.coords.latitude,
             longitude: pos.coords.longitude
           };
-        } catch (highAccErr) {
-          // Graceful fallback to low accuracy (WiFi / cell tower triangulation)
+        } catch (highAccErr: any) {
+          // If location is disabled on the phone, throw immediately with helpful advice
+          const msg = (highAccErr?.message || '').toLowerCase();
+          if (msg.includes('disabled') || msg.includes('not enabled')) {
+            throw new Error('ফোনের জিপিএস / লোকেশন সার্ভিসটি অন করুন');
+          }
+
+          // 2. Fallback to network/cell tower triangulation (works indoors)
           const fallbackPos: Position = await Geolocation.getCurrentPosition({
             enableHighAccuracy: false,
-            timeout: 8000,
-            maximumAge: 60000
+            timeout: 10000,
+            maximumAge: 600000 // 10 minutes
           });
 
           return {
@@ -128,11 +134,18 @@ export class NativeMobileService {
           };
         }
       } catch (err: any) {
-        // Fallback to browser Geolocation API inside WebView if native plugin encounters unexpected issue
+        // Fallback to browser Geolocation API inside WebView if native plugin encountered issues
         try {
           return await this.getBrowserPosition();
         } catch {
-          throw new Error(err?.message || 'জিপিএস অবস্থান নির্ধারণ করা সম্ভব হয়নি');
+          const msg = (err?.message || '').toLowerCase();
+          if (msg.includes('disabled') || msg.includes('not enabled')) {
+            throw new Error('ফোনের জিপিএস / লোকেশন সার্ভিসটি অন করুন');
+          }
+          if (msg.includes('denied') || msg.includes('permission')) {
+            throw new Error('লোকেশন পারমিশন দেওয়া হয়নি। ফোনের সেটিংসে গিয়ে পারমিশন অন করুন অথবা ম্যাপে পিন করুন।');
+          }
+          throw new Error(err?.message || 'জিপিএস অবস্থান পাওয়া যায়নি। অনুগ্রহ করে ম্যাপ থেকে পিন করুন।');
         }
       }
     }
@@ -165,12 +178,18 @@ export class NativeMobileService {
               });
             },
             () => {
-              reject(new Error(err?.message || 'লোকেশন অ্যাক্সেস করা যায়নি'));
+              if (err.code === 1) {
+                reject(new Error('ব্রাউজার বা ডিভাইসে লোকেশন পারমিশন দেওয়া হয়নি'));
+              } else if (err.code === 2) {
+                reject(new Error('ফোনের জিপিএস / লোকেশন সার্ভিসটি অন করুন'));
+              } else {
+                reject(new Error('লোকেশন অবস্থান পেতে সময় বেশি লাগছে। ম্যাপ থেকে পিন করুন।'));
+              }
             },
-            { enableHighAccuracy: false, timeout: 8000, maximumAge: 60000 }
+            { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
           );
         },
-        { enableHighAccuracy: true, timeout: 7000, maximumAge: 10000 }
+        { enableHighAccuracy: true, timeout: 9000, maximumAge: 180000 }
       );
     });
   }

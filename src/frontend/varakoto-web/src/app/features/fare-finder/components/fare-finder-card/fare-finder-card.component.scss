@@ -75,6 +75,18 @@
   flex-direction: column;
   gap: 6px;
 
+  &.has-dropdown-open {
+    z-index: 55;
+  }
+
+  &.origin-group.has-dropdown-open {
+    z-index: 60;
+  }
+
+  &.destination-group.has-dropdown-open {
+    z-index: 55;
+  }
+
   .field-label {
     display: flex;
     align-items: center;
@@ -262,10 +274,41 @@
   border: 1.5px solid var(--border-color);
   border-radius: var(--radius-md);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  max-height: 240px;
+  max-height: 280px;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+
+  .recommendation-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--vk-green);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--border-subtle);
+    margin-bottom: 4px;
+    background-color: var(--bg-surface);
+    position: sticky;
+    top: 0;
+    z-index: 2;
+
+    .rec-icon {
+      font-size: 13px;
+    }
+
+    .rec-title {
+      font-weight: 700;
+    }
+  }
 
   .suggestion-item {
+    min-height: 48px;
+    touch-action: manipulation;
+    user-select: none;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -449,9 +492,57 @@
   font-weight: 600;
 
   &.gps-alert {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
     background-color: rgba(229, 87, 10, 0.12);
     color: var(--vk-orange);
     border: 1px solid rgba(229, 87, 10, 0.25);
+    padding: 12px 14px;
+
+    .alert-content {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      svg {
+        flex-shrink: 0;
+      }
+
+      .alert-text {
+        flex: 1;
+        font-size: 13.5px;
+        line-height: 1.4;
+      }
+    }
+
+    .alert-map-action-btn {
+      align-self: flex-start;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background-color: var(--vk-green);
+      color: #ffffff;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(11, 79, 68, 0.25);
+      transition: background-color var(--transition-fast), transform var(--transition-fast);
+
+      &:hover {
+        background-color: #083c34;
+        transform: translateY(-1px);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
   }
 
   &.validation-alert {
