@@ -21,8 +21,294 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <style>@font-face{font-family:'Baloo Da 2';font-style:normal;font-weight:500;font-display:swap;src:url(https://fonts.gstatic.com/s/balooda2/v26/2-ci9J9j0IaUMQZwAJyJQvvdoKFD.woff2) format('woff2');unicode-range:U+0951-0952, U+0964-0965, U+0980-09FE, U+1CD0, U+1CD2, U+1CD5-1CD6, U+1CD8, U+1CE1, U+1CEA, U+1CED, U+1CF2, U+1CF5-1CF7, U+200C-200D, U+20B9, U+25CC, U+A8F1, U+11DF0-11DF1;}@font-face{font-family:'Baloo Da 2';font-style:normal;font-weight:500;font-display:swap;src:url(https://fonts.gstatic.com/s/balooda2/v26/2-ci9J9j0IaUMQZwAJyJQubdoKFD.woff2) format('woff2');unicode-range:U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;}@font-face{font-family:'Baloo Da 2';font-style:normal;font-weight:500;font-display:swap;src:url(https://fonts.gstatic.com/s/balooda2/v26/2-ci9J9j0IaUMQZwAJyJQufdoKFD.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;}@font-face{font-family:'Baloo Da 2';font-style:normal;font-weight:500;font-display:swap;src:url(https://fonts.gstatic.com/s/balooda2/v26/2-ci9J9j0IaUMQZwAJyJQundoA.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;}@font-face{font-family:'Baloo Da 2';font-style:normal;font-weight:600;font-display:swap;src:url(https://fonts.gstatic.com/s/balooda2/v26/2-ci9J9j0IaUMQZwAJyJQvvdoKFD.woff2) format('woff2');unicode-range:U+0951-0952, U+0964-0965, U+0980-09FE, U+1CD0, U+1CD2, U+1CD5-1CD6, U+1CD8, U+1CE1, U+1CEA, U+1CED, U+1CF2, U+1CF5-1CF7, U+200C-200D, U+20B9, U+25CC, U+A8F1, U+11DF0-11DF1;}@font-face{font-family:'Baloo Da 2';font-style:normal;font-weight:600;font-display:swap;src:url(https://fonts.gstatic.com/s/balooda2/v26/2-ci9J9j0IaUMQZwAJyJQubdoKFD.woff2) format('woff2');unicode-range:U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;}@font-face{font-family:'Baloo Da 2';font-style:normal;font-weight:600;font-display:swap;src:url(https://fonts.gstatic.com/s/balooda2/v26/2-ci9J9j0IaUMQZwAJyJQufdoKFD.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;}@font-face{font-family:'Baloo Da 2';font-style:normal;font-weight:600;font-display:swap;src:url(https://fonts.gstatic.com/s/balooda2/v26/2-ci9J9j0IaUMQZwAJyJQundoA.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;}@font-face{font-family:'Baloo Da 2';font-style:normal;font-weight:700;font-display:swap;src:url(https://fonts.gstatic.com/s/balooda2/v26/2-ci9J9j0IaUMQZwAJyJQvvdoKFD.woff2) format('woff2');unicode-range:U+0951-0952, U+0964-0965, U+0980-09FE, U+1CD0, U+1CD2, U+1CD5-1CD6, U+1CD8, U+1CE1, U+1CEA, U+1CED, U+1CF2, U+1CF5-1CF7, U+200C-200D, U+20B9, U+25CC, U+A8F1, U+11DF0-11DF1;}@font-face{font-family:'Baloo Da 2';font-style:normal;font-weight:700;font-display:swap;src:url(https://fonts.gstatic.com/s/balooda2/v26/2-ci9J9j0IaUMQZwAJyJQubdoKFD.woff2) format('woff2');unicode-range:U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;}@font-face{font-family:'Baloo Da 2';font-style:normal;font-weight:700;font-display:swap;src:url(https://fonts.gstatic.com/s/balooda2/v26/2-ci9J9j0IaUMQZwAJyJQufdoKFD.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;}@font-face{font-family:'Baloo Da 2';font-style:normal;font-weight:700;font-display:swap;src:url(https://fonts.gstatic.com/s/balooda2/v26/2-ci9J9j0IaUMQZwAJyJQundoA.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;}@font-face{font-family:'Baloo Da 2';font-style:normal;font-weight:800;font-display:swap;src:url(https://fonts.gstatic.com/s/balooda2/v26/2-ci9J9j0IaUMQZwAJyJQvvdoKFD.woff2) format('woff2');unicode-range:U+0951-0952, U+0964-0965, U+0980-09FE, U+1CD0, U+1CD2, U+1CD5-1CD6, U+1CD8, U+1CE1, U+1CEA, U+1CED, U+1CF2, U+1CF5-1CF7, U+200C-200D, U+20B9, U+25CC, U+A8F1, U+11DF0-11DF1;}@font-face{font-family:'Baloo Da 2';font-style:normal;font-weight:800;font-display:swap;src:url(https://fonts.gstatic.com/s/balooda2/v26/2-ci9J9j0IaUMQZwAJyJQubdoKFD.woff2) format('woff2');unicode-range:U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;}@font-face{font-family:'Baloo Da 2';font-style:normal;font-weight:800;font-display:swap;src:url(https://fonts.gstatic.com/s/balooda2/v26/2-ci9J9j0IaUMQZwAJyJQufdoKFD.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;}@font-face{font-family:'Baloo Da 2';font-style:normal;font-weight:800;font-display:swap;src:url(https://fonts.gstatic.com/s/balooda2/v26/2-ci9J9j0IaUMQZwAJyJQundoA.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;}</style>
+
+  <style>
+    /* Native App Boot Splash Screen (Displays instantly while Angular initializes) */
+    #app-boot-splash {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background-color: #FFF6E5;
+      color: #17302B;
+      font-family: 'Baloo Da 2', system-ui, -apple-system, sans-serif;
+      z-index: 99999;
+      padding: max(16px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
+      overflow: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+      transition: opacity 0.3s ease-out;
+    }
+
+    .boot-skyline {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      height: 110px;
+      color: #0B4F44;
+      opacity: 0.10;
+      pointer-events: none;
+    }
+
+    .boot-character-stage {
+      position: relative;
+      width: min(250px, 72vw);
+      max-height: 200px;
+      height: auto;
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .boot-hb { animation: b-bob 1.8s ease-in-out infinite; transform-origin: 130px 318px; }
+    .boot-shadow { animation: b-shadow 1.8s ease-in-out infinite; transform-origin: 130px 322px; }
+    .boot-arm { animation: b-scratch 0.45s ease-in-out infinite alternate; transform-origin: 100px 192px; }
+    .boot-look { animation: b-look 3s ease-in-out infinite; }
+    .boot-drop { animation: b-drop 2.4s ease-in infinite; }
+    .boot-carb { animation: b-carb 0.7s ease-in-out infinite; }
+    .boot-tag { animation: b-swing 2.4s ease-in-out infinite; transform-origin: 320px 112px; }
+    .boot-bulb { opacity: 0; animation: b-bulb 5s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+    .boot-qm { opacity: 0; animation: b-qm 3s ease-in infinite; transform-box: fill-box; transform-origin: center; }
+    .boot-qm.qm2 { animation-delay: -1s; }
+    .boot-qm.qm3 { animation-delay: -2s; }
+
+    .boot-brand {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      z-index: 2;
+    }
+    .boot-logo-title {
+      margin: 0;
+      font-weight: 800;
+      font-size: clamp(34px, 8.5vw, 48px);
+      line-height: 1.05;
+      letter-spacing: -0.5px;
+    }
+    .boot-logo-title .v { color: #0B4F44; }
+    .boot-logo-title .k { color: #E5570A; }
+    .boot-logo-title .d { font-size: 0.38em; font-weight: 700; color: #17302B; }
+
+    .boot-logo-subline {
+      margin: 2px 0 0;
+      font-weight: 700;
+      font-size: 16px;
+      color: #0B4F44;
+    }
+
+    .boot-msg-container {
+      position: relative;
+      height: 26px;
+      margin-top: 8px;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .boot-msg {
+      font-weight: 700;
+      font-size: 16px;
+      color: #17302B;
+      animation: b-pulse 1.8s ease-in-out infinite;
+    }
+
+    .boot-road-container {
+      position: relative;
+      width: min(260px, 82vw);
+      height: 40px;
+      overflow: hidden;
+      margin-top: 6px;
+      z-index: 2;
+    }
+    .boot-road-track {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 14px;
+      border-radius: 7px;
+      background: #17302B;
+    }
+    .boot-dash {
+      position: absolute;
+      left: 8px;
+      right: 8px;
+      bottom: 5px;
+      height: 3px;
+      background-image: repeating-linear-gradient(90deg, #FFC93C 0, #FFC93C 14px, transparent 14px, transparent 28px);
+      animation: b-dash 0.5s linear infinite;
+    }
+    .boot-drive {
+      position: absolute;
+      bottom: 8px;
+      left: -14%;
+      width: 42px;
+      height: 26px;
+      animation: b-drive 3s linear infinite;
+    }
+    .boot-mini-car {
+      width: 42px;
+      height: 38px;
+      display: block;
+      margin-top: -11px;
+    }
+
+    /* Keyframes */
+    @keyframes b-bob { 0%, 100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-5px) rotate(1deg); } }
+    @keyframes b-shadow { 0%, 100% { transform: scaleX(1); opacity: 0.14; } 50% { transform: scaleX(0.88); opacity: 0.08; } }
+    @keyframes b-scratch { from { transform: rotate(-5deg); } to { transform: rotate(5deg); } }
+    @keyframes b-look { 0%, 100% { transform: translateX(-3px); } 50% { transform: translateX(4px); } }
+    @keyframes b-drop { 0% { opacity: 0; transform: translateY(0); } 20% { opacity: 1; } 100% { opacity: 0; transform: translateY(22px); } }
+    @keyframes b-carb { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-1.5px); } }
+    @keyframes b-qm { 0% { opacity: 0; transform: translateY(10px) scale(0.6) rotate(-10deg); } 20% { opacity: 1; } 70% { opacity: 1; transform: translateY(-14px) scale(1) rotate(8deg); } 100% { opacity: 0; transform: translateY(-26px) scale(1.05) rotate(12deg); } }
+    @keyframes b-swing { 0%, 100% { transform: rotate(-8deg); } 50% { transform: rotate(8deg); } }
+    @keyframes b-bulb { 0%, 70% { opacity: 0; transform: scale(0.2); } 80% { opacity: 1; transform: scale(1.2); } 88%, 94% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(0.2); } }
+    @keyframes b-dash { from { background-position: 0 0; } to { background-position: -28px 0; } }
+    @keyframes b-drive { from { left: -14%; } to { left: 105%; } }
+    @keyframes b-pulse { 0%, 100% { opacity: 0.85; transform: scale(0.98); } 50% { opacity: 1; transform: scale(1); } }
+
+    /* Dark Mode Auto-Detect */
+    @media (prefers-color-scheme: dark) {
+      #app-boot-splash {
+        background-color: #07221E;
+        color: #FFF6E5;
+      }
+      .boot-logo-title .v { color: #34D399; }
+      .boot-logo-title .k { color: #FF671F; }
+      .boot-logo-title .d { color: #FFF6E5; }
+      .boot-logo-subline { color: #FFC93C; }
+      .boot-msg { color: #FFF6E5; }
+      .boot-road-track { background: #0B2420; border: 1px solid rgba(255, 246, 229, 0.15); }
+    }
+  </style>
 <style>:root{--vk-green:#0B4F44;--vk-orange:#E5570A;--vk-yellow:#FFC93C;--vk-cream:#FFF6E5;--vk-slate:#17302B;--vk-white:#FFFFFF;--vk-skyline:rgba(11, 79, 68, .1);--vk-font:"Baloo Da 2", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;--radius-sm:8px;--radius-md:16px;--radius-lg:24px;--radius-xl:28px;--radius-full:9999px;--transition-fast:.15s cubic-bezier(.4, 0, .2, 1);--transition-normal:.25s cubic-bezier(.4, 0, .2, 1)}:root{--bg-primary:#FFF6E5;--bg-surface:#FFFFFF;--bg-surface-elevated:#FFFDF8;--bg-subtle:#FFE0A8;--text-primary:#17302B;--text-heading:#0B4F44;--text-muted:#4B635E;--border-color:#17302B;--border-subtle:rgba(23, 48, 43, .15);--accent-cta:#E5570A;--accent-cta-hover:#C94605;--accent-badge:#FFC93C;--card-shadow:0 4px 20px rgba(23, 48, 43, .08)}*,*:before,*:after{box-sizing:border-box}html,body{margin:0;padding:0;width:100%;max-width:100%;overflow-x:hidden;touch-action:pan-y;overscroll-behavior-x:none;-webkit-overflow-scrolling:touch;min-height:100vh;font-family:var(--vk-font);background-color:var(--bg-primary);color:var(--text-primary);line-height:1.5;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;transition:background-color var(--transition-normal),color var(--transition-normal)}@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}</style><link rel="stylesheet" href="styles-GDD5NJAD.css" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="styles-GDD5NJAD.css"></noscript></head>
 <body>
-  <app-root></app-root>
-<link rel="modulepreload" href="chunk-4W7UQTUR.js"><link rel="modulepreload" href="chunk-UIGZEDL5.js"><link rel="modulepreload" href="chunk-HJNXITGE.js"><link rel="modulepreload" href="chunk-TODDF7EH.js"><link rel="modulepreload" href="chunk-ABFOCPDC.js"><link rel="modulepreload" href="chunk-TQPZRHFO.js"><script src="main-BKQCCALX.js" type="module"></script></body>
+  <app-root>
+    <!-- Instant Native Splash Screen (Disappears automatically when Angular finishes loading) -->
+    <div id="app-boot-splash">
+      <svg class="boot-skyline" viewBox="0 0 1280 220" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+        <g fill="currentColor">
+          <rect x="20" y="110" width="80" height="110" rx="6"/>
+          <rect x="120" y="150" width="70" height="70" rx="6"/>
+          <rect x="210" y="80" width="90" height="140" rx="6"/>
+          <rect x="320" y="130" width="70" height="90" rx="6"/>
+          <rect x="410" y="100" width="100" height="120" rx="6"/>
+          <rect x="530" y="150" width="70" height="70" rx="6"/>
+          <rect x="620" y="70" width="90" height="150" rx="6"/>
+          <rect x="730" y="125" width="80" height="95" rx="6"/>
+          <rect x="830" y="95" width="100" height="125" rx="6"/>
+          <rect x="950" y="150" width="70" height="70" rx="6"/>
+          <rect x="1040" y="105" width="90" height="115" rx="6"/>
+        </g>
+      </svg>
+
+      <!-- Main Character Stage -->
+      <svg class="boot-character-stage" viewBox="0 -10 420 350" aria-hidden="true">
+        <ellipse class="boot-shadow" cx="130" cy="322" rx="62" ry="9" fill="#0B4F44" opacity="0.14"/>
+        <ellipse cx="312" cy="322" rx="92" ry="9" fill="#0B4F44" opacity="0.14"/>
+        <text class="boot-qm qm1" x="36" y="120" font-family="'Baloo Da 2',sans-serif" font-weight="800" font-size="58" fill="#E5570A" stroke="#17302B" stroke-width="3" paint-order="stroke">?</text>
+        <text class="boot-qm qm2" x="190" y="96" font-family="'Baloo Da 2',sans-serif" font-weight="800" font-size="44" fill="#FFC93C" stroke="#17302B" stroke-width="3" paint-order="stroke">?</text>
+        <text class="boot-qm qm3" x="62" y="52" font-family="'Baloo Da 2',sans-serif" font-weight="800" font-size="38" fill="#0B4F44" stroke="#17302B" stroke-width="3" paint-order="stroke">?</text>
+        <g class="boot-bulb">
+          <circle cx="130" cy="40" r="34" fill="#FFC93C" opacity="0.35"/>
+          <path d="M130 18 C115 18 107 30 111 42 C113 48 119 52 119 58 L141 58 C141 52 147 48 149 42 C153 30 145 18 130 18 Z" fill="#FFE27A" stroke="#17302B" stroke-width="3.5" stroke-linejoin="round"/>
+          <rect x="120" y="58" width="20" height="9" rx="3" fill="#17302B"/>
+          <path d="M130 -4 V4 M95 12 L101 18 M165 12 L159 18 M87 40 H95 M165 40 H173" stroke="#17302B" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+        </g>
+        <g class="boot-carb">
+          <path d="M320 118 V190" stroke="#17302B" stroke-width="4" stroke-linecap="round" fill="none"/>
+          <g transform="translate(232 179) scale(1.35)">
+            <rect x="50" y="8" width="30" height="22" rx="6" fill="#E5570A" stroke="#17302B" stroke-width="3"/>
+            <path d="M58 16 C58 11 72 11 72 16 C72 20 65 20 65 24" fill="none" stroke="#FFF6E5" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="65" cy="27.5" r="1.8" fill="#FFF6E5"/>
+            <path d="M30 56 L45 36 Q47 30 54 30 L82 30 Q89 30 92 36 L104 56 Z" fill="#0B4F44" stroke="#17302B" stroke-width="3" stroke-linejoin="round"/>
+            <rect x="8" y="54" width="104" height="34" rx="14" fill="#0B4F44" stroke="#17302B" stroke-width="3"/>
+            <path d="M42 54 L52 38 L66 38 L66 54 Z M72 54 L72 38 L82 38 L90 54 Z" fill="#FFF6E5" stroke="#FFF6E5" stroke-width="3" stroke-linejoin="round"/>
+            <rect x="102" y="62" width="8" height="8" rx="3" fill="#FFC93C"/>
+            <rect x="10" y="62" width="8" height="8" rx="3" fill="#E5570A"/>
+            <circle cx="32" cy="90" r="14" fill="#17302B" stroke="#FFF6E5" stroke-width="3"/>
+            <circle cx="32" cy="90" r="6" fill="#FFC93C"/>
+            <circle cx="90" cy="90" r="14" fill="#17302B" stroke="#FFF6E5" stroke-width="3"/>
+            <circle cx="90" cy="90" r="6" fill="#FFC93C"/>
+          </g>
+        </g>
+        <g class="boot-tag">
+          <path d="M320 112 L338 138" stroke="#17302B" stroke-width="3" fill="none"/>
+          <circle cx="320" cy="112" r="5" fill="#FFF6E5" stroke="#17302B" stroke-width="3"/>
+          <rect x="312" y="134" width="92" height="44" rx="12" fill="#FFC93C" stroke="#17302B" stroke-width="4"/>
+          <circle cx="324" cy="146" r="4" fill="#FFF6E5" stroke="#17302B" stroke-width="2.5"/>
+          <text x="360" y="166" text-anchor="middle" font-family="'Baloo Da 2',sans-serif" font-weight="800" font-size="24" fill="#17302B">৳ ?</text>
+        </g>
+        <g class="boot-hb">
+          <rect x="106" y="248" width="22" height="64" rx="8" fill="#2B3A67" stroke="#17302B" stroke-width="4.5"/>
+          <rect x="134" y="248" width="22" height="64" rx="8" fill="#2B3A67" stroke="#17302B" stroke-width="4.5"/>
+          <rect x="96" y="304" width="36" height="16" rx="8" fill="#17302B"/>
+          <rect x="130" y="304" width="36" height="16" rx="8" fill="#17302B"/>
+          <path d="M162 196 C 186 204 190 232 182 256" stroke="#17302B" stroke-width="22" stroke-linecap="round" fill="none"/>
+          <path d="M162 196 C 186 204 190 232 182 256" stroke="#FFC93C" stroke-width="13" stroke-linecap="round" fill="none"/>
+          <circle cx="182" cy="262" r="12" fill="#D9976B" stroke="#17302B" stroke-width="4"/>
+          <rect x="94" y="170" width="72" height="92" rx="24" fill="#FFC93C" stroke="#17302B" stroke-width="5"/>
+          <path d="M118 172 L130 190 L142 172" fill="#FFF6E5" stroke="#17302B" stroke-width="4" stroke-linejoin="round"/>
+          <circle cx="86" cy="124" r="10" fill="#D9976B" stroke="#17302B" stroke-width="4"/>
+          <circle cx="174" cy="124" r="10" fill="#D9976B" stroke="#17302B" stroke-width="4"/>
+          <circle cx="130" cy="120" r="44" fill="#D9976B" stroke="#17302B" stroke-width="5"/>
+          <path d="M88 112 C86 78 112 66 134 70 C158 72 176 92 172 112 C160 98 148 94 130 96 C112 98 98 100 88 112 Z" fill="#17302B" stroke="#17302B" stroke-width="3" stroke-linejoin="round"/>
+          <ellipse cx="114" cy="124" rx="11" ry="13" fill="#FFFFFF" stroke="#17302B" stroke-width="3.5"/>
+          <ellipse cx="148" cy="124" rx="11" ry="13" fill="#FFFFFF" stroke="#17302B" stroke-width="3.5"/>
+          <g class="boot-look">
+            <circle cx="114" cy="122" r="5.5" fill="#17302B"/>
+            <circle cx="148" cy="122" r="5.5" fill="#17302B"/>
+          </g>
+          <path d="M100 104 Q112 96 126 102" stroke="#17302B" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+          <path d="M138 96 Q150 90 162 98" stroke="#17302B" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+          <path d="M131 128 Q137 138 129 141" stroke="#17302B" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+          <path d="M116 152 q 7 -8 14 0 t 14 0" stroke="#17302B" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+          <path class="boot-drop" d="M170 96 C166 104 164 108 170 110 C176 108 174 104 170 96 Z" fill="#7CC7F2" stroke="#17302B" stroke-width="2.5" stroke-linejoin="round"/>
+          <g class="boot-arm">
+            <path d="M98 194 C 58 190 50 130 90 94" stroke="#17302B" stroke-width="22" stroke-linecap="round" fill="none"/>
+            <path d="M98 194 C 58 190 50 130 90 94" stroke="#FFC93C" stroke-width="13" stroke-linecap="round" fill="none"/>
+            <circle cx="96" cy="86" r="14" fill="#D9976B" stroke="#17302B" stroke-width="4"/>
+            <path d="M89 80 L93 88 M96 78 L99 87 M103 80 L104 88" stroke="#17302B" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+          </g>
+        </g>
+      </svg>
+
+      <!-- Brand Block -->
+      <div class="boot-brand">
+        <h1 class="boot-logo-title">
+          <span class="v">Vara</span><span class="k">Koto</span><span class="d">.com</span>
+        </h1>
+        <p class="boot-logo-subline">গাড়ি ভাড়া কত?</p>
+      </div>
+
+      <!-- Messages -->
+      <div class="boot-msg-container">
+        <div class="boot-msg">অ্যাপ চালু হচ্ছে...</div>
+      </div>
+
+      <!-- Moving Mini Car Road -->
+      <div class="boot-road-container">
+        <div class="boot-road-track"></div>
+        <div class="boot-dash"></div>
+        <div class="boot-drive">
+          <svg viewBox="0 0 120 110" class="boot-mini-car" aria-hidden="true">
+            <rect x="50" y="8" width="30" height="22" rx="6" fill="#E5570A"/>
+            <path d="M58 16 C58 11 72 11 72 16 C72 20 65 20 65 24" fill="none" stroke="#FFF6E5" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="65" cy="27.5" r="1.8" fill="#FFF6E5"/>
+            <path d="M30 56 L45 36 Q47 30 54 30 L82 30 Q89 30 92 36 L104 56 Z" fill="#0B4F44"/>
+            <rect x="8" y="54" width="104" height="34" rx="14" fill="#0B4F44"/>
+            <path d="M42 54 L52 38 L66 38 L66 54 Z M72 54 L72 38 L82 38 L90 54 Z" fill="#FFF6E5" stroke="#FFF6E5" stroke-width="3" stroke-linejoin="round"/>
+            <circle cx="32" cy="90" r="14" fill="#17302B" stroke="#FFF6E5" stroke-width="3"/>
+            <circle cx="32" cy="90" r="6" fill="#FFC93C"/>
+            <circle cx="90" cy="90" r="14" fill="#17302B" stroke="#FFF6E5" stroke-width="3"/>
+            <circle cx="90" cy="90" r="6" fill="#FFC93C"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </app-root>
+<link rel="modulepreload" href="chunk-4W7UQTUR.js"><link rel="modulepreload" href="chunk-UIGZEDL5.js"><link rel="modulepreload" href="chunk-HJNXITGE.js"><link rel="modulepreload" href="chunk-TODDF7EH.js"><link rel="modulepreload" href="chunk-ABFOCPDC.js"><link rel="modulepreload" href="chunk-TQPZRHFO.js"><script src="main-2SKXW3JC.js" type="module"></script></body>
 </html>
