@@ -87,34 +87,61 @@ export class NativeMobileService {
   }
 
   /**
-   * Native device GPS location detection with high accuracy.
+   * Native device GPS location detection with high accuracy and network fallback.
    */
   async getCurrentPosition(): Promise<{ latitude: number; longitude: number }> {
     if (this.isNative) {
       try {
+        const isGranted = (p: any) => p?.location === 'granted' || p?.coarseLocation === 'granted';
         const perm = await Geolocation.checkPermissions();
-        if (perm.location !== 'granted') {
+
+        if (!isGranted(perm)) {
           const req = await Geolocation.requestPermissions();
-          if (req.location !== 'granted') {
+          if (!isGranted(req)) {
             throw new Error('লোকেশন ব্যবহারের অনুমতি দেওয়া হয়নি (Location permission denied)');
           }
         }
 
-        const pos: Position = await Geolocation.getCurrentPosition({
-          enableHighAccuracy: true,
-          timeout: 10000
-        });
+        // First attempt high accuracy (GPS satellites)
+        try {
+          const pos: Position = await Geolocation.getCurrentPosition({
+            enableHighAccuracy: true,
+            timeout: 7000,
+            maximumAge: 10000
+          });
 
-        return {
-          latitude: pos.coords.latitude,
-          longitude: pos.coords.longitude
-        };
+          return {
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude
+          };
+        } catch (highAccErr) {
+          // Graceful fallback to low accuracy (WiFi / cell tower triangulation)
+          const fallbackPos: Position = await Geolocation.getCurrentPosition({
+            enableHighAccuracy: false,
+            timeout: 8000,
+            maximumAge: 60000
+          });
+
+          return {
+            latitude: fallbackPos.coords.latitude,
+            longitude: fallbackPos.coords.longitude
+          };
+        }
       } catch (err: any) {
-        throw new Error(err?.message || 'জিপিএস অবস্থান নির্ধারণ করা সম্ভব হয়নি');
+        // Fallback to browser Geolocation API inside WebView if native plugin encounters unexpected issue
+        try {
+          return await this.getBrowserPosition();
+        } catch {
+          throw new Error(err?.message || 'জিপিএস অবস্থান নির্ধারণ করা সম্ভব হয়নি');
+        }
       }
     }
 
-    // Fallback to browser Geolocation API
+    // Web fallback
+    return this.getBrowserPosition();
+  }
+
+  private getBrowserPosition(): Promise<{ latitude: number; longitude: number }> {
     return new Promise((resolve, reject) => {
       if (typeof navigator === 'undefined' || !navigator.geolocation) {
         reject(new Error('এই ডিভাইসে লোকেশন ফিচার সমর্থিত নয়'));
@@ -129,9 +156,21 @@ export class NativeMobileService {
           });
         },
         (err) => {
-          reject(new Error(err?.message || 'লোকেশন অ্যাক্সেস করা যায়নি'));
+          // If high accuracy failed in browser, try low accuracy
+          navigator.geolocation.getCurrentPosition(
+            (fallbackPos) => {
+              resolve({
+                latitude: fallbackPos.coords.latitude,
+                longitude: fallbackPos.coords.longitude
+              });
+            },
+            () => {
+              reject(new Error(err?.message || 'লোকেশন অ্যাক্সেস করা যায়নি'));
+            },
+            { enableHighAccuracy: false, timeout: 8000, maximumAge: 60000 }
+          );
         },
-        { enableHighAccuracy: true, timeout: 10000 }
+        { enableHighAccuracy: true, timeout: 7000, maximumAge: 10000 }
       );
     });
   }

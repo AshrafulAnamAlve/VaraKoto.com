@@ -2,7 +2,7 @@ import { Component, OnInit, inject, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
-import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, switchMap, map } from 'rxjs/operators';
 import { LocationService } from '../../../../core/services/location.service';
 import { FareService } from '../../../../core/services/fare.service';
 import { NativeMobileService } from '../../../../core/services/native-mobile.service';
@@ -213,15 +213,29 @@ export class FareFinderCardComponent implements OnInit {
 
     this.nativeMobile.hapticImpact('light');
     this.locationService.detectBrowserLocation().pipe(
-      switchMap((coords) => this.locationService.reverse(coords.latitude, coords.longitude))
+      switchMap((coords) =>
+        this.locationService.reverse(coords.latitude, coords.longitude).pipe(
+          map((loc) => ({ loc, coords }))
+        )
+      )
     ).subscribe({
-      next: (loc) => {
+      next: ({ loc, coords }) => {
         this.isDetectingGps.set(false);
         if (loc) {
           this.selectFrom(loc);
           this.nativeMobile.hapticSuccess();
         } else {
-          this.gpsError.set('লোকেশন সনাক্ত করা সম্ভব হয়নি। নাম লিখে সার্চ করুন বা ম্যাপে পিন করুন।');
+          const fallbackLoc: LocationDto = {
+            nameBn: 'আমার বর্তমান অবস্থান',
+            nameEn: 'My Current Location',
+            displayName: `বর্তমান অবস্থান (${coords.latitude.toFixed(4)}, ${coords.longitude.toFixed(4)})`,
+            latitude: coords.latitude,
+            longitude: coords.longitude,
+            isHub: false,
+            source: 'GPS'
+          };
+          this.selectFrom(fallbackLoc);
+          this.nativeMobile.hapticSuccess();
         }
       },
       error: () => {

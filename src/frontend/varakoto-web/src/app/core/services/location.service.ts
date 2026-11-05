@@ -1,15 +1,17 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
+import { Observable, from, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { LocationDto, DistanceResultDto } from '../models/location.model';
 import { environment } from '../../../environments/environment';
+import { NativeMobileService } from './native-mobile.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class LocationService {
   private readonly http = inject(HttpClient);
+  private readonly nativeMobile = inject(NativeMobileService);
   private readonly apiUrl = environment.apiUrl;
 
   search(query: string, limit: number = 8): Observable<LocationDto[]> {
@@ -75,30 +77,7 @@ export class LocationService {
   }
 
   detectBrowserLocation(): Observable<{ latitude: number; longitude: number }> {
-    return new Observable(observer => {
-      if (typeof window === 'undefined' || !navigator.geolocation) {
-        observer.error(new Error('Geolocation is not supported by your browser'));
-        return;
-      }
-
-      navigator.geolocation.getCurrentPosition(
-        position => {
-          observer.next({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude
-          });
-          observer.complete();
-        },
-        error => {
-          observer.error(error);
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 8000,
-          maximumAge: 60000
-        }
-      );
-    });
+    return from(this.nativeMobile.getCurrentPosition());
   }
 
   private calculateHaversine(lat1: number, lon1: number, lat2: number, lon2: number): number {

@@ -105,6 +105,8 @@ canvas {
   font-weight: 500;
   white-space: nowrap;
   max-width: calc(100% - 32px);
+  overflow: hidden;
+  text-overflow: ellipsis;
   transition: opacity 0.5s ease, transform 0.5s ease;
   z-index: 4;
   font-family: 'Baloo Da 2', system-ui, sans-serif;

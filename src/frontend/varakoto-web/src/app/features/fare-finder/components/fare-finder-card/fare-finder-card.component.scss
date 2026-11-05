@@ -8,6 +8,7 @@
   max-width: 640px;
   margin: 0 auto;
   box-sizing: border-box;
+  overflow-x: hidden;
   transition: background-color var(--transition-normal), border-color var(--transition-normal);
 
   @media (max-width: 600px) {
@@ -524,23 +525,23 @@
       letter-spacing: 0.3px;
     }
 
-    // High-visibility check badge indicator
+    // High-visibility check badge indicator (safely placed inside button bounds)
     &::after {
       content: '✓';
       position: absolute;
-      top: -7px;
-      right: -7px;
-      width: 22px;
-      height: 22px;
+      top: 3px;
+      right: 3px;
+      width: 20px;
+      height: 20px;
       background: #FF6A1A;
       color: #FFFFFF;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 900;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
       border: 2px solid var(--bg-surface);
       z-index: 2;
     }
