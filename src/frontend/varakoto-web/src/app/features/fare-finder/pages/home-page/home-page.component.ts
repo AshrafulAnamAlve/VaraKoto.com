@@ -76,6 +76,10 @@ export class HomePageComponent implements OnInit {
   readonly contributionInitialTo = signal<string>('');
   readonly contributionInitialTransport = signal<TransportCode>('bus');
 
+  // Mobile App Native Bottom Nav & Info Sheet State
+  readonly activeNavTab = signal<'finder' | 'share' | 'updates' | 'info'>('finder');
+  readonly isInfoSheetOpen = signal<boolean>(false);
+
   ngOnInit(): void {
     // Sync native mobile status bar theme with initial dark/light state
     this.nativeMobile.updateStatusBarTheme(this.themeService.isDark());
@@ -91,10 +95,42 @@ export class HomePageComponent implements OnInit {
 
   showFinder(): void {
     this.nativeMobile.hapticSelection();
+    this.activeNavTab.set('finder');
     this.currentView.set('finder');
     this.fareService.clearResult();
     if (typeof window !== 'undefined') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
+  openInfoSheet(): void {
+    this.nativeMobile.hapticSelection();
+    this.isInfoSheetOpen.set(true);
+    this.activeNavTab.set('info');
+  }
+
+  closeInfoSheet(): void {
+    this.isInfoSheetOpen.set(false);
+    this.activeNavTab.set('finder');
+  }
+
+  onSelectNavTab(tab: 'finder' | 'share' | 'updates' | 'info'): void {
+    this.nativeMobile.hapticSelection();
+    if (tab === 'finder') {
+      this.activeNavTab.set('finder');
+      this.showFinder();
+    } else if (tab === 'share') {
+      this.openContributionModal();
+    } else if (tab === 'updates') {
+      this.activeNavTab.set('updates');
+      if (typeof window !== 'undefined') {
+        const element = document.querySelector('.recent-contributions-section');
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }
+    } else if (tab === 'info') {
+      this.openInfoSheet();
     }
   }
 
@@ -119,6 +155,7 @@ export class HomePageComponent implements OnInit {
 
   closeContributionModal(): void {
     this.isContributionModalOpen.set(false);
+    this.activeNavTab.set('finder');
   }
 
   handleContribute(event: { fromLocation?: string; toLocation?: string; transport?: string }): void {

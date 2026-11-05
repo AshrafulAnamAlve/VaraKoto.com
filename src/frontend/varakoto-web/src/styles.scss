@@ -69,6 +69,16 @@
   box-sizing: border-box;
 }
 
+/* Mobile App Touch & Selection Optimizations */
+button, a, input, select, textarea, [role="button"] {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button, [role="button"], .nav-tab-btn, .theme-toggle-btn {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 html, body {
   margin: 0;
   padding: 0;

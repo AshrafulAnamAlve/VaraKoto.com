@@ -3,8 +3,8 @@
   <app-loading-screen [active]="true" [fullscreen]="true"></app-loading-screen>
 }
 
-<div class="homepage-layout">
-  <!-- Minimalist Header -->
+<div class="homepage-layout" [class.is-native-app]="nativeMobile.isNative">
+  <!-- Minimalist Header / Mobile App Bar -->
   <header class="app-header">
     <div class="header-inner">
       <div class="brand-link" (click)="showFinder()" role="button" tabindex="0" title="VaraKoto.com হোমপেজ">
@@ -12,11 +12,11 @@
       </div>
 
       <div class="header-right">
-        <!-- App Download Header Button (Hidden on native Android/iOS app) -->
+        <!-- Desktop App Download Header Button (Hidden on native app and on mobile viewport) -->
         @if (!nativeMobile.isNative) {
           <a
             routerLink="/download"
-            class="download-header-btn"
+            class="download-header-btn desktop-only"
             title="VaraKoto অ্যান্ড্রয়েড অ্যাপ ডাউনলোড করুন"
           >
             <span class="btn-icon">📲</span>
@@ -24,10 +24,10 @@
           </a>
         }
 
-        <!-- Share Fare Header CTA Button -->
+        <!-- Share Fare Header CTA Button (Desktop only; on mobile, it is the prominent center action in bottom nav) -->
         <button
           type="button"
-          class="contribute-header-btn"
+          class="contribute-header-btn desktop-only"
           (click)="openContributionModal()"
           title="আপনার দেওয়া ভাড়া শেয়ার করুন"
         >
@@ -65,11 +65,26 @@
             <span class="theme-text">ডার্ক</span>
           }
         </button>
+
+        <!-- Mobile Info Header Button (Clean circular action on mobile) -->
+        <button
+          type="button"
+          class="mobile-info-btn mobile-only"
+          (click)="openInfoSheet()"
+          title="অ্যাপের তথ্য ও সেটিংস"
+          aria-label="অ্যাপের তথ্য"
+        >
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+        </button>
       </div>
     </div>
   </header>
 
-  <!-- Main Fare Content Area -->
+  <!-- Main Fare Content Area (Untouched core section) -->
   <main class="app-main">
     <div class="main-container" [class.has-result]="fareService.latestResult() !== null">
       <div class="main-layout-grid">
@@ -159,13 +174,22 @@
               </div>
             </section>
           }
+
+          <!-- Mobile Native App Info Card / Credit (Visible on mobile instead of website footer) -->
+          <div class="mobile-app-credit mobile-only">
+            <div class="credit-badge">
+              <span class="pulse-dot"></span>
+              <span>VaraKoto v1.0.0</span>
+            </div>
+            <p class="credit-desc">বাস, রিকশা, সিএনজি ও বাইক ভাড়ার ওপেন প্ল্যাটফর্ম</p>
+          </div>
         </div>
       </div>
     </div>
   </main>
 
-  <!-- Clean Minimalist Footer -->
-  <footer class="app-footer">
+  <!-- Clean Minimalist Footer (Desktop Web only; hidden on mobile) -->
+  <footer class="app-footer desktop-only">
     <div class="footer-inner">
       <p class="footer-text">
         <strong>VaraKoto.com (গাড়ি ভাড়া কত?)</strong> — সহজ ও স্বচ্ছ পরিবহন ভাড়া অনুসন্ধান
@@ -175,7 +199,130 @@
       </p>
     </div>
   </footer>
+
+  <!-- Native Mobile Bottom Navigation Bar (Fixed docked tabs on mobile / native app) -->
+  <nav class="mobile-bottom-nav mobile-only" aria-label="মোবাইল নেভিগেশন">
+    <button
+      type="button"
+      class="nav-tab-btn"
+      [class.active]="activeNavTab() === 'finder'"
+      (click)="onSelectNavTab('finder')"
+    >
+      <div class="nav-icon-wrapper">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+      </div>
+      <span class="nav-label">ভাড়া হিসাব</span>
+    </button>
+
+    <button
+      type="button"
+      class="nav-tab-btn nav-tab-primary"
+      (click)="onSelectNavTab('share')"
+      title="ভাড়া শেয়ার করুন"
+    >
+      <div class="nav-icon-wrapper primary-action-circle">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#FFFFFF" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+      </div>
+      <span class="nav-label">ভাড়া শেয়ার</span>
+    </button>
+
+    <button
+      type="button"
+      class="nav-tab-btn"
+      [class.active]="activeNavTab() === 'updates'"
+      (click)="onSelectNavTab('updates')"
+    >
+      <div class="nav-icon-wrapper">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 20v-6M6 20V10M18 20V4"></path>
+        </svg>
+      </div>
+      <span class="nav-label">আপডেট</span>
+    </button>
+
+    <button
+      type="button"
+      class="nav-tab-btn"
+      [class.active]="activeNavTab() === 'info'"
+      (click)="onSelectNavTab('info')"
+    >
+      <div class="nav-icon-wrapper">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="16" x2="12" y2="12"></line>
+          <line x1="12" y1="8" x2="12.01" y2="8"></line>
+        </svg>
+      </div>
+      <span class="nav-label">তথ্য</span>
+    </button>
+  </nav>
 </div>
+
+<!-- Native App Info Bottom Sheet -->
+@if (isInfoSheetOpen()) {
+  <div class="app-info-backdrop" (click)="closeInfoSheet()">
+    <div class="app-info-sheet" (click)="$event.stopPropagation()">
+      <div class="sheet-drag-handle"></div>
+
+      <div class="sheet-header">
+        <app-logo variant="compact" size="sm"></app-logo>
+        <div class="app-version-badge">v1.0.0 (অফিসিয়াল মোবাইল অ্যাপ)</div>
+      </div>
+
+      <div class="sheet-body">
+        <div class="sheet-feature-grid">
+          <div class="feature-item">
+            <span class="feature-icon">⚡</span>
+            <div class="feature-text">
+              <strong>অফলাইন ফ্রেন্ডলি</strong>
+              <span>ইন্টারনেট দুর্বল থাকলেও সঠিক দূরত্ব ও ভাড়ার হিসাব</span>
+            </div>
+          </div>
+          <div class="feature-item">
+            <span class="feature-icon">📍</span>
+            <div class="feature-text">
+              <strong>স্মার্ট জিপিএস লোকেশন</strong>
+              <span>এক ট্যাপে আপনার বর্তমান অবস্থান অটো-ডিটেক্ট</span>
+            </div>
+          </div>
+          <div class="feature-item">
+            <span class="feature-icon">🚌</span>
+            <div class="feature-text">
+              <strong>৪ ধরনের পরিবহন</strong>
+              <span>বাস, রিকশা, সিএনজি (মিটার/চুক্তি) ও বাইক ভাড়া</span>
+            </div>
+          </div>
+          <div class="feature-item">
+            <span class="feature-icon">🛡️</span>
+            <div class="feature-text">
+              <strong>ওপেন ও স্বচ্ছ</strong>
+              <span>সহযাত্রীদের বাস্তব অভিজ্ঞতা এবং বিআরটিএ রেট</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="sheet-actions">
+          <button type="button" class="sheet-share-btn" (click)="closeInfoSheet(); openContributionModal()">
+            💬 আপনার এলাকার ভাড়া শেয়ার করুন
+          </button>
+          <a routerLink="/admin/login" (click)="closeInfoSheet()" class="sheet-admin-link">
+            অ্যাডমিন প্যানেল ➔
+          </a>
+        </div>
+      </div>
+
+      <button type="button" class="sheet-close-btn" (click)="closeInfoSheet()">
+        ঠিক আছে
+      </button>
+    </div>
+  </div>
+}
 
 <!-- Community Contribution Modal -->
 <app-fare-contribution-modal
