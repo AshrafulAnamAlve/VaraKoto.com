@@ -11,6 +11,18 @@
         <app-logo variant="compact" size="sm"></app-logo>
       </div>
 
+      <!-- Header District Pill (Editable) -->
+      <button
+        type="button"
+        class="header-district-badge"
+        (click)="districtService.openModal()"
+        title="বর্তমান জেলা পরিবর্তন করুন (Change District)"
+      >
+        <span class="badge-pin">📍</span>
+        <span class="badge-name">{{ districtService.currentDistrict().nameBn }}</span>
+        <span class="badge-arrow">▾</span>
+      </button>
+
       <div class="header-right">
         <!-- App Download Header Button (Always visible on Web across desktop, tablet, and mobile; hidden only in installed native app) -->
         @if (!nativeMobile.isNative) {
@@ -382,3 +394,6 @@
   (closeModal)="closeContributionModal()"
   (fareContributed)="handleFareContributed($event)"
 ></app-fare-contribution-modal>
+
+<!-- District Selector Modal -->
+<app-district-selector-modal></app-district-selector-modal>

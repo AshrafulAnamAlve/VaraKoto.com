@@ -16,7 +16,11 @@ public class LocationsController : ControllerBase
     }
 
     [HttpGet("search")]
-    public async Task<IActionResult> Search([FromQuery] string? q, [FromQuery] int limit = 8, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> Search(
+        [FromQuery] string? q,
+        [FromQuery] string? district,
+        [FromQuery] int limit = 8,
+        CancellationToken cancellationToken = default)
     {
         var sanitizedQuery = InputSanitizer.Sanitize(q);
         if (string.IsNullOrWhiteSpace(sanitizedQuery))
@@ -24,7 +28,8 @@ public class LocationsController : ControllerBase
             return Ok(Array.Empty<object>());
         }
 
-        var results = await _locationService.SearchLocationsAsync(sanitizedQuery, Math.Clamp(limit, 1, 20), cancellationToken);
+        var sanitizedDistrict = InputSanitizer.Sanitize(district);
+        var results = await _locationService.SearchLocationsAsync(sanitizedQuery, Math.Clamp(limit, 1, 20), sanitizedDistrict, cancellationToken);
         return Ok(results);
     }
 

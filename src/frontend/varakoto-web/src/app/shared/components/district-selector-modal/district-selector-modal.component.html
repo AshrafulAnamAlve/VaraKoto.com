@@ -1,0 +1,105 @@
+@if (districtService.isModalOpen()) {
+  <div class="modal-backdrop" (click)="close()">
+    <div class="modal-card" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="district-modal-title">
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <div class="header-title-row">
+          <span class="header-icon">📍</span>
+          <div class="header-text-block">
+            <h2 id="district-modal-title" class="modal-title">আপনি এখন কোন জেলায় আছেন?</h2>
+            <p class="modal-subtitle">সঠিক বাস স্ট্যান্ড, লোকাল রুট ও ভাড়ার তথ্য পেতে আপনার বর্তমান জেলা নির্বাচন করুন</p>
+          </div>
+        </div>
+        <button type="button" class="close-btn" (click)="close()" title="বন্ধ করুন" aria-label="Close">✕</button>
+      </div>
+
+      <!-- Quick GPS Auto-Detect Button -->
+      <div class="gps-detect-bar">
+        <button
+          type="button"
+          class="gps-detect-action"
+          (click)="detectGps()"
+          [disabled]="isDetectingGps()"
+        >
+          @if (isDetectingGps()) {
+            <span class="gps-spinner"></span>
+            <span>লোকেশন সনাক্ত করা হচ্ছে...</span>
+          } @else {
+            <span class="gps-icon">🧭</span>
+            <span>বর্তমান জিপিএস লোকেশন দিয়ে জেলা সনাক্ত করুন</span>
+          }
+        </button>
+        @if (gpsError()) {
+          <div class="gps-error-notice">
+            <span>⚠️ {{ gpsError() }}</span>
+          </div>
+        }
+      </div>
+
+      <!-- Quick Popular Districts Row -->
+      <div class="popular-section">
+        <span class="section-label">জনপ্রিয় জেলাসমূহ:</span>
+        <div class="popular-pills">
+          @for (d of popularDistricts; track d.id) {
+            <button
+              type="button"
+              class="district-pill"
+              [class.is-selected]="districtService.currentDistrict().id === d.id"
+              (click)="selectDistrict(d)"
+            >
+              {{ d.nameBn }}
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Search Input -->
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input
+          type="text"
+          class="search-input"
+          placeholder="জেলার নাম লিখুন (যেমন: রাঙ্গামাটি, সিলেট, চট্টগ্রাম...)"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event)"
+        />
+        @if (searchQuery()) {
+          <button type="button" class="clear-search-btn" (click)="searchQuery.set('')">✕</button>
+        }
+      </div>
+
+      <!-- 64 Districts List -->
+      <div class="districts-list-container">
+        @if (filteredDistricts().length === 0) {
+          <div class="empty-state">
+            <span>🔍 '{{ searchQuery() }}' নামের কোনো জেলা পাওয়া যায়নি</span>
+          </div>
+        } @else {
+          <div class="districts-grid">
+            @for (d of filteredDistricts(); track d.id) {
+              <button
+                type="button"
+                class="district-item"
+                [class.is-active]="districtService.currentDistrict().id === d.id"
+                (click)="selectDistrict(d)"
+              >
+                <div class="district-main">
+                  <span class="item-name-bn">{{ d.nameBn }}</span>
+                  <span class="item-name-en">({{ d.nameEn }})</span>
+                </div>
+                <span class="item-division">{{ d.divisionBn }}</span>
+              </button>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-footer">
+        <button type="button" class="skip-btn" (click)="close()">
+          পরে নির্বাচন করব (Skip)
+        </button>
+      </div>
+    </div>
+  </div>
+}

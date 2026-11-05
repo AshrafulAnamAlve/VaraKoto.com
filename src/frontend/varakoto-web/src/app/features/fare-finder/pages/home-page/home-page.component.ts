@@ -7,6 +7,8 @@ import { FareResultCardComponent } from '../../components/fare-result-card/fare-
 import { FareContributionModalComponent } from '../../../fare-contribution/components/fare-contribution-modal/fare-contribution-modal.component';
 import { LoadingScreenComponent } from '../../../../shared/components/loading-screen/loading-screen.component';
 import { LogoComponent } from '../../../../shared/components/logo/logo.component';
+import { DistrictSelectorModalComponent } from '../../../../shared/components/district-selector-modal/district-selector-modal.component';
+import { DistrictService } from '../../../../core/services/district.service';
 import { ThemeService } from '../../../../core/services/theme.service';
 import { FareService } from '../../../../core/services/fare.service';
 import { NativeMobileService } from '../../../../core/services/native-mobile.service';
@@ -23,7 +25,8 @@ import { FareContributionResponseModel, TransportCode } from '../../../../core/m
     FareResultCardComponent,
     FareContributionModalComponent,
     LoadingScreenComponent,
-    LogoComponent
+    LogoComponent,
+    DistrictSelectorModalComponent
   ],
   templateUrl: './home-page.component.html',
   styleUrls: ['./home-page.component.scss']
@@ -32,6 +35,7 @@ export class HomePageComponent implements OnInit {
   readonly themeService = inject(ThemeService);
   readonly fareService = inject(FareService);
   readonly nativeMobile = inject(NativeMobileService);
+  readonly districtService = inject(DistrictService);
 
   // View state: 'finder' | 'result'
   readonly currentView = signal<'finder' | 'result'>('finder');

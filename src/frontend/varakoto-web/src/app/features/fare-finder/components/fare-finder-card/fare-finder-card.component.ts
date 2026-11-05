@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, map } from 'rxjs/operators';
 import { LocationService } from '../../../../core/services/location.service';
+import { DistrictService } from '../../../../core/services/district.service';
 import { FareService } from '../../../../core/services/fare.service';
 import { NativeMobileService } from '../../../../core/services/native-mobile.service';
 import { LocationDto } from '../../../../core/models/location.model';
@@ -21,6 +22,7 @@ export class FareFinderCardComponent implements OnInit {
   private readonly locationService = inject(LocationService);
   readonly fareService = inject(FareService);
   private readonly nativeMobile = inject(NativeMobileService);
+  readonly districtService = inject(DistrictService);
 
   // Output events
   readonly searchSubmitted = output<void>();
@@ -80,25 +82,26 @@ export class FareFinderCardComponent implements OnInit {
   ];
 
   ngOnInit(): void {
-    // Setup debounced location search for Origin
+    // Setup debounced location search for Origin with District context
     this.fromSearchSubject.pipe(
       debounceTime(200),
       distinctUntilChanged(),
       switchMap((term) => {
         const query = term ? term.trim() : '';
+        const currentDist = this.districtService.currentDistrict();
         if (query.length === 0) {
           this.isSearchingFrom.set(false);
-          this.fromSuggestions.set(this.popularHubs);
+          this.fromSuggestions.set(this.currentPopularHubs);
           return [];
         }
         this.isSearchingFrom.set(true);
-        return this.locationService.search(query, 8);
+        return this.locationService.search(query, 8, currentDist.nameEn, currentDist.center);
       })
     ).subscribe((results) => {
       if (results && results.length > 0) {
         this.fromSuggestions.set(results);
       } else if (this.fromQuery().trim().length === 0) {
-        this.fromSuggestions.set(this.popularHubs);
+        this.fromSuggestions.set(this.currentPopularHubs);
       } else {
         this.fromSuggestions.set([]);
       }
@@ -106,25 +109,26 @@ export class FareFinderCardComponent implements OnInit {
       this.showFromDropdown.set(true);
     });
 
-    // Setup debounced location search for Destination
+    // Setup debounced location search for Destination with District context
     this.toSearchSubject.pipe(
       debounceTime(200),
       distinctUntilChanged(),
       switchMap((term) => {
         const query = term ? term.trim() : '';
+        const currentDist = this.districtService.currentDistrict();
         if (query.length === 0) {
           this.isSearchingTo.set(false);
-          this.toSuggestions.set(this.popularHubs);
+          this.toSuggestions.set(this.currentPopularHubs);
           return [];
         }
         this.isSearchingTo.set(true);
-        return this.locationService.search(query, 8);
+        return this.locationService.search(query, 8, currentDist.nameEn, currentDist.center);
       })
     ).subscribe((results) => {
       if (results && results.length > 0) {
         this.toSuggestions.set(results);
       } else if (this.toQuery().trim().length === 0) {
-        this.toSuggestions.set(this.popularHubs);
+        this.toSuggestions.set(this.currentPopularHubs);
       } else {
         this.toSuggestions.set([]);
       }
@@ -133,11 +137,19 @@ export class FareFinderCardComponent implements OnInit {
     });
   }
 
+  get currentPopularHubs(): LocationDto[] {
+    return this.districtService.getPopularHubsForCurrentDistrict();
+  }
+
+  openDistrictSelector(): void {
+    this.districtService.openModal();
+  }
+
   onFromFocus(): void {
     this.showFromDropdown.set(true);
     this.showToDropdown.set(false);
     if (!this.fromQuery() || this.fromQuery().trim().length < 2) {
-      this.fromSuggestions.set(this.popularHubs);
+      this.fromSuggestions.set(this.currentPopularHubs);
     }
   }
 
@@ -145,7 +157,7 @@ export class FareFinderCardComponent implements OnInit {
     this.showToDropdown.set(true);
     this.showFromDropdown.set(false);
     if (!this.toQuery() || this.toQuery().trim().length < 2) {
-      this.toSuggestions.set(this.popularHubs);
+      this.toSuggestions.set(this.currentPopularHubs);
     }
   }
 
@@ -156,7 +168,7 @@ export class FareFinderCardComponent implements OnInit {
       this.selectedFrom.set(null);
     }
     if (!value || value.trim().length === 0) {
-      this.fromSuggestions.set(this.popularHubs);
+      this.fromSuggestions.set(this.currentPopularHubs);
     }
     this.fromSearchSubject.next(value);
   }
@@ -168,7 +180,7 @@ export class FareFinderCardComponent implements OnInit {
       this.selectedTo.set(null);
     }
     if (!value || value.trim().length === 0) {
-      this.toSuggestions.set(this.popularHubs);
+      this.toSuggestions.set(this.currentPopularHubs);
     }
     this.toSearchSubject.next(value);
   }

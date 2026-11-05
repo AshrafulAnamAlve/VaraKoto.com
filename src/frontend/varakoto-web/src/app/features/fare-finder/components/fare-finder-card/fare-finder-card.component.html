@@ -5,6 +5,19 @@
     <p class="sub-heading">প্রারম্ভিক স্থান ও গন্তব্য নির্বাচন করে যেকোনো বাহনের সঠিক ভাড়ার হিসেব দেখুন</p>
   </div>
 
+  <!-- User Current District / Location Bar (Editable) -->
+  <div class="user-district-bar" (click)="openDistrictSelector()" role="button" tabindex="0" title="জেলা পরিবর্তন করতে ক্লিক করুন">
+    <div class="district-badge-left">
+      <span class="district-pin">📍</span>
+      <span class="district-caption">আপনার অবস্থান:</span>
+      <span class="district-highlight">{{ districtService.currentDistrict().nameBn }} ({{ districtService.currentDistrict().nameEn }})</span>
+    </div>
+    <button type="button" class="edit-district-btn" (click)="$event.stopPropagation(); openDistrictSelector()">
+      <span class="edit-text">পরিবর্তন</span>
+      <span class="edit-icon">✏️</span>
+    </button>
+  </div>
+
   <form class="finder-form" (ngSubmit)="onFindFare()" role="search">
     <!-- Locations Input Cluster -->
     <div class="locations-cluster">
@@ -80,7 +93,7 @@
             @if (!fromQuery() || fromQuery().trim().length < 2) {
               <li class="recommendation-header">
                 <span class="rec-icon">⭐</span>
-                <span class="rec-title">জনপ্রিয় বাস স্ট্যান্ড ও স্থান (Recommended)</span>
+                <span class="rec-title">জনপ্রিয় স্থান ও বাস স্ট্যান্ড ({{ districtService.currentDistrict().nameBn }})</span>
               </li>
             }
 
@@ -185,7 +198,7 @@
             @if (!toQuery() || toQuery().trim().length < 2) {
               <li class="recommendation-header">
                 <span class="rec-icon">⭐</span>
-                <span class="rec-title">জনপ্রিয় বাস স্ট্যান্ড ও স্থান (Recommended)</span>
+                <span class="rec-title">জনপ্রিয় স্থান ও বাস স্ট্যান্ড ({{ districtService.currentDistrict().nameBn }})</span>
               </li>
             }
 

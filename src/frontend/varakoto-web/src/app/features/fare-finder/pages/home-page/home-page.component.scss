@@ -1192,3 +1192,39 @@
     }
   }
 }
+
+.header-district-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: 12px;
+  padding: 5px 12px;
+  background-color: var(--bg-surface-elevated);
+  border: 1.5px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+
+  &:hover {
+    border-color: var(--vk-green);
+    color: var(--vk-green);
+    background-color: rgba(11, 79, 68, 0.08);
+  }
+
+  .badge-pin {
+    font-size: 13px;
+  }
+
+  .badge-name {
+    font-weight: 700;
+  }
+
+  .badge-arrow {
+    font-size: 10px;
+    color: var(--text-muted);
+  }
+}

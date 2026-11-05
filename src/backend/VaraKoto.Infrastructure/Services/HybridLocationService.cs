@@ -36,7 +36,12 @@ public class HybridLocationService : ILocationService
         _httpClient.Timeout = TimeSpan.FromSeconds(5);
     }
 
-    public async Task<IReadOnlyList<LocationDto>> SearchLocationsAsync(string query, int limit = 8, CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<LocationDto>> SearchLocationsAsync(string query, int limit = 8, CancellationToken cancellationToken = default)
+    {
+        return SearchLocationsAsync(query, limit, null, cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<LocationDto>> SearchLocationsAsync(string query, int limit, string? district, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(query))
         {
@@ -44,7 +49,7 @@ public class HybridLocationService : ILocationService
         }
 
         var normalizedQuery = query.Trim();
-        var cacheKey = $"loc_search_{normalizedQuery.ToLowerInvariant()}_{limit}";
+        var cacheKey = $"loc_search_{normalizedQuery.ToLowerInvariant()}_{district?.ToLowerInvariant()}_{limit}";
 
         if (_memoryCache.TryGetValue(cacheKey, out IReadOnlyList<LocationDto>? cachedResults) && cachedResults != null)
         {
@@ -53,13 +58,14 @@ public class HybridLocationService : ILocationService
 
         var results = new List<LocationDto>();
 
-        // 1. Search local pre-seeded database hubs & locations
+        // 1. Search local pre-seeded database hubs & locations with district priority
         var localMatches = await _context.Locations
             .Where(l => EF.Functions.Like(l.NameEn, $"%{normalizedQuery}%") ||
                         EF.Functions.Like(l.NameBn, $"%{normalizedQuery}%") ||
                         (l.Thana != null && EF.Functions.Like(l.Thana, $"%{normalizedQuery}%")) ||
                         (l.District != null && EF.Functions.Like(l.District, $"%{normalizedQuery}%")))
-            .OrderByDescending(l => l.IsHub)
+            .OrderBy(l => !string.IsNullOrEmpty(district) && l.District != null && EF.Functions.Like(l.District, $"%{district}%") ? 0 : 1)
+            .ThenByDescending(l => l.IsHub)
             .ThenBy(l => l.NameEn.StartsWith(normalizedQuery) || l.NameBn.StartsWith(normalizedQuery) ? 0 : 1)
             .Take(limit)
             .ToListAsync(cancellationToken);
@@ -85,7 +91,7 @@ public class HybridLocationService : ILocationService
         if (results.Count < limit && normalizedQuery.Length >= 2)
         {
             var remaining = limit - results.Count;
-            var externalResults = await FetchFromPhotonAsync(normalizedQuery, remaining, cancellationToken);
+            var externalResults = await FetchFromPhotonAsync(normalizedQuery, remaining, district, cancellationToken);
 
             foreach (var ext in externalResults)
             {
@@ -244,13 +250,17 @@ public class HybridLocationService : ILocationService
         };
     }
 
-    private async Task<List<LocationDto>> FetchFromPhotonAsync(string query, int limit, CancellationToken cancellationToken)
+    private async Task<List<LocationDto>> FetchFromPhotonAsync(string query, int limit, string? targetDistrict, CancellationToken cancellationToken)
     {
         var list = new List<LocationDto>();
         try
         {
+            var effectiveQuery = !string.IsNullOrWhiteSpace(targetDistrict) && !query.Contains(targetDistrict, StringComparison.OrdinalIgnoreCase)
+                ? $"{query} {targetDistrict}"
+                : query;
+
             // Photon API bounded to Bangladesh bbox (88.0, 20.5 to 92.7, 26.7)
-            var url = $"https://photon.komoot.io/api/?q={Uri.EscapeDataString(query)}&bbox=88.0,20.5,92.7,26.7&limit={limit}";
+            var url = $"https://photon.komoot.io/api/?q={Uri.EscapeDataString(effectiveQuery)}&bbox=88.0,20.5,92.7,26.7&limit={limit}";
             var response = await _httpClient.GetAsync(url, cancellationToken);
 
             if (response.IsSuccessStatusCode)
