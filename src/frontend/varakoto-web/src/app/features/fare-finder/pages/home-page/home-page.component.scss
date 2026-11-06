@@ -269,6 +269,14 @@
     @media (max-width: 960px) {
       grid-template-columns: 1fr;
       gap: 16px;
+
+      .card-column {
+        order: 1;
+      }
+
+      .map-column {
+        order: 2;
+      }
     }
   }
 
