@@ -60,7 +60,111 @@
       </div>
     </div>
 
-    <!-- 2. ROUTE SELECTOR & SWITCHER (Always Best Route by default + One-click Change Route Button) -->
+    <!-- 2. Primary Fare Hero Display (Vara Section First) -->
+    <div class="fare-hero-box" [attr.data-transport]="primaryFare()?.transportCode">
+      <div class="hero-top-bar">
+        <div class="transport-badge">
+          <!-- Transport Icon -->
+          @switch (primaryFare()?.transportCode) {
+            @case ('bus') {
+              <span class="badge-icon">🚌</span>
+            }
+            @case ('rickshaw') {
+              <span class="badge-icon">🛺</span>
+            }
+            @case ('cng') {
+              <span class="badge-icon">🛺💨</span>
+            }
+            @case ('bike') {
+              <span class="badge-icon">🏍️</span>
+            }
+          }
+          <span class="badge-name">{{ primaryFare()?.transportNameBn }} ভাড়া</span>
+        </div>
+
+        <!-- Reliability Badge -->
+        <div class="reliability-badge" [class.official]="primaryFare()?.reliability === 'Official'" [class.community]="primaryFare()?.reliability === 'CommunityBacked'">
+          @if (primaryFare()?.reliability === 'Official') {
+            <span class="rel-icon">✓</span>
+            <span>বিআরটিএ সরকারি রেট</span>
+          } @else if (primaryFare()?.reliability === 'CommunityBacked') {
+            <span class="rel-icon">★</span>
+            <span>কমিউনিটি যাচাইকৃত</span>
+          } @else {
+            <span class="rel-icon">~</span>
+            <span>সাধারণ আনুমানিক</span>
+          }
+        </div>
+      </div>
+
+      <!-- Huge Fare Typography in Baloo Da 2 -->
+      <div class="fare-amount-display">
+        <span class="fare-label">আনুমানিক ভাড়া ({{ activeRouteName() }}):</span>
+        <div class="amount-text">{{ primaryFare()?.fareDisplayBn }}</div>
+      </div>
+
+      <!-- CNG Dual Display Details -->
+      @if (primaryFare()?.officialMeterFare) {
+        <div class="meter-notice-box">
+          <div class="meter-header">
+            <span class="meter-icon">ℹ️</span>
+            <span class="meter-title">সিএনজি ভাড়া সম্পর্কে তথ্য</span>
+          </div>
+          <p class="meter-body">
+            সরকারি মিটার রেট: <strong>~৳{{ fareService.toBengaliDigits(primaryFare()?.officialMeterFare || 0) }}</strong>
+            <br>
+            <span class="meter-hint">তবে ঢাকার রাস্তায় চালকরা সাধারণত মিটারে যেতে চান না এবং <strong>{{ primaryFare()?.fareDisplayBn }}</strong> চুক্তিভিত্তিক ভাড়া দাবি করেন।</span>
+          </p>
+        </div>
+      }
+
+      <!-- Distance Feasibility Notice (e.g. Rickshaws > 7km) -->
+      @if (primaryFare()?.distanceNoticeBn) {
+        <div class="distance-warning-box">
+          <span class="warn-icon">⚠️</span>
+          <span>{{ primaryFare()?.distanceNoticeBn }}</span>
+        </div>
+      }
+
+      <!-- Source & Verification Note -->
+      <div class="fare-source-footer">
+        <span class="source-icon">📌</span>
+        <span class="source-text">{{ primaryFare()?.sourceNoteBn || primaryFare()?.sourceNote }}</span>
+      </div>
+    </div>
+
+    <!-- 3. All Transports Quick Comparison Bar -->
+    @if (allFares() && allFares().length > 1) {
+      <div class="comparison-section">
+        <span class="comparison-title">অন্যান্য যানবাহনের ভাড়া তুলনা ({{ activeRouteName() }}):</span>
+        <div class="comparison-grid">
+          @for (fare of allFares(); track fare.transportCode) {
+            <button
+              type="button"
+              class="comparison-card"
+              [class.active]="fare.transportCode === primaryFare()?.transportCode"
+              (click)="selectTransport(fare.transportCode)"
+              [title]="fare.transportNameBn + ' ভাড়া দেখুন'"
+            >
+              <div class="comp-header">
+                <span class="comp-icon">
+                  @switch (fare.transportCode) {
+                    @case ('bus') { 🚌 }
+                    @case ('rickshaw') { 🛺 }
+                    @case ('cng') { 🛺💨 }
+                    @case ('bike') { 🏍️ }
+                  }
+                </span>
+                <span class="comp-name">{{ fare.transportNameBn }}</span>
+              </div>
+              <div class="comp-amount">{{ fare.fareDisplayBn }}</div>
+            </button>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- 4. ROUTE SELECTOR & SWITCHER (Always Best Route by default + One-click Change Route Button) -->
     @if (routesInfo()) {
       <div class="route-switcher-box">
         <div class="switcher-top-row">
@@ -131,7 +235,7 @@
       </div>
     }
 
-    <!-- 3. PROMINENTLY HIGHLIGHTED TRANSIT JOURNEY GUIDE (যেভাবে যাবেন — বাহন ও রুট নির্দেশিকা) -->
+    <!-- 5. PROMINENTLY HIGHLIGHTED TRANSIT JOURNEY GUIDE (যেভাবে যাবেন — বাহন ও রুট নির্দেশিকা) -->
     @if (transitGuide()) {
       <div class="transit-guide-box highlighted-guide">
         <div class="guide-header">
@@ -239,110 +343,6 @@
                 </div>
               </div>
             </div>
-          }
-        </div>
-      </div>
-    }
-
-    <!-- 4. Primary Fare Hero Display -->
-    <div class="fare-hero-box" [attr.data-transport]="primaryFare()?.transportCode">
-      <div class="hero-top-bar">
-        <div class="transport-badge">
-          <!-- Transport Icon -->
-          @switch (primaryFare()?.transportCode) {
-            @case ('bus') {
-              <span class="badge-icon">🚌</span>
-            }
-            @case ('rickshaw') {
-              <span class="badge-icon">🛺</span>
-            }
-            @case ('cng') {
-              <span class="badge-icon">🛺💨</span>
-            }
-            @case ('bike') {
-              <span class="badge-icon">🏍️</span>
-            }
-          }
-          <span class="badge-name">{{ primaryFare()?.transportNameBn }} ভাড়া</span>
-        </div>
-
-        <!-- Reliability Badge -->
-        <div class="reliability-badge" [class.official]="primaryFare()?.reliability === 'Official'" [class.community]="primaryFare()?.reliability === 'CommunityBacked'">
-          @if (primaryFare()?.reliability === 'Official') {
-            <span class="rel-icon">✓</span>
-            <span>বিআরটিএ সরকারি রেট</span>
-          } @else if (primaryFare()?.reliability === 'CommunityBacked') {
-            <span class="rel-icon">★</span>
-            <span>কমিউনিটি যাচাইকৃত</span>
-          } @else {
-            <span class="rel-icon">~</span>
-            <span>সাধারণ আনুমানিক</span>
-          }
-        </div>
-      </div>
-
-      <!-- Huge Fare Typography in Baloo Da 2 -->
-      <div class="fare-amount-display">
-        <span class="fare-label">আনুমানিক ভাড়া ({{ activeRouteName() }}):</span>
-        <div class="amount-text">{{ primaryFare()?.fareDisplayBn }}</div>
-      </div>
-
-      <!-- CNG Dual Display Details -->
-      @if (primaryFare()?.officialMeterFare) {
-        <div class="meter-notice-box">
-          <div class="meter-header">
-            <span class="meter-icon">ℹ️</span>
-            <span class="meter-title">সিএনজি ভাড়া সম্পর্কে তথ্য</span>
-          </div>
-          <p class="meter-body">
-            সরকারি মিটার রেট: <strong>~৳{{ fareService.toBengaliDigits(primaryFare()?.officialMeterFare || 0) }}</strong>
-            <br>
-            <span class="meter-hint">তবে ঢাকার রাস্তায় চালকরা সাধারণত মিটারে যেতে চান না এবং <strong>{{ primaryFare()?.fareDisplayBn }}</strong> চুক্তিভিত্তিক ভাড়া দাবি করেন।</span>
-          </p>
-        </div>
-      }
-
-      <!-- Distance Feasibility Notice (e.g. Rickshaws > 7km) -->
-      @if (primaryFare()?.distanceNoticeBn) {
-        <div class="distance-warning-box">
-          <span class="warn-icon">⚠️</span>
-          <span>{{ primaryFare()?.distanceNoticeBn }}</span>
-        </div>
-      }
-
-      <!-- Source & Verification Note -->
-      <div class="fare-source-footer">
-        <span class="source-icon">📌</span>
-        <span class="source-text">{{ primaryFare()?.sourceNoteBn || primaryFare()?.sourceNote }}</span>
-      </div>
-    </div>
-
-    <!-- 5. All Transports Quick Comparison Bar -->
-    @if (allFares() && allFares().length > 1) {
-      <div class="comparison-section">
-        <span class="comparison-title">অন্যান্য যানবাহনের ভাড়া তুলনা ({{ activeRouteName() }}):</span>
-        <div class="comparison-grid">
-          @for (fare of allFares(); track fare.transportCode) {
-            <button
-              type="button"
-              class="comparison-card"
-              [class.active]="fare.transportCode === primaryFare()?.transportCode"
-              (click)="selectTransport(fare.transportCode)"
-              [title]="fare.transportNameBn + ' ভাড়া দেখুন'"
-            >
-              <div class="comp-header">
-                <span class="comp-icon">
-                  @switch (fare.transportCode) {
-                    @case ('bus') { 🚌 }
-                    @case ('rickshaw') { 🛺 }
-                    @case ('cng') { 🛺💨 }
-                    @case ('bike') { 🏍️ }
-                  }
-                </span>
-                <span class="comp-name">{{ fare.transportNameBn }}</span>
-              </div>
-              <div class="comp-amount">{{ fare.fareDisplayBn }}</div>
-            </button>
           }
         </div>
       </div>
