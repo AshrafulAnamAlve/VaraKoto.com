@@ -60,7 +60,78 @@
       </div>
     </div>
 
-    <!-- 2. PROMINENTLY HIGHLIGHTED TRANSIT JOURNEY GUIDE (যেভাবে যাবেন — বাহন ও রুট নির্দেশিকা) -->
+    <!-- 2. ROUTE SELECTOR & SWITCHER (Always Best Route by default + One-click Change Route Button) -->
+    @if (routesInfo()) {
+      <div class="route-switcher-box">
+        <div class="switcher-top-row">
+          <div class="switcher-label-wrap">
+            <span class="switcher-label-icon">🛣️</span>
+            <span class="switcher-label-text">নির্বাচিত রুট:</span>
+            <span class="current-route-pill">{{ activeRouteName() }}</span>
+          </div>
+
+          <button
+            type="button"
+            class="change-route-btn"
+            (click)="toggleRoute()"
+            title="অন্য বিকল্প রুটের ভাড়া ও নির্দেশিকা দেখুন"
+            aria-label="রুট পরিবর্তন করুন"
+          >
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="17 1 21 5 17 9"></polyline>
+              <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+              <polyline points="7 23 3 19 7 15"></polyline>
+              <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+            </svg>
+            <span>রুট পরিবর্তন</span>
+          </button>
+        </div>
+
+        <div class="route-cards-grid">
+          <!-- Route 1: Best / Primary Route -->
+          <button
+            type="button"
+            class="route-card-tab"
+            [class.active]="selectedRouteIndex() === 0"
+            (click)="selectRoute(0)"
+          >
+            <div class="card-tab-top">
+              <span class="route-pill primary-pill">⭐ সেরা রুট (Best)</span>
+              <span class="route-km">{{ route1DistanceBn() }} কিমি</span>
+            </div>
+            <div class="route-via-desc">{{ route1ViaText() }}</div>
+            <div class="route-meta-footer">
+              <span>সময়: ~{{ route1DurationBn() }} মি.</span>
+              @if (selectedRouteIndex() === 0) {
+                <span class="selected-check">✓ নির্বাচিত</span>
+              }
+            </div>
+          </button>
+
+          <!-- Route 2: Alternative Route -->
+          <button
+            type="button"
+            class="route-card-tab"
+            [class.active]="selectedRouteIndex() === 1"
+            (click)="selectRoute(1)"
+          >
+            <div class="card-tab-top">
+              <span class="route-pill alt-pill">🔄 বিকল্প রুট (Alt)</span>
+              <span class="route-km">{{ route2DistanceBn() }} কিমি</span>
+            </div>
+            <div class="route-via-desc">{{ route2ViaText() }}</div>
+            <div class="route-meta-footer">
+              <span>সময়: ~{{ route2DurationBn() }} মি.</span>
+              @if (selectedRouteIndex() === 1) {
+                <span class="selected-check">✓ নির্বাচিত</span>
+              }
+            </div>
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- 3. PROMINENTLY HIGHLIGHTED TRANSIT JOURNEY GUIDE (যেভাবে যাবেন — বাহন ও রুট নির্দেশিকা) -->
     @if (transitGuide()) {
       <div class="transit-guide-box highlighted-guide">
         <div class="guide-header">
@@ -71,7 +142,7 @@
               <h3 class="guide-title">যেভাবে যাবেন (বাহন ও বাস রুট)</h3>
             </div>
           </div>
-          <span class="guide-badge-status">প্রস্তাবিত রুট</span>
+          <span class="guide-badge-status">{{ activeRouteName() }}</span>
         </div>
 
         <div class="guide-content">
@@ -173,7 +244,7 @@
       </div>
     }
 
-    <!-- 3. Primary Fare Hero Display -->
+    <!-- 4. Primary Fare Hero Display -->
     <div class="fare-hero-box" [attr.data-transport]="primaryFare()?.transportCode">
       <div class="hero-top-bar">
         <div class="transport-badge">
@@ -212,7 +283,7 @@
 
       <!-- Huge Fare Typography in Baloo Da 2 -->
       <div class="fare-amount-display">
-        <span class="fare-label">আনুমানিক ভাড়া:</span>
+        <span class="fare-label">আনুমানিক ভাড়া ({{ activeRouteName() }}):</span>
         <div class="amount-text">{{ primaryFare()?.fareDisplayBn }}</div>
       </div>
 
@@ -246,12 +317,12 @@
       </div>
     </div>
 
-    <!-- 4. All Transports Quick Comparison Bar -->
-    @if (result()?.allFares && (result()?.allFares?.length || 0) > 1) {
+    <!-- 5. All Transports Quick Comparison Bar -->
+    @if (allFares() && allFares().length > 1) {
       <div class="comparison-section">
-        <span class="comparison-title">অন্যান্য যানবাহনের ভাড়া তুলনা:</span>
+        <span class="comparison-title">অন্যান্য যানবাহনের ভাড়া তুলনা ({{ activeRouteName() }}):</span>
         <div class="comparison-grid">
-          @for (fare of result()?.allFares; track fare.transportCode) {
+          @for (fare of allFares(); track fare.transportCode) {
             <button
               type="button"
               class="comparison-card"
@@ -277,7 +348,7 @@
       </div>
     }
 
-    <!-- 5. Result Action Buttons -->
+    <!-- 6. Result Action Buttons -->
     <div class="result-actions">
       <button type="button" class="action-btn back-primary-btn" (click)="onModify()" aria-label="নতুন সার্চ করুন">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">

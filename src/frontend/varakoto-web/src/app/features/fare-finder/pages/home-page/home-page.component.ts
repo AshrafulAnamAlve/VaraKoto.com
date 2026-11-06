@@ -1,240 +1,256 @@
-import { Component, OnInit, OnDestroy, computed, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
-import { RouteMapComponent } from '../../components/route-map/route-map.component';
-import { FareFinderCardComponent } from '../../components/fare-finder-card/fare-finder-card.component';
-import { FareResultCardComponent } from '../../components/fare-result-card/fare-result-card.component';
-import { FareContributionModalComponent } from '../../../fare-contribution/components/fare-contribution-modal/fare-contribution-modal.component';
-import { LoadingScreenComponent } from '../../../../shared/components/loading-screen/loading-screen.component';
-import { LogoComponent } from '../../../../shared/components/logo/logo.component';
-import { DistrictSelectorModalComponent } from '../../../../shared/components/district-selector-modal/district-selector-modal.component';
-import { DistrictService } from '../../../../core/services/district.service';
-import { ThemeService } from '../../../../core/services/theme.service';
-import { FareService } from '../../../../core/services/fare.service';
-import { NativeMobileService } from '../../../../core/services/native-mobile.service';
-import { FareContributionResponseModel, TransportCode } from '../../../../core/models/fare.model';
-
-@Component({
-  selector: 'app-home-page',
-  standalone: true,
-  imports: [
-    CommonModule,
-    RouterModule,
-    RouteMapComponent,
-    FareFinderCardComponent,
-    FareResultCardComponent,
-    FareContributionModalComponent,
-    LoadingScreenComponent,
-    LogoComponent,
-    DistrictSelectorModalComponent
-  ],
-  templateUrl: './home-page.component.html',
-  styleUrls: ['./home-page.component.scss']
-})
-export class HomePageComponent implements OnInit, OnDestroy {
-  readonly themeService = inject(ThemeService);
-  readonly fareService = inject(FareService);
-  readonly nativeMobile = inject(NativeMobileService);
-  readonly districtService = inject(DistrictService);
-
-  // View state: 'finder' | 'result'
-  readonly currentView = signal<'finder' | 'result'>('finder');
-  readonly replayTrigger = signal<number>(0);
-
-  // Route Map Data (computed directly from the calculated fare result)
-  readonly resultFrom = computed(() => {
-    const res = this.fareService.latestResult();
-    return res?.fromLocation?.nameBn || res?.fromLocation?.displayName || res?.fromLocation?.nameEn || '';
-  });
-
-  readonly resultTo = computed(() => {
-    const res = this.fareService.latestResult();
-    return res?.toLocation?.nameBn || res?.toLocation?.displayName || res?.toLocation?.nameEn || '';
-  });
-
-  readonly resultDistanceKm = computed(() => {
-    return this.fareService.latestResult()?.distanceKm ?? null;
-  });
-
-  readonly resultDurationMinutes = computed(() => {
-    return this.fareService.latestResult()?.estimatedDurationMinutes ?? null;
-  });
-
-  readonly resultFareAmount = computed(() => {
-    const primary = this.fareService.latestResult()?.primaryFare;
-    if (!primary) return null;
-    return primary.exactFare ?? primary.estimatedMinFare;
-  });
-
-  readonly resultFareDisplayBn = computed(() => {
-    return this.fareService.latestResult()?.primaryFare?.fareDisplayBn ?? '';
-  });
-
-  readonly resultVehicle = computed(() => {
-    return this.fareService.selectedTransport();
-  });
-
-  // Contribution Modal State
-  readonly isContributionModalOpen = signal<boolean>(false);
-  readonly contributionInitialFrom = signal<string>('');
-  readonly contributionInitialTo = signal<string>('');
-  readonly contributionInitialTransport = signal<TransportCode>('bus');
-
-  // Mobile App Native Bottom Nav & Info Sheet State
-  readonly activeNavTab = signal<'finder' | 'routes' | 'share' | 'district' | 'info'>('finder');
-  readonly isInfoSheetOpen = signal<boolean>(false);
-  readonly isKeyboardOpen = signal<boolean>(false);
-
-  private handleFocusIn?: (e: FocusEvent) => void;
-  private handleFocusOut?: () => void;
-  private handleViewportResize?: () => void;
-
-  ngOnInit(): void {
-    // Sync native mobile status bar theme with initial dark/light state
-    this.nativeMobile.updateStatusBarTheme(this.themeService.isDark());
-    // Load recent approved contributions for the community section
-    this.fareService.loadRecentContributions(6).subscribe();
-
-    if (typeof window !== 'undefined') {
-      this.handleFocusIn = (event: FocusEvent) => {
-        const target = event.target as HTMLElement;
-        if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) {
-          const type = (target as HTMLInputElement).type;
-          if (type !== 'checkbox' && type !== 'radio') {
-            this.isKeyboardOpen.set(true);
-            setTimeout(() => {
-              const rect = target.getBoundingClientRect();
-              const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-              if (rect.top < 65 || rect.top > 180) {
-                const targetY = scrollTop + rect.top - 74;
-                window.scrollTo({
-                  top: Math.max(0, targetY),
-                  behavior: 'smooth'
-                });
-              }
-            }, 180);
-          }
-        }
-      };
-
-      this.handleFocusOut = () => {
-        setTimeout(() => {
-          const activeEl = document.activeElement;
-          if (!activeEl || (activeEl.tagName !== 'INPUT' && activeEl.tagName !== 'TEXTAREA')) {
-            this.isKeyboardOpen.set(false);
-          }
-        }, 120);
-      };
-
-      window.addEventListener('focusin', this.handleFocusIn);
-      window.addEventListener('focusout', this.handleFocusOut);
-
-      if (window.visualViewport) {
-        const initialHeight = window.innerHeight;
-        this.handleViewportResize = () => {
-          const currentHeight = window.visualViewport?.height || window.innerHeight;
-          if (initialHeight - currentHeight > 140) {
-            this.isKeyboardOpen.set(true);
-          } else if (document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
-            this.isKeyboardOpen.set(false);
-          }
-        };
-        window.visualViewport.addEventListener('resize', this.handleViewportResize);
-      }
-    }
-  }
-
-  ngOnDestroy(): void {
-    if (typeof window !== 'undefined') {
-      if (this.handleFocusIn) window.removeEventListener('focusin', this.handleFocusIn);
-      if (this.handleFocusOut) window.removeEventListener('focusout', this.handleFocusOut);
-      if (this.handleViewportResize && window.visualViewport) {
-        window.visualViewport.removeEventListener('resize', this.handleViewportResize);
-      }
-    }
-  }
-
-  toggleTheme(): void {
-    this.themeService.toggleTheme();
-    this.nativeMobile.updateStatusBarTheme(this.themeService.isDark());
-    this.nativeMobile.hapticSelection();
-  }
-
-  showFinder(): void {
-    this.nativeMobile.hapticSelection();
-    this.activeNavTab.set('finder');
-    this.currentView.set('finder');
-    this.fareService.clearResult();
-    if (typeof window !== 'undefined') {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  }
-
-  openInfoSheet(): void {
-    this.nativeMobile.hapticSelection();
-    this.isInfoSheetOpen.set(true);
-    this.activeNavTab.set('info');
-  }
-
-  closeInfoSheet(): void {
-    this.isInfoSheetOpen.set(false);
-    this.activeNavTab.set('finder');
-  }
-
-  onSelectNavTab(tab: 'finder' | 'routes' | 'share' | 'district' | 'info'): void {
-    this.nativeMobile.hapticSelection();
-    if (tab === 'finder') {
-      this.activeNavTab.set('finder');
-      this.showFinder();
-    } else if (tab === 'routes') {
-      this.activeNavTab.set('routes');
-      if (typeof window !== 'undefined') {
-        const transitElement = document.querySelector('.transit-guide-box');
-        if (transitElement) {
-          transitElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        } else {
-          this.showFinder();
-        }
-      }
-    } else if (tab === 'share') {
-      this.openContributionModal();
-    } else if (tab === 'district') {
-      this.districtService.openModal();
-    } else if (tab === 'info') {
-      this.openInfoSheet();
-    }
-  }
-
-  onSearchSubmitted(): void {
-    this.nativeMobile.hapticSuccess();
-    this.replayTrigger.update(v => v + 1);
-    if (typeof window !== 'undefined' && window.innerWidth <= 960) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  }
-
-  openContributionModal(from?: string, to?: string, transport?: string): void {
-    this.contributionInitialFrom.set(from || '');
-    this.contributionInitialTo.set(to || '');
-    if (transport && ['bus', 'rickshaw', 'cng', 'bike'].includes(transport.toLowerCase())) {
-      this.contributionInitialTransport.set(transport.toLowerCase() as TransportCode);
-    } else {
-      this.contributionInitialTransport.set('bus');
-    }
-    this.isContributionModalOpen.set(true);
-  }
-
-  closeContributionModal(): void {
-    this.isContributionModalOpen.set(false);
-    this.activeNavTab.set('finder');
-  }
-
-  handleContribute(event: { fromLocation?: string; toLocation?: string; transport?: string }): void {
-    this.openContributionModal(event.fromLocation, event.toLocation, event.transport);
-  }
-
-  handleFareContributed(response: FareContributionResponseModel): void {
-    // Refresh recent contributions after a new one is submitted
-    this.fareService.loadRecentContributions(6).subscribe();
-  }
-}
+import { Component, OnInit, OnDestroy, computed, inject, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { RouteMapComponent } from '../../components/route-map/route-map.component';
+import { FareFinderCardComponent } from '../../components/fare-finder-card/fare-finder-card.component';
+import { FareResultCardComponent } from '../../components/fare-result-card/fare-result-card.component';
+import { FareContributionModalComponent } from '../../../fare-contribution/components/fare-contribution-modal/fare-contribution-modal.component';
+import { LoadingScreenComponent } from '../../../../shared/components/loading-screen/loading-screen.component';
+import { LogoComponent } from '../../../../shared/components/logo/logo.component';
+import { DistrictSelectorModalComponent } from '../../../../shared/components/district-selector-modal/district-selector-modal.component';
+import { DistrictService } from '../../../../core/services/district.service';
+import { ThemeService } from '../../../../core/services/theme.service';
+import { FareService } from '../../../../core/services/fare.service';
+import { NativeMobileService } from '../../../../core/services/native-mobile.service';
+import { FareContributionResponseModel, TransportCode } from '../../../../core/models/fare.model';
+
+@Component({
+  selector: 'app-home-page',
+  standalone: true,
+  imports: [
+    CommonModule,
+    RouterModule,
+    RouteMapComponent,
+    FareFinderCardComponent,
+    FareResultCardComponent,
+    FareContributionModalComponent,
+    LoadingScreenComponent,
+    LogoComponent,
+    DistrictSelectorModalComponent
+  ],
+  templateUrl: './home-page.component.html',
+  styleUrls: ['./home-page.component.scss']
+})
+export class HomePageComponent implements OnInit, OnDestroy {
+  readonly themeService = inject(ThemeService);
+  readonly fareService = inject(FareService);
+  readonly nativeMobile = inject(NativeMobileService);
+  readonly districtService = inject(DistrictService);
+
+  // View state: 'finder' | 'result'
+  // View state: 'finder' | 'result'
+  readonly currentView = signal<'finder' | 'result'>('finder');
+  readonly replayTrigger = signal<number>(0);
+  readonly selectedRouteOverride = signal<{ distanceKm: number; durationMinutes: number } | null>(null);
+
+  // Route Map Data (computed directly from the calculated fare result)
+  readonly resultFrom = computed(() => {
+    const res = this.fareService.latestResult();
+    return res?.fromLocation?.nameBn || res?.fromLocation?.displayName || res?.fromLocation?.nameEn || '';
+  });
+
+  readonly resultTo = computed(() => {
+    const res = this.fareService.latestResult();
+    return res?.toLocation?.nameBn || res?.toLocation?.displayName || res?.toLocation?.nameEn || '';
+  });
+
+  readonly resultDistanceKm = computed(() => {
+    const override = this.selectedRouteOverride();
+    if (override) return override.distanceKm;
+    return this.fareService.latestResult()?.distanceKm ?? null;
+  });
+
+  readonly resultDurationMinutes = computed(() => {
+    const override = this.selectedRouteOverride();
+    if (override) return override.durationMinutes;
+    return this.fareService.latestResult()?.estimatedDurationMinutes ?? null;
+  });
+
+  readonly resultFareAmount = computed(() => {
+    const primary = this.fareService.latestResult()?.primaryFare;
+    if (!primary) return null;
+    return primary.exactFare ?? primary.estimatedMinFare;
+  });
+
+  readonly resultFareDisplayBn = computed(() => {
+    return this.fareService.latestResult()?.primaryFare?.fareDisplayBn ?? '';
+  });
+
+  readonly resultVehicle = computed(() => {
+    return this.fareService.selectedTransport();
+  });
+
+  // Contribution Modal State
+  readonly isContributionModalOpen = signal<boolean>(false);
+  readonly contributionInitialFrom = signal<string>('');
+  readonly contributionInitialTo = signal<string>('');
+  readonly contributionInitialTransport = signal<TransportCode>('bus');
+
+  // Mobile App Native Bottom Nav & Info Sheet State
+  readonly activeNavTab = signal<'finder' | 'routes' | 'share' | 'district' | 'info'>('finder');
+  readonly isInfoSheetOpen = signal<boolean>(false);
+  readonly isKeyboardOpen = signal<boolean>(false);
+
+  private handleFocusIn?: (e: FocusEvent) => void;
+  private handleFocusOut?: () => void;
+  private handleViewportResize?: () => void;
+
+  ngOnInit(): void {
+    // Sync native mobile status bar theme with initial dark/light state
+    this.nativeMobile.updateStatusBarTheme(this.themeService.isDark());
+    // Load recent approved contributions for the community section
+    this.fareService.loadRecentContributions(6).subscribe();
+
+    if (typeof window !== 'undefined') {
+      this.handleFocusIn = (event: FocusEvent) => {
+        const target = event.target as HTMLElement;
+        if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) {
+          const type = (target as HTMLInputElement).type;
+          if (type !== 'checkbox' && type !== 'radio') {
+            this.isKeyboardOpen.set(true);
+            setTimeout(() => {
+              const rect = target.getBoundingClientRect();
+              const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+              if (rect.top < 65 || rect.top > 180) {
+                const targetY = scrollTop + rect.top - 74;
+                window.scrollTo({
+                  top: Math.max(0, targetY),
+                  behavior: 'smooth'
+                });
+              }
+            }, 180);
+          }
+        }
+      };
+
+      this.handleFocusOut = () => {
+        setTimeout(() => {
+          const activeEl = document.activeElement;
+          if (!activeEl || (activeEl.tagName !== 'INPUT' && activeEl.tagName !== 'TEXTAREA')) {
+            this.isKeyboardOpen.set(false);
+          }
+        }, 120);
+      };
+
+      window.addEventListener('focusin', this.handleFocusIn);
+      window.addEventListener('focusout', this.handleFocusOut);
+
+      if (window.visualViewport) {
+        const initialHeight = window.innerHeight;
+        this.handleViewportResize = () => {
+          const currentHeight = window.visualViewport?.height || window.innerHeight;
+          if (initialHeight - currentHeight > 140) {
+            this.isKeyboardOpen.set(true);
+          } else if (document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
+            this.isKeyboardOpen.set(false);
+          }
+        };
+        window.visualViewport.addEventListener('resize', this.handleViewportResize);
+      }
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (typeof window !== 'undefined') {
+      if (this.handleFocusIn) window.removeEventListener('focusin', this.handleFocusIn);
+      if (this.handleFocusOut) window.removeEventListener('focusout', this.handleFocusOut);
+      if (this.handleViewportResize && window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', this.handleViewportResize);
+      }
+    }
+  }
+
+  toggleTheme(): void {
+    this.themeService.toggleTheme();
+    this.nativeMobile.updateStatusBarTheme(this.themeService.isDark());
+    this.nativeMobile.hapticSelection();
+  }
+
+  showFinder(): void {
+    this.selectedRouteOverride.set(null);
+    this.nativeMobile.hapticSelection();
+    this.activeNavTab.set('finder');
+    this.currentView.set('finder');
+    this.fareService.clearResult();
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
+  openInfoSheet(): void {
+    this.nativeMobile.hapticSelection();
+    this.isInfoSheetOpen.set(true);
+    this.activeNavTab.set('info');
+  }
+
+  closeInfoSheet(): void {
+    this.isInfoSheetOpen.set(false);
+    this.activeNavTab.set('finder');
+  }
+
+  onSelectNavTab(tab: 'finder' | 'routes' | 'share' | 'district' | 'info'): void {
+    this.nativeMobile.hapticSelection();
+    if (tab === 'finder') {
+      this.activeNavTab.set('finder');
+      this.showFinder();
+    } else if (tab === 'routes') {
+      this.activeNavTab.set('routes');
+      if (typeof window !== 'undefined') {
+        const transitElement = document.querySelector('.transit-guide-box');
+        if (transitElement) {
+          transitElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+          this.showFinder();
+        }
+      }
+    } else if (tab === 'share') {
+      this.openContributionModal();
+    } else if (tab === 'district') {
+      this.districtService.openModal();
+    } else if (tab === 'info') {
+      this.openInfoSheet();
+    }
+  }
+
+  onRouteChanged(event: { routeIndex: number; distanceKm: number; durationMinutes: number }): void {
+    this.selectedRouteOverride.set({
+      distanceKm: event.distanceKm,
+      durationMinutes: event.durationMinutes
+    });
+    this.replayTrigger.update(v => v + 1);
+  }
+
+  onSearchSubmitted(): void {
+    this.selectedRouteOverride.set(null);
+    this.nativeMobile.hapticSuccess();
+    this.replayTrigger.update(v => v + 1);
+    if (typeof window !== 'undefined' && window.innerWidth <= 960) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
+  openContributionModal(from?: string, to?: string, transport?: string): void {
+    this.contributionInitialFrom.set(from || '');
+    this.contributionInitialTo.set(to || '');
+    if (transport && ['bus', 'rickshaw', 'cng', 'bike'].includes(transport.toLowerCase())) {
+      this.contributionInitialTransport.set(transport.toLowerCase() as TransportCode);
+    } else {
+      this.contributionInitialTransport.set('bus');
+    }
+    this.isContributionModalOpen.set(true);
+  }
+
+  closeContributionModal(): void {
+    this.isContributionModalOpen.set(false);
+    this.activeNavTab.set('finder');
+  }
+
+  handleContribute(event: { fromLocation?: string; toLocation?: string; transport?: string }): void {
+    this.openContributionModal(event.fromLocation, event.toLocation, event.transport);
+  }
+
+  handleFareContributed(response: FareContributionResponseModel): void {
+    // Refresh recent contributions after a new one is submitted
+    this.fareService.loadRecentContributions(6).subscribe();
+  }
+}

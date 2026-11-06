@@ -142,6 +142,7 @@
             <app-fare-result-card
               (modifySearch)="showFinder()"
               (contributeFare)="handleContribute($event)"
+              (routeChanged)="onRouteChanged($event)"
             ></app-fare-result-card>
           } @else {
             <!-- Fare Finder Search Card -->

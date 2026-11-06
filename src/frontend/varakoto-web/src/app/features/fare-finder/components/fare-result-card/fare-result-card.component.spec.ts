@@ -183,4 +183,42 @@ describe('FareResultCardComponent', () => {
       text: expect.stringContaining('ফার্মগেট')
     }));
   });
+
+  it('should select best route by default and allow toggling to alternative route', () => {
+    // Default route should be 0 (Best route)
+    expect(component.selectedRouteIndex()).toBe(0);
+    expect(component.activeRouteName()).toBe('রুট ১ (সেরা রুট)');
+    expect(component.route1ViaText()).toContain('রোকেয়া সরণি');
+
+    // Toggle to alternative route
+    const routeChangedSpy = vi.spyOn(component.routeChanged, 'emit');
+    component.toggleRoute();
+
+    expect(component.selectedRouteIndex()).toBe(1);
+    expect(component.activeRouteName()).toBe('রুট ২ (বিকল্প রুট)');
+    expect(routeChangedSpy).toHaveBeenCalledWith(expect.objectContaining({
+      routeIndex: 1,
+      distanceKm: expect.any(Number),
+      durationMinutes: expect.any(Number)
+    }));
+
+    // Distance and fare should dynamically scale with alternative route
+    expect(component.activeDistanceKm()).toBeGreaterThan(7.5);
+    const altFare = component.primaryFare();
+    expect(altFare).toBeTruthy();
+    expect(altFare?.estimatedMinFare).toBeGreaterThanOrEqual(250);
+
+    // Toggle back to Route 1 (Best route)
+    component.toggleRoute();
+    expect(component.selectedRouteIndex()).toBe(0);
+    expect(component.activeRouteName()).toBe('রুট ১ (সেরা রুট)');
+  });
+
+  it('should select specific route on selectRoute call', () => {
+    component.selectRoute(1);
+    expect(component.selectedRouteIndex()).toBe(1);
+
+    component.selectRoute(0);
+    expect(component.selectedRouteIndex()).toBe(0);
+  });
 });
