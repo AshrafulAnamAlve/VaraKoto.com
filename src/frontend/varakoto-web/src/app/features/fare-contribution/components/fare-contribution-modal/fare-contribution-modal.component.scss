@@ -289,6 +289,12 @@
           color: #ffffff;
           border-color: var(--vk-green);
         }
+
+        [data-theme="dark"] & {
+          color: #FFC93C !important;
+          border-color: rgba(255, 201, 60, 0.35) !important;
+          background: rgba(255, 201, 60, 0.08) !important;
+        }
       }
     }
   }
@@ -317,6 +323,11 @@
 
     &:hover {
       background-color: var(--bg-subtle);
+    }
+
+    [data-theme="dark"] & {
+      color: #37E6A3 !important;
+      border-color: rgba(55, 230, 163, 0.35) !important;
     }
 
     .toggle-indicator {

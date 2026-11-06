@@ -84,15 +84,67 @@ export const BANGLADESH_DISTRICTS: District[] = [
 ];
 
 export const DISTRICT_HUBS: Record<string, LocationDto[]> = {
-  rangamati: [
-    { displayName: 'বনরূপা বাজার, রাঙ্গামাটি', nameBn: 'বনরূপা বাজার', nameEn: 'Bonorupa Bazar', latitude: 22.655477, longitude: 92.178924, district: 'Rangamati', thana: 'Rangamati Sadar', isHub: true, source: 'Hub' },
-    { displayName: 'রিজার্ভ বাজার, রাঙ্গামাটি', nameBn: 'রিজার্ভ বাজার', nameEn: 'Reserve Bazar', latitude: 22.646200, longitude: 92.186500, district: 'Rangamati', thana: 'Rangamati Sadar', isHub: true, source: 'Hub' },
-    { displayName: 'তবলছড়ি বাজার, রাঙ্গামাটি', nameBn: 'তবলছড়ি', nameEn: 'Tabalchhari', latitude: 22.637300, longitude: 92.181800, district: 'Rangamati', thana: 'Rangamati Sadar', isHub: true, source: 'Hub' },
-    { displayName: 'ভেদভেদী বাস টার্মিনাল, রাঙ্গামাটি', nameBn: 'ভেদভেদী বাস টার্মিনাল', nameEn: 'Bhedbhedi Bus Terminal', latitude: 22.659800, longitude: 92.164500, district: 'Rangamati', thana: 'Rangamati Sadar', isHub: true, source: 'Hub' },
-    { displayName: 'আসামবস্তি, রাঙ্গামাটি', nameBn: 'আসামবস্তি', nameEn: 'Asambosti', latitude: 22.641200, longitude: 92.193400, district: 'Rangamati', thana: 'Rangamati Sadar', isHub: true, source: 'Hub' },
-    { displayName: 'মানিকছড়ি, রাঙ্গামাটি', nameBn: 'মানিকছড়ি', nameEn: 'Manikchhari', latitude: 22.668500, longitude: 92.138700, district: 'Rangamati', thana: 'Rangamati Sadar', isHub: true, source: 'Hub' },
-    { displayName: 'কাপ্তাই নতুন বাজার, রাঙ্গামাটি', nameBn: 'কাপ্তাই নতুন বাজার', nameEn: 'Kaptai Notun Bazar', latitude: 22.496200, longitude: 92.222900, district: 'Rangamati', thana: 'Kaptai', isHub: true, source: 'Hub' },
-    { displayName: 'হাসপাতাল রোড, রাঙ্গামাটি', nameBn: 'হাসপাতাল রোড', nameEn: 'Hospital Road', latitude: 22.658700, longitude: 92.168200, district: 'Rangamati', thana: 'Rangamati Sadar', isHub: true, source: 'Hub' }
+  dhaka: [
+    { displayName: 'মিরপুর ১০ গোলচত্বর, ঢাকা', nameBn: 'মিরপুর ১০', nameEn: 'Mirpur 10', latitude: 23.8069, longitude: 90.3687, district: 'Dhaka', thana: 'Mirpur', isHub: true, source: 'Hub' },
+    { displayName: 'ফার্মগেট মোড়, ঢাকা', nameBn: 'ফার্মগেট', nameEn: 'Farmgate', latitude: 23.7561, longitude: 90.3872, district: 'Dhaka', thana: 'Tejgaon', isHub: true, source: 'Hub' },
+    { displayName: 'উত্তরা রাজলক্ষ্মী, ঢাকা', nameBn: 'উত্তরা রাজলক্ষ্মী', nameEn: 'Uttara Rajlakshmi', latitude: 23.8681, longitude: 90.3995, district: 'Dhaka', thana: 'Uttara', isHub: true, source: 'Hub' },
+    { displayName: 'উত্তরা হাউস বিল্ডিং, ঢাকা', nameBn: 'উত্তরা হাউস বিল্ডিং', nameEn: 'Uttara House Building', latitude: 23.8759, longitude: 90.3984, district: 'Dhaka', thana: 'Uttara', isHub: true, source: 'Hub' },
+    { displayName: 'হযরত শাহজালাল আন্তর্জাতিক বিমানবন্দর, ঢাকা', nameBn: 'বিমানবন্দর', nameEn: 'Airport', latitude: 23.8512, longitude: 90.4074, district: 'Dhaka', thana: 'Airport', isHub: true, source: 'Hub' },
+    { displayName: 'মতিঝিল শাপলা চত্বর, ঢাকা', nameBn: 'মতিঝিল', nameEn: 'Motijheel', latitude: 23.7289, longitude: 90.4182, district: 'Dhaka', thana: 'Motijheel', isHub: true, source: 'Hub' },
+    { displayName: 'কমলাপুর রেলওয়ে স্টেশন, ঢাকা', nameBn: 'কমলাপুর রেলওয়ে স্টেশন', nameEn: 'Kamalapur Railway Station', latitude: 23.7314, longitude: 90.4255, district: 'Dhaka', thana: 'Motijheel', isHub: true, source: 'Hub' },
+    { displayName: 'মহাখালী বাস টার্মিনাল, ঢাকা', nameBn: 'মহাখালী', nameEn: 'Mohakhali', latitude: 23.7778, longitude: 90.4005, district: 'Dhaka', thana: 'Mohakhali', isHub: true, source: 'Hub' },
+    { displayName: 'শাহবাগ মোড়, ঢাকা', nameBn: 'শাহবাগ', nameEn: 'Shahbagh', latitude: 23.7383, longitude: 90.3957, district: 'Dhaka', thana: 'Shahbagh', isHub: true, source: 'Hub' },
+    { displayName: 'ধানমন্ডি ২৭ (সোবহানবাগ), ঢাকা', nameBn: 'ধানমন্ডি ২৭', nameEn: 'Dhanmondi 27', latitude: 23.7534, longitude: 90.3768, district: 'Dhaka', thana: 'Dhanmondi', isHub: true, source: 'Hub' },
+    { displayName: 'ধানমন্ডি ৩২ (রাসেল স্কয়ার), ঢাকা', nameBn: 'ধানমন্ডি ৩২', nameEn: 'Dhanmondi 32', latitude: 23.7516, longitude: 90.3792, district: 'Dhaka', thana: 'Dhanmondi', isHub: true, source: 'Hub' },
+    { displayName: 'সায়েন্স ল্যাব মোড়, ঢাকা', nameBn: 'সায়েন্স ল্যাব', nameEn: 'Science Lab', latitude: 23.7397, longitude: 90.3831, district: 'Dhaka', thana: 'New Market', isHub: true, source: 'Hub' },
+    { displayName: 'নিউ মার্কেট বাস স্ট্যান্ড, ঢাকা', nameBn: 'নিউ মার্কেট', nameEn: 'New Market', latitude: 23.7335, longitude: 90.3845, district: 'Dhaka', thana: 'New Market', isHub: true, source: 'Hub' },
+    { displayName: 'আজিমপুর বাস স্ট্যান্ড, ঢাকা', nameBn: 'আজিমপুর', nameEn: 'Azimpur', latitude: 23.7275, longitude: 90.3871, district: 'Dhaka', thana: 'Lalbagh', isHub: true, source: 'Hub' },
+    { displayName: 'মোহাম্মদপুর বাস স্ট্যান্ড, ঢাকা', nameBn: 'মোহাম্মদপুর', nameEn: 'Mohammadpur', latitude: 23.7578, longitude: 90.3603, district: 'Dhaka', thana: 'Mohammadpur', isHub: true, source: 'Hub' },
+    { displayName: 'শ্যামলী স্কয়ার মোড়, ঢাকা', nameBn: 'শ্যামলী', nameEn: 'Shyamoli', latitude: 23.7712, longitude: 90.3644, district: 'Dhaka', thana: 'Mohammadpur', isHub: true, source: 'Hub' },
+    { displayName: 'কল্যাণপুর বাস স্ট্যান্ড, ঢাকা', nameBn: 'কল্যাণপুর', nameEn: 'Kalyanpur', latitude: 23.7801, longitude: 90.3605, district: 'Dhaka', thana: 'Mirpur', isHub: true, source: 'Hub' },
+    { displayName: 'টেকনিক্যাল মোড়, ঢাকা', nameBn: 'টেকনিক্যাল', nameEn: 'Technical', latitude: 23.7845, longitude: 90.3547, district: 'Dhaka', thana: 'Mirpur', isHub: true, source: 'Hub' },
+    { displayName: 'গাবতলী আন্তঃজেলা বাস টার্মিনাল, ঢাকা', nameBn: 'গাবতলী', nameEn: 'Gabtoli', latitude: 23.7828, longitude: 90.3458, district: 'Dhaka', thana: 'Mirpur', isHub: true, source: 'Hub' },
+    { displayName: 'মিরপুর ১ গোলচত্বর, ঢাকা', nameBn: 'মিরপুর ১', nameEn: 'Mirpur 1', latitude: 23.7956, longitude: 90.3537, district: 'Dhaka', thana: 'Mirpur', isHub: true, source: 'Hub' },
+    { displayName: 'মিরপুর ১২ বাস স্ট্যান্ড, ঢাকা', nameBn: 'মিরপুর ১২', nameEn: 'Mirpur 12', latitude: 23.8272, longitude: 90.3653, district: 'Dhaka', thana: 'Pallabi', isHub: true, source: 'Hub' },
+    { displayName: 'মিরপুর ১৪ বাস স্ট্যান্ড, ঢাকা', nameBn: 'মিরপুর ১৪', nameEn: 'Mirpur 14', latitude: 23.7997, longitude: 90.3872, district: 'Dhaka', thana: 'Kafrul', isHub: true, source: 'Hub' },
+    { displayName: 'আগারগাঁও মেট্রো স্টেশন, ঢাকা', nameBn: 'আগারগাঁও', nameEn: 'Agargaon', latitude: 23.7781, longitude: 90.3798, district: 'Dhaka', thana: 'Sher-e-Bangla Nagar', isHub: true, source: 'Hub' },
+    { displayName: 'শেওড়াপাড়া বাস স্ট্যান্ড, ঢাকা', nameBn: 'শেওড়াপাড়া', nameEn: 'Shewrapara', latitude: 23.7905, longitude: 90.3734, district: 'Dhaka', thana: 'Mirpur', isHub: true, source: 'Hub' },
+    { displayName: 'কাজীপাড়া মেট্রো স্টেশন, ঢাকা', nameBn: 'কাজীপাড়া', nameEn: 'Kazipara', latitude: 23.7978, longitude: 90.3712, district: 'Dhaka', thana: 'Mirpur', isHub: true, source: 'Hub' },
+    { displayName: 'পল্লবী মেট্রো স্টেশন, ঢাকা', nameBn: 'পল্লবী', nameEn: 'Pallabi', latitude: 23.8241, longitude: 90.3639, district: 'Dhaka', thana: 'Pallabi', isHub: true, source: 'Hub' },
+    { displayName: 'কারওয়ান বাজার মোড়, ঢাকা', nameBn: 'কারওয়ান বাজার', nameEn: 'Karwan Bazar', latitude: 23.7505, longitude: 90.3934, district: 'Dhaka', thana: 'Tejgaon', isHub: true, source: 'Hub' },
+    { displayName: 'বাংলামটর মোড়, ঢাকা', nameBn: 'বাংলামটর', nameEn: 'Banglamotor', latitude: 23.7461, longitude: 90.3954, district: 'Dhaka', thana: 'Ramna', isHub: true, source: 'Hub' },
+    { displayName: 'মগবাজার চৌরাস্তা, ঢাকা', nameBn: 'মগবাজার', nameEn: 'Moghbazar', latitude: 23.7485, longitude: 90.4072, district: 'Dhaka', thana: 'Ramna', isHub: true, source: 'Hub' },
+    { displayName: 'মৌচাক মোড়, ঢাকা', nameBn: 'মৌচাক', nameEn: 'Mouchak', latitude: 23.7462, longitude: 90.4138, district: 'Dhaka', thana: 'Malibagh', isHub: true, source: 'Hub' },
+    { displayName: 'মালিবাগ রেলগেট, ঢাকা', nameBn: 'মালিবাগ', nameEn: 'Malibagh', latitude: 23.7511, longitude: 90.4182, district: 'Dhaka', thana: 'Malibagh', isHub: true, source: 'Hub' },
+    { displayName: 'রামপুরা ব্রিজ মোড়, ঢাকা', nameBn: 'রামপুরা ব্রিজ', nameEn: 'Rampura Bridge', latitude: 23.7634, longitude: 90.4258, district: 'Dhaka', thana: 'Rampura', isHub: true, source: 'Hub' },
+    { displayName: 'বাড্ডা লিংক রোড, ঢাকা', nameBn: 'বাড্ডা লিংক রোড', nameEn: 'Badda Link Road', latitude: 23.7844, longitude: 90.4267, district: 'Dhaka', thana: 'Badda', isHub: true, source: 'Hub' },
+    { displayName: 'নতুন বাজার মোড়, ঢাকা', nameBn: 'নতুন বাজার', nameEn: 'Notun Bazar', latitude: 23.7978, longitude: 90.4242, district: 'Dhaka', thana: 'Vatara', isHub: true, source: 'Hub' },
+    { displayName: 'কুড়িল বিশ্বরোড মোড়, ঢাকা', nameBn: 'কুড়িল বিশ্বরোড', nameEn: 'Kuril Bishwa Road', latitude: 23.8164, longitude: 90.4208, district: 'Dhaka', thana: 'Khilkhet', isHub: true, source: 'Hub' },
+    { displayName: 'বসুন্ধরা আবাসিক এলাকা গেট, ঢাকা', nameBn: 'বসুন্ধরা', nameEn: 'Bashundhara', latitude: 23.8138, longitude: 90.4248, district: 'Dhaka', thana: 'Vatara', isHub: true, source: 'Hub' },
+    { displayName: 'বনানী গোলচত্বর (১১ নং রোড), ঢাকা', nameBn: 'বনানী', nameEn: 'Banani', latitude: 23.7937, longitude: 90.4043, district: 'Dhaka', thana: 'Banani', isHub: true, source: 'Hub' },
+    { displayName: 'গুলশান ১ গোলচত্বর, ঢাকা', nameBn: 'গুলশান ১', nameEn: 'Gulshan 1', latitude: 23.7785, longitude: 90.4178, district: 'Dhaka', thana: 'Gulshan', isHub: true, source: 'Hub' },
+    { displayName: 'গুলশান ২ গোলচত্বর, ঢাকা', nameBn: 'গুলশান ২', nameEn: 'Gulshan 2', latitude: 23.7949, longitude: 90.4143, district: 'Dhaka', thana: 'Gulshan', isHub: true, source: 'Hub' },
+    { displayName: 'পল্টন মোড়, ঢাকা', nameBn: 'পল্টন', nameEn: 'Paltan', latitude: 23.7312, longitude: 90.4121, district: 'Dhaka', thana: 'Paltan', isHub: true, source: 'Hub' },
+    { displayName: 'গুলিস্তান জিরো পয়েন্ট, ঢাকা', nameBn: 'গুলিস্তান', nameEn: 'Gulistan', latitude: 23.7258, longitude: 90.4115, district: 'Dhaka', thana: 'Motijheel', isHub: true, source: 'Hub' },
+    { displayName: 'সদরঘাট লঞ্চ টার্মিনাল, ঢাকা', nameBn: 'সদরঘাট', nameEn: 'Sadarghat', latitude: 23.7058, longitude: 90.4112, district: 'Dhaka', thana: 'Kotwali', isHub: true, source: 'Hub' },
+    { displayName: 'যাত্রাবাড়ী চৌরাস্তা, ঢাকা', nameBn: 'যাত্রাবাড়ী', nameEn: 'Jatrabari', latitude: 23.7118, longitude: 90.4344, district: 'Dhaka', thana: 'Jatrabari', isHub: true, source: 'Hub' },
+    { displayName: 'সায়েদাবাদ জনপথ মোড়, ঢাকা', nameBn: 'সায়েদাবাদ', nameEn: 'Sayedabad', latitude: 23.7153, longitude: 90.4286, district: 'Dhaka', thana: 'Jatrabari', isHub: true, source: 'Hub' },
+    { displayName: 'ইসিবি চত্বর, ঢাকা', nameBn: 'ইসিবি চত্বর', nameEn: 'ECB Chattar', latitude: 23.8236, longitude: 90.3912, district: 'Dhaka', thana: 'Cantonment', isHub: true, source: 'Hub' },
+    { displayName: 'দিয়াবাড়ী মেট্রো স্টেশন (উত্তরা উত্তর), ঢাকা', nameBn: 'দিয়াবাড়ী', nameEn: 'Diabari', latitude: 23.8887, longitude: 90.3789, district: 'Dhaka', thana: 'Turag', isHub: true, source: 'Hub' }
+  ],
+  gazipur: [
+    { displayName: 'জয়দেবপুর চৌরাস্তা, গাজীপুর', nameBn: 'চৌরাস্তা', nameEn: 'Joydebpur Chowrasta', latitude: 23.9989, longitude: 90.3842, district: 'Gazipur', thana: 'Joydebpur', isHub: true, source: 'Hub' },
+    { displayName: 'টঙ্গী স্টেশন রোড বাস স্ট্যান্ড, গাজীপুর', nameBn: 'টঙ্গী স্টেশন রোড', nameEn: 'Tongi Station Road', latitude: 23.8967, longitude: 90.4042, district: 'Gazipur', thana: 'Tongi', isHub: true, source: 'Hub' },
+    { displayName: 'শিববাড়ি মোড়, গাজীপুর', nameBn: 'শিববাড়ি', nameEn: 'Shibbari Gazipur', latitude: 24.0042, longitude: 90.4215, district: 'Gazipur', thana: 'Joydebpur', isHub: true, source: 'Hub' },
+    { displayName: 'বোর্ড বাজার বাস স্ট্যান্ড, গাজীপুর', nameBn: 'বোর্ড বাজার', nameEn: 'Board Bazar', latitude: 23.9634, longitude: 90.3921, district: 'Gazipur', thana: 'Joydebpur', isHub: true, source: 'Hub' },
+    { displayName: 'কোনাবাড়ী বাস স্ট্যান্ড, গাজীপুর', nameBn: 'কোনাবাড়ী', nameEn: 'Konabari', latitude: 24.0182, longitude: 90.3278, district: 'Gazipur', thana: 'Konabari', isHub: true, source: 'Hub' }
+  ],
+  narayanganj: [
+    { displayName: 'চাষাড়া গোলচত্বর, নারায়ণগঞ্জ', nameBn: 'চাষাড়া', nameEn: 'Chashara', latitude: 23.6238, longitude: 90.4998, district: 'Narayanganj', thana: 'Narayanganj Sadar', isHub: true, source: 'Hub' },
+    { displayName: '২ নং রেলগেট বাস স্ট্যান্ড, নারায়ণগঞ্জ', nameBn: '২ নং রেলগেট', nameEn: '2 No Railgate', latitude: 23.6189, longitude: 90.5054, district: 'Narayanganj', thana: 'Narayanganj Sadar', isHub: true, source: 'Hub' },
+    { displayName: 'সাইনবোর্ড মোড় (ঢাকা-চট্টগ্রাম হাইওয়ে), নারায়ণগঞ্জ', nameBn: 'সাইনবোর্ড', nameEn: 'Signboard', latitude: 23.6845, longitude: 90.4782, district: 'Narayanganj', thana: 'Siddhirganj', isHub: true, source: 'Hub' },
+    { displayName: 'শিমরাইল মোড় (কাঁচপুর ব্রিজ), নারায়ণগঞ্জ', nameBn: 'শিমরাইল কাঁচপুর', nameEn: 'Shimrail Kanchpur', latitude: 23.6998, longitude: 90.5187, district: 'Narayanganj', thana: 'Siddhirganj', isHub: true, source: 'Hub' },
+    { displayName: 'আদমজী ইপিজেড মোড়, নারায়ণগঞ্জ', nameBn: 'আদমজী', nameEn: 'Adamjee EPZ', latitude: 23.6654, longitude: 90.5289, district: 'Narayanganj', thana: 'Siddhirganj', isHub: true, source: 'Hub' }
   ],
   chattogram: [
     { displayName: 'জিইসি মোড়, চট্টগ্রাম', nameBn: 'জিইসি মোড়', nameEn: 'GEC Circle', latitude: 22.3585, longitude: 91.8222, district: 'Chattogram', thana: 'Panchlaish', isHub: true, source: 'Hub' },
@@ -100,7 +152,9 @@ export const DISTRICT_HUBS: Record<string, LocationDto[]> = {
     { displayName: 'অলংকার মোড়, চট্টগ্রাম', nameBn: 'অলংকার মোড়', nameEn: 'Alankar Circle', latitude: 22.3705, longitude: 91.7828, district: 'Chattogram', thana: 'Pahartali', isHub: true, source: 'Hub' },
     { displayName: 'এ কে খান বাস টার্মিনাল, চট্টগ্রাম', nameBn: 'এ কে খান গেট', nameEn: 'A.K. Khan Gate', latitude: 22.3789, longitude: 91.7778, district: 'Chattogram', thana: 'Pahartali', isHub: true, source: 'Hub' },
     { displayName: 'নিউ মার্কেট মোড়, চট্টগ্রাম', nameBn: 'নিউ মার্কেট', nameEn: 'New Market', latitude: 22.3353, longitude: 91.8329, district: 'Chattogram', thana: 'Kotwali', isHub: true, source: 'Hub' },
-    { displayName: 'আগ্রাবাদ বাণিজ্যিক এলাকা, চট্টগ্রাম', nameBn: 'আগ্রাবাদ', nameEn: 'Agrabad C/A', latitude: 22.3276, longitude: 91.8123, district: 'Chattogram', thana: 'Double Mooring', isHub: true, source: 'Hub' }
+    { displayName: 'আগ্রাবাদ বাণিজ্যিক এলাকা, চট্টগ্রাম', nameBn: 'আগ্রাবাদ', nameEn: 'Agrabad C/A', latitude: 22.3276, longitude: 91.8123, district: 'Chattogram', thana: 'Double Mooring', isHub: true, source: 'Hub' },
+    { displayName: 'চকবাজার মোড়, চট্টগ্রাম', nameBn: 'চকবাজার', nameEn: 'Chawkbazar', latitude: 22.3589, longitude: 91.8398, district: 'Chattogram', thana: 'Chawkbazar', isHub: true, source: 'Hub' },
+    { displayName: 'মুরাদপুর মোড়, চট্টগ্রাম', nameBn: 'মুরাদপুর', nameEn: 'Muradpur', latitude: 22.3645, longitude: 91.8389, district: 'Chattogram', thana: 'Panchlaish', isHub: true, source: 'Hub' }
   ],
   coxsbazar: [
     { displayName: 'কলাতলী সুগন্ধা মোড়, কক্সবাজার', nameBn: 'কলাতলী মোড়', nameEn: 'Kolatoli Circle', latitude: 21.4192, longitude: 91.9839, district: "Cox's Bazar", thana: "Cox's Bazar Sadar", isHub: true, source: 'Hub' },
@@ -132,16 +186,25 @@ export const DISTRICT_HUBS: Record<string, LocationDto[]> = {
     { displayName: 'রূপাতলী বাস টার্মিনাল, বরিশাল', nameBn: 'রূপাতলী বাস টার্মিনাল', nameEn: 'Rupatali Bus Terminal', latitude: 22.6789, longitude: 90.3442, district: 'Barishal', thana: 'Kotwali', isHub: true, source: 'Hub' },
     { displayName: 'সদর রোড চৌমাথা, বরিশাল', nameBn: 'সদর রোড', nameEn: 'Sadar Road', latitude: 22.7012, longitude: 90.3705, district: 'Barishal', thana: 'Kotwali', isHub: true, source: 'Hub' }
   ],
-  dhaka: [
-    { displayName: 'মিরপুর ১০ গোলচত্বর, ঢাকা', nameBn: 'মিরপুর ১০', nameEn: 'Mirpur 10', latitude: 23.8069, longitude: 90.3687, district: 'Dhaka', thana: 'Mirpur', isHub: true, source: 'Hub' },
-    { displayName: 'ফার্মগেট মোড়, ঢাকা', nameBn: 'ফার্মগেট', nameEn: 'Farmgate', latitude: 23.7561, longitude: 90.3872, district: 'Dhaka', thana: 'Tejgaon', isHub: true, source: 'Hub' },
-    { displayName: 'উত্তরা রাজলক্ষ্মী, ঢাকা', nameBn: 'উত্তরা', nameEn: 'Uttara', latitude: 23.8681, longitude: 90.3995, district: 'Dhaka', thana: 'Uttara', isHub: true, source: 'Hub' },
-    { displayName: 'মতিঝিল শাপলা চত্বর, ঢাকা', nameBn: 'মতিঝিল', nameEn: 'Motijheel', latitude: 23.7289, longitude: 90.4182, district: 'Dhaka', thana: 'Motijheel', isHub: true, source: 'Hub' },
-    { displayName: 'মহাখালী বাস টার্মিনাল, ঢাকা', nameBn: 'মহাখালী', nameEn: 'Mohakhali', latitude: 23.7778, longitude: 90.4005, district: 'Dhaka', thana: 'Mohakhali', isHub: true, source: 'Hub' },
-    { displayName: 'শাহবাগ মোড়, ঢাকা', nameBn: 'শাহবাগ', nameEn: 'Shahbagh', latitude: 23.7383, longitude: 90.3957, district: 'Dhaka', thana: 'Shahbagh', isHub: true, source: 'Hub' },
-    { displayName: 'ধানমন্ডি ২৭ (সোবহানবাগ), ঢাকা', nameBn: 'ধানমন্ডি ২৭', nameEn: 'Dhanmondi 27', latitude: 23.7534, longitude: 90.3768, district: 'Dhaka', thana: 'Dhanmondi', isHub: true, source: 'Hub' },
-    { displayName: 'গুলশান ২ গোলচত্বর, ঢাকা', nameBn: 'গুলশান ২', nameEn: 'Gulshan 2', latitude: 23.7949, longitude: 90.4143, district: 'Dhaka', thana: 'Gulshan', isHub: true, source: 'Hub' },
-    { displayName: 'গাবতলী আন্তঃজেলা বাস টার্মিনাল, ঢাকা', nameBn: 'গাবতলী', nameEn: 'Gabtoli', latitude: 23.7828, longitude: 90.3458, district: 'Dhaka', thana: 'Mirpur', isHub: true, source: 'Hub' },
-    { displayName: 'সায়েদাবাদ জনপথ মোড়, ঢাকা', nameBn: 'সায়েদাবাদ', nameEn: 'Sayedabad', latitude: 23.7153, longitude: 90.4286, district: 'Dhaka', thana: 'Jatrabari', isHub: true, source: 'Hub' }
+  cumilla: [
+    { displayName: 'কান্দিরপাড় মোড়, কুমিল্লা', nameBn: 'কান্দিরপাড়', nameEn: 'Kandirpar', latitude: 23.4612, longitude: 91.1812, district: 'Cumilla', thana: 'Adarsha Sadar', isHub: true, source: 'Hub' },
+    { displayName: 'শাসনগাছা কেন্দ্রীয় বাস টার্মিনাল, কুমিল্লা', nameBn: 'শাসনগাছা বাস টার্মিনাল', nameEn: 'Shashongacha Bus Terminal', latitude: 23.4689, longitude: 91.1712, district: 'Cumilla', thana: 'Adarsha Sadar', isHub: true, source: 'Hub' },
+    { displayName: 'পদুয়ার বাজার বিশ্বরোড মোড়, কুমিল্লা', nameBn: 'পদুয়ার বাজার বিশ্বরোড', nameEn: 'Paduar Bazar', latitude: 23.4178, longitude: 91.1923, district: 'Cumilla', thana: 'Sadar South', isHub: true, source: 'Hub' },
+    { displayName: 'জাঙ্গালিয়া বাস টার্মিনাল, কুমিল্লা', nameBn: 'জাঙ্গালিয়া বাস টার্মিনাল', nameEn: 'Jangalia Bus Terminal', latitude: 23.4398, longitude: 91.1789, district: 'Cumilla', thana: 'Sadar South', isHub: true, source: 'Hub' }
+  ],
+  bogura: [
+    { displayName: 'চারমাথা কেন্দ্রীয় বাস টার্মিনাল, বগুড়া', nameBn: 'চারমাথা বাস টার্মিনাল', nameEn: 'Charmatha Bus Terminal', latitude: 24.8512, longitude: 89.3512, district: 'Bogura', thana: 'Bogura Sadar', isHub: true, source: 'Hub' },
+    { displayName: 'সাতমাথা জিরো পয়েন্ট, বগুড়া', nameBn: 'সাতমাথা জিরো পয়েন্ট', nameEn: 'Satmatha Zero Point', latitude: 24.8465, longitude: 89.3723, district: 'Bogura', thana: 'Bogura Sadar', isHub: true, source: 'Hub' },
+    { displayName: 'বনানী মোড়, বগুড়া', nameBn: 'বনানী মোড়', nameEn: 'Banani Bogura', latitude: 24.8189, longitude: 89.3789, district: 'Bogura', thana: 'Shahjahanpur', isHub: true, source: 'Hub' }
+  ],
+  rangamati: [
+    { displayName: 'বনরূপা বাজার, রাঙ্গামাটি', nameBn: 'বনরূপা বাজার', nameEn: 'Bonorupa Bazar', latitude: 22.655477, longitude: 92.178924, district: 'Rangamati', thana: 'Rangamati Sadar', isHub: true, source: 'Hub' },
+    { displayName: 'রিজার্ভ বাজার, রাঙ্গামাটি', nameBn: 'রিজার্ভ বাজার', nameEn: 'Reserve Bazar', latitude: 22.646200, longitude: 92.186500, district: 'Rangamati', thana: 'Rangamati Sadar', isHub: true, source: 'Hub' },
+    { displayName: 'তবলছড়ি বাজার, রাঙ্গামাটি', nameBn: 'তবলছড়ি', nameEn: 'Tabalchhari', latitude: 22.637300, longitude: 92.181800, district: 'Rangamati', thana: 'Rangamati Sadar', isHub: true, source: 'Hub' },
+    { displayName: 'ভেদভেদী বাস টার্মিনাল, রাঙ্গামাটি', nameBn: 'ভেদভেদী বাস টার্মিনাল', nameEn: 'Bhedbhedi Bus Terminal', latitude: 22.659800, longitude: 92.164500, district: 'Rangamati', thana: 'Rangamati Sadar', isHub: true, source: 'Hub' },
+    { displayName: 'আসামবস্তি, রাঙ্গামাটি', nameBn: 'আসামবস্তি', nameEn: 'Asambosti', latitude: 22.641200, longitude: 92.193400, district: 'Rangamati', thana: 'Rangamati Sadar', isHub: true, source: 'Hub' },
+    { displayName: 'মানিকছড়ি, রাঙ্গামাটি', nameBn: 'মানিকছড়ি', nameEn: 'Manikchhari', latitude: 22.668500, longitude: 92.138700, district: 'Rangamati', thana: 'Rangamati Sadar', isHub: true, source: 'Hub' },
+    { displayName: 'কাপ্তাই নতুন বাজার, রাঙ্গামাটি', nameBn: 'কাপ্তাই নতুন বাজার', nameEn: 'Kaptai Notun Bazar', latitude: 22.496200, longitude: 92.222900, district: 'Rangamati', thana: 'Kaptai', isHub: true, source: 'Hub' },
+    { displayName: 'হাসপাতাল রোড, রাঙ্গামাটি', nameBn: 'হাসপাতাল রোড', nameEn: 'Hospital Road', latitude: 22.658700, longitude: 92.168200, district: 'Rangamati', thana: 'Rangamati Sadar', isHub: true, source: 'Hub' }
   ]
 };

@@ -118,6 +118,16 @@
       box-shadow: 0 4px 12px rgba(11, 79, 68, 0.2);
     }
 
+    [data-theme="dark"] & {
+      color: #37E6A3 !important;
+      border-color: #37E6A3 !important;
+      background: rgba(55, 230, 163, 0.12) !important;
+      &:hover:not(:disabled) {
+        background-color: #37E6A3 !important;
+        color: #07221E !important;
+      }
+    }
+
     &:active:not(:disabled) {
       transform: translateY(0);
     }
@@ -286,6 +296,15 @@
         .item-name-bn {
           color: var(--vk-green);
           font-weight: 700;
+        }
+
+        [data-theme="dark"] & {
+          background-color: rgba(55, 230, 163, 0.15) !important;
+          border-color: #37E6A3 !important;
+
+          .item-name-bn {
+            color: #FFC93C !important;
+          }
         }
       }
 

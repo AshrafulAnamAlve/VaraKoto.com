@@ -105,4 +105,36 @@ describe('LocationService', () => {
     expect(req.request.method).toBe('GET');
     req.flush(mockDistance);
   });
+
+  describe('searchLocalHubs', () => {
+    it('should return empty array for empty or whitespace query', () => {
+      expect(service.searchLocalHubs('')).toEqual([]);
+      expect(service.searchLocalHubs('   ')).toEqual([]);
+    });
+
+    it('should find local hubs with English search', () => {
+      const results = service.searchLocalHubs('Mirpur', 'dhaka', 5);
+      expect(results.length).toBeGreaterThan(0);
+      expect(results.some(r => r.nameEn.toLowerCase().includes('mirpur'))).toBe(true);
+    });
+
+    it('should find local hubs with Bengali search', () => {
+      const results = service.searchLocalHubs('মিরপুর', 'dhaka', 5);
+      expect(results.length).toBeGreaterThan(0);
+      expect(results.some(r => r.nameBn.includes('মিরপুর'))).toBe(true);
+    });
+
+    it('should match phonetic aliases (e.g. airport -> বিমানবন্দর)', () => {
+      const results = service.searchLocalHubs('airport', 'dhaka', 5);
+      expect(results.length).toBeGreaterThan(0);
+      expect(results.some(r => r.nameEn.toLowerCase().includes('airport') || r.nameBn.includes('বিমানবন্দর'))).toBe(true);
+    });
+
+    it('should prioritize current district hubs', () => {
+      const dhakaResults = service.searchLocalHubs('Agrabad', 'dhaka', 5);
+      const chittagongResults = service.searchLocalHubs('Agrabad', 'chattogram', 5);
+      expect(chittagongResults.length).toBeGreaterThan(0);
+      expect(chittagongResults[0].nameEn).toContain('Agrabad');
+    });
+  });
 });
