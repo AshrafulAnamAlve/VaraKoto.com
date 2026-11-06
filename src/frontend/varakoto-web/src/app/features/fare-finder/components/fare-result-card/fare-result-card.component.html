@@ -1,5 +1,27 @@
 @if (result() && primaryFare()) {
   <div class="result-card" role="region" aria-label="ভাড়ার ফলাফল">
+    <!-- 0. Top Bar with Direct Back to Home / Search Action -->
+    <div class="result-top-bar">
+      <button
+        type="button"
+        class="back-to-search-btn"
+        (click)="onModify()"
+        title="হোমে ফিরে যান বা নতুন সার্চ করুন"
+        aria-label="আবার নতুন সার্চ করুন"
+      >
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        <span>← নতুন সার্চ করুন</span>
+      </button>
+
+      <span class="result-badge-chip">
+        <span class="badge-dot"></span>
+        <span>ভাড়া ও রুট রেজাল্ট</span>
+      </span>
+    </div>
+
     <!-- 1. Route Summary Header -->
     <div class="route-header">
       <div class="route-locations">
@@ -38,7 +60,120 @@
       </div>
     </div>
 
-    <!-- 2. Primary Fare Hero Display -->
+    <!-- 2. PROMINENTLY HIGHLIGHTED TRANSIT JOURNEY GUIDE (যেভাবে যাবেন — বাহন ও রুট নির্দেশিকা) -->
+    @if (transitGuide()) {
+      <div class="transit-guide-box highlighted-guide">
+        <div class="guide-header">
+          <div class="header-left">
+            <span class="guide-badge-icon">🧭</span>
+            <div class="guide-title-wrap">
+              <span class="guide-pill-badge">জরুরি নির্দেশিকা</span>
+              <h3 class="guide-title">যেভাবে যাবেন (বাহন ও বাস রুট)</h3>
+            </div>
+          </div>
+          <span class="guide-badge-status">প্রস্তাবিত রুট</span>
+        </div>
+
+        <div class="guide-content">
+          <!-- Option A: Metro Rail (MRT Line-6) Fast Option -->
+          @if (transitGuide()?.hasMetroOption) {
+            <div class="transit-card metro-card">
+              <div class="transit-card-top">
+                <span class="metro-pill">⚡ দ্রুততম বাহন</span>
+                <span class="transit-name">মেট্রোরেল (MRT-6)</span>
+                <span class="transit-duration">~{{ fareService.toBengaliDigits(transitGuide()?.metroDurationMinutes || 0) }} মিনিট</span>
+              </div>
+              <div class="station-route-row">
+                <div class="station-chip start-station">
+                  <span class="station-icon">🚉</span>
+                  <span>{{ transitGuide()?.metroBoardingStation }}</span>
+                </div>
+                <span class="route-arrow-icon">➔</span>
+                <div class="station-chip end-station">
+                  <span class="station-icon">🏁</span>
+                  <span>{{ transitGuide()?.metroAlightingStation }}</span>
+                </div>
+              </div>
+              <div class="transit-card-footer">
+                <span class="footer-tag">ভাড়া: ৳{{ fareService.toBengaliDigits(transitGuide()?.metroFare || 0) }}</span>
+                <span class="footer-hint">জ্যামমুক্ত দ্রুত যাতায়াত</span>
+              </div>
+            </div>
+          }
+
+          <!-- Option B: Direct City Buses -->
+          @if (transitGuide()?.hasDirectBus) {
+            <div class="transit-card bus-card">
+              <div class="transit-card-top">
+                <span class="bus-pill">🚌 সরাসরি বাসসমূহ</span>
+                <span class="transit-name">চলমান বাস রুট</span>
+              </div>
+              <div class="bus-chips-wrap">
+                @for (bus of transitGuide()?.directBuses; track bus) {
+                  <span class="bus-name-badge">{{ bus }}</span>
+                }
+              </div>
+              <div class="transit-card-footer">
+                <span class="footer-hint">🚏 <strong>{{ transitGuide()?.nearestBoardingStop }}</strong> বাস স্ট্যান্ড থেকে উঠুন</span>
+              </div>
+            </div>
+          }
+
+          <!-- Option C: Short Distance (Rickshaw) -->
+          @if (transitGuide()?.isShortDistance) {
+            <div class="transit-card short-card">
+              <div class="transit-card-top">
+                <span class="short-pill">🛺 সরাসরি রিকশা</span>
+                <span class="transit-name">স্বল্প দূরত্বের পথ</span>
+              </div>
+              <p class="short-advice-text">
+                এই দূরত্বের জন্য সরাসরি <strong>রিকশায়</strong> যাওয়া সবচেয়ে দ্রুত ও সুবিধাজনক। বাসের কোনো প্রয়োজন নেই।
+              </p>
+            </div>
+          }
+
+          <!-- Option D: Inter-District Highway Coaches -->
+          @if (transitGuide()?.isInterDistrict) {
+            <div class="transit-card coach-card">
+              <div class="transit-card-top">
+                <span class="coach-pill">🚌 দূরপাল্লার কোচ</span>
+                <span class="transit-name">{{ transitGuide()?.destinationDistrict }} গামী বাস</span>
+              </div>
+              <div class="bus-chips-wrap">
+                @for (coach of transitGuide()?.interDistrictCoaches; track coach) {
+                  <span class="coach-name-badge">{{ coach }}</span>
+                }
+              </div>
+              <div class="transit-card-footer">
+                <span class="footer-hint">📍 <strong>{{ transitGuide()?.departureTerminal }}</strong> থেকে টিকিট কেটে উঠুন</span>
+              </div>
+            </div>
+          }
+
+          <!-- Option E: Transfer Route (If not short, not metro, not direct bus) -->
+          @if (transitGuide()?.hasTransferOption) {
+            <div class="transit-card transfer-card">
+              <div class="transit-card-top">
+                <span class="transfer-pill">🔄 কানেক্টিং রুট</span>
+                <span class="transit-name">১-ট্রান্সফারে যাতায়াত</span>
+              </div>
+              <div class="transfer-steps-box">
+                <div class="transfer-step">
+                  <span class="step-badge">১</span>
+                  <span class="step-desc"><strong>{{ transitGuide()?.nearestBoardingStop }}</strong> থেকে বাস বা মেট্রোয় <strong>{{ transitGuide()?.transferHub }}</strong> যান।</span>
+                </div>
+                <div class="transfer-step">
+                  <span class="step-badge">২</span>
+                  <span class="step-desc">সেখান থেকে কানেক্টিং বাস অথবা সিএনজি/রিকশায় গন্তব্যে পৌঁছান।</span>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- 3. Primary Fare Hero Display -->
     <div class="fare-hero-box" [attr.data-transport]="primaryFare()?.transportCode">
       <div class="hero-top-bar">
         <div class="transport-badge">
@@ -111,7 +246,7 @@
       </div>
     </div>
 
-    <!-- 3. All Transports Quick Comparison Bar -->
+    <!-- 4. All Transports Quick Comparison Bar -->
     @if (result()?.allFares && (result()?.allFares?.length || 0) > 1) {
       <div class="comparison-section">
         <span class="comparison-title">অন্যান্য যানবাহনের ভাড়া তুলনা:</span>
@@ -142,117 +277,16 @@
       </div>
     }
 
-    <!-- 4. Transit Journey Guide (How to go & which vehicle to take) -->
-    @if (transitGuide()) {
-      <div class="transit-guide-box">
-        <div class="guide-header">
-          <div class="header-left">
-            <span class="guide-icon">🧭</span>
-            <span class="guide-title">যেভাবে যাবেন (বাহন ও বাস নির্দেশিকা)</span>
-          </div>
-        </div>
-
-        <div class="guide-content">
-          <!-- Option A: Metro Rail (MRT Line-6) Fast Option -->
-          @if (transitGuide()?.hasMetroOption) {
-            <div class="transit-card metro-card">
-              <div class="transit-card-top">
-                <span class="metro-pill">⚡ দ্রুততম অপশন</span>
-                <span class="transit-name">মেট্রোরেল (MRT-6)</span>
-                <span class="transit-duration">~{{ fareService.toBengaliDigits(transitGuide()?.metroDurationMinutes || 0) }} মিনিট</span>
-              </div>
-              <div class="station-route-row">
-                <div class="station-chip start-station">
-                  <span class="station-icon">🚉</span>
-                  <span>{{ transitGuide()?.metroBoardingStation }}</span>
-                </div>
-                <span class="route-arrow-icon">➔</span>
-                <div class="station-chip end-station">
-                  <span class="station-icon">🏁</span>
-                  <span>{{ transitGuide()?.metroAlightingStation }}</span>
-                </div>
-              </div>
-              <div class="transit-card-footer">
-                <span class="footer-tag">ভাড়া: ৳{{ fareService.toBengaliDigits(transitGuide()?.metroFare || 0) }}</span>
-                <span class="footer-hint">জ্যামমুক্ত দ্রুত যাতায়াত</span>
-              </div>
-            </div>
-          }
-
-          <!-- Option B: Direct City Buses -->
-          @if (transitGuide()?.hasDirectBus) {
-            <div class="transit-card bus-card">
-              <div class="transit-card-top">
-                <span class="bus-pill">🚌 সরাসরি বাস</span>
-                <span class="transit-name">চলমান বাসসমূহ</span>
-              </div>
-              <div class="bus-chips-wrap">
-                @for (bus of transitGuide()?.directBuses; track bus) {
-                  <span class="bus-name-badge">{{ bus }}</span>
-                }
-              </div>
-              <div class="transit-card-footer">
-                <span class="footer-hint">🚏 <strong>{{ transitGuide()?.nearestBoardingStop }}</strong> বাস স্ট্যান্ড থেকে উঠুন</span>
-              </div>
-            </div>
-          }
-
-          <!-- Option C: Short Distance (Rickshaw) -->
-          @if (transitGuide()?.isShortDistance) {
-            <div class="transit-card short-card">
-              <div class="transit-card-top">
-                <span class="short-pill">🛺 সরাসরি রিকশা</span>
-                <span class="transit-name">স্বল্প দূরত্বের পথ</span>
-              </div>
-              <p class="short-advice-text">
-                এই দূরত্বের জন্য সরাসরি <strong>রিকশায়</strong> যাওয়া সবচেয়ে দ্রুত ও সুবিধাজনক। বাসের কোনো প্রয়োজন নেই।
-              </p>
-            </div>
-          }
-
-          <!-- Option D: Inter-District Highway Coaches -->
-          @if (transitGuide()?.isInterDistrict) {
-            <div class="transit-card coach-card">
-              <div class="transit-card-top">
-                <span class="coach-pill">🚌 দূরপাল্লার কোচ</span>
-                <span class="transit-name">{{ transitGuide()?.destinationDistrict }} গামী বাস</span>
-              </div>
-              <div class="bus-chips-wrap">
-                @for (coach of transitGuide()?.interDistrictCoaches; track coach) {
-                  <span class="coach-name-badge">{{ coach }}</span>
-                }
-              </div>
-              <div class="transit-card-footer">
-                <span class="footer-hint">📍 <strong>{{ transitGuide()?.departureTerminal }}</strong> থেকে টিকিট কেটে উঠুন</span>
-              </div>
-            </div>
-          }
-
-          <!-- Option E: Transfer Route (If not short, not metro, not direct bus) -->
-          @if (transitGuide()?.hasTransferOption) {
-            <div class="transit-card transfer-card">
-              <div class="transit-card-top">
-                <span class="transfer-pill">🔄 কানেক্টিং রুট</span>
-                <span class="transit-name">১-ট্রান্সফারে যাতায়াত</span>
-              </div>
-              <div class="transfer-steps-box">
-                <div class="transfer-step">
-                  <span class="step-badge">১</span>
-                  <span class="step-desc"><strong>{{ transitGuide()?.nearestBoardingStop }}</strong> থেকে বাস বা মেট্রোয় <strong>{{ transitGuide()?.transferHub }}</strong> যান।</span>
-                </div>
-                <div class="transfer-step">
-                  <span class="step-badge">২</span>
-                  <span class="step-desc">সেখান থেকে কানেক্টিং বাস অথবা সিএনজি/রিকশায় গন্তব্যে পৌঁছান।</span>
-                </div>
-              </div>
-            </div>
-          }
-        </div>
-      </div>
-    }
-
-    <!-- 4. Result Action Buttons -->
+    <!-- 5. Result Action Buttons -->
     <div class="result-actions">
+      <button type="button" class="action-btn back-primary-btn" (click)="onModify()" aria-label="নতুন সার্চ করুন">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        <span>নতুন সার্চ করুন</span>
+      </button>
+
       <button type="button" class="action-btn share-btn" (click)="onShare()" aria-label="ভাড়া শেয়ার করুন">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="18" cy="5" r="3"></circle>
@@ -264,20 +298,12 @@
         <span>শেয়ার করুন</span>
       </button>
 
-      <button type="button" class="action-btn modify-btn" (click)="onModify()">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-        </svg>
-        <span>রুট পরিবর্তন করুন</span>
-      </button>
-
       <button type="button" class="action-btn contribute-btn" (click)="onContribute()">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 20h9"></path>
           <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
         </svg>
-        <span>আপনি কত ভাড়া দিয়েছিলেন?</span>
+        <span>ভাড়া আপডেট দিন</span>
       </button>
     </div>
   </div>
