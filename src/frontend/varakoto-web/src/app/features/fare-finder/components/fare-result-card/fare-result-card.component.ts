@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FareService } from '../../../../core/services/fare.service';
 import { NativeMobileService } from '../../../../core/services/native-mobile.service';
 import { FareBreakdownModel, TransportCode } from '../../../../core/models/fare.model';
+import { TransitGuideService } from '../../../../core/services/transit-guide.service';
+import { DistrictService } from '../../../../core/services/district.service';
 
 @Component({
   selector: 'app-fare-result-card',
@@ -14,6 +16,8 @@ import { FareBreakdownModel, TransportCode } from '../../../../core/models/fare.
 export class FareResultCardComponent {
   readonly fareService = inject(FareService);
   readonly nativeMobile = inject(NativeMobileService);
+  readonly transitGuideService = inject(TransitGuideService);
+  readonly districtService = inject(DistrictService);
 
   @Output() modifySearch = new EventEmitter<void>();
   @Output() contributeFare = new EventEmitter<{ fromLocation?: string; toLocation?: string; transport?: string }>();
@@ -31,6 +35,17 @@ export class FareResultCardComponent {
   readonly durationBn = computed(() => {
     const res = this.result();
     return res ? this.fareService.toBengaliDigits(Math.round(res.estimatedDurationMinutes)) : '০';
+  });
+
+  readonly transitGuide = computed(() => {
+    const res = this.result();
+    if (!res) return null;
+    return this.transitGuideService.generateGuide(
+      res.fromLocation,
+      res.toLocation,
+      res.distanceKm,
+      this.districtService.currentDistrict()?.id
+    );
   });
 
   selectTransport(code: string): void {

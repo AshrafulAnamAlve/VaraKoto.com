@@ -440,3 +440,262 @@
     transform: translateY(0);
   }
 }
+
+/* Transit Journey Recommendation Guide */
+.transit-guide-box {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background-color: var(--bg-surface-elevated);
+  border: 1.5px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  margin: 6px 0;
+
+  .guide-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .guide-icon {
+        font-size: 18px;
+      }
+
+      .guide-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--text-heading);
+        letter-spacing: -0.01em;
+      }
+    }
+  }
+
+  .guide-content {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .transit-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px 14px;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+
+    .transit-card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+
+      .transit-name {
+        font-size: 13.5px;
+        font-weight: 700;
+        color: var(--text-primary);
+      }
+
+      .transit-duration {
+        font-size: 12.5px;
+        font-weight: 700;
+        color: var(--vk-green);
+        background-color: rgba(11, 79, 68, 0.1);
+        padding: 2px 8px;
+        border-radius: var(--radius-full);
+      }
+    }
+
+    .metro-pill {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #92400e;
+      background-color: #fef3c7;
+      border: 1px solid #fcd34d;
+      padding: 3px 8px;
+      border-radius: var(--radius-full);
+    }
+
+    .bus-pill {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--vk-green);
+      background-color: rgba(11, 79, 68, 0.12);
+      border: 1px solid rgba(11, 79, 68, 0.25);
+      padding: 3px 8px;
+      border-radius: var(--radius-full);
+    }
+
+    .short-pill {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--vk-orange);
+      background-color: rgba(229, 87, 10, 0.12);
+      border: 1px solid rgba(229, 87, 10, 0.25);
+      padding: 3px 8px;
+      border-radius: var(--radius-full);
+    }
+
+    .coach-pill,
+    .transfer-pill {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--text-primary);
+      background-color: var(--bg-surface-elevated);
+      border: 1px solid var(--border-color);
+      padding: 3px 8px;
+      border-radius: var(--radius-full);
+    }
+
+    .station-route-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+
+      .station-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13.5px;
+        font-weight: 600;
+        color: var(--text-primary);
+        background-color: var(--bg-surface-elevated);
+        padding: 5px 10px;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border-subtle);
+
+        .station-icon {
+          font-size: 14px;
+        }
+      }
+
+      .route-arrow-icon {
+        color: var(--vk-green);
+        font-weight: 700;
+        font-size: 14px;
+      }
+    }
+
+    .bus-chips-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+
+      .bus-name-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 10px;
+        background-color: rgba(11, 79, 68, 0.08);
+        border: 1px solid rgba(11, 79, 68, 0.2);
+        color: var(--vk-green);
+        font-size: 13px;
+        font-weight: 700;
+        border-radius: var(--radius-full);
+        transition: all var(--transition-fast);
+
+        &:hover {
+          background-color: var(--vk-green);
+          color: #ffffff;
+        }
+      }
+
+      .coach-name-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 10px;
+        background-color: var(--bg-surface-elevated);
+        border: 1px solid var(--border-subtle);
+        color: var(--text-primary);
+        font-size: 13px;
+        font-weight: 600;
+        border-radius: var(--radius-full);
+      }
+    }
+
+    .short-advice-text {
+      margin: 0;
+      font-size: 13.5px;
+      color: var(--text-muted);
+      line-height: 1.4;
+
+      strong {
+        color: var(--text-primary);
+      }
+    }
+
+    .transfer-steps-box {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+
+      .transfer-step {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+
+        .step-badge {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 20px;
+          height: 20px;
+          background-color: var(--vk-green);
+          color: #ffffff;
+          border-radius: 50%;
+          font-size: 11px;
+          font-weight: 700;
+          flex-shrink: 0;
+          margin-top: 2px;
+        }
+
+        .step-desc {
+          font-size: 13px;
+          color: var(--text-primary);
+          line-height: 1.4;
+        }
+      }
+    }
+
+    .transit-card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 12.5px;
+      color: var(--text-muted);
+      padding-top: 4px;
+      border-top: 1px dashed var(--border-subtle);
+
+      .footer-tag {
+        font-weight: 700;
+        color: var(--vk-green);
+      }
+
+      .footer-hint {
+        color: var(--text-muted);
+
+        strong {
+          color: var(--text-primary);
+        }
+      }
+    }
+
+    &.metro-card {
+      border-color: rgba(245, 158, 11, 0.4);
+      background: linear-gradient(135deg, rgba(254, 243, 199, 0.15) 0%, var(--bg-surface) 100%);
+    }
+
+    &.bus-card {
+      border-color: rgba(11, 79, 68, 0.3);
+    }
+  }
+}
