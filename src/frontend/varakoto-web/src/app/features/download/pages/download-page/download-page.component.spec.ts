@@ -36,7 +36,7 @@ describe('DownloadPageComponent', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('.app-title')?.textContent).toContain('ভাড়া কত?');
     expect(compiled.querySelector('.app-tagline')?.textContent).toContain('অ্যান্ড্রয়েড মোবাইল অ্যাপ্লিকেশন');
-    expect(compiled.textContent).toContain('v1.1.3');
+    expect(compiled.textContent).toContain('v1.1.4');
     expect(compiled.textContent).toContain('~9.7 MB');
   });
 
