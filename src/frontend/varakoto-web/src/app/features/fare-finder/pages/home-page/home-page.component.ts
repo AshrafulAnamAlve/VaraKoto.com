@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { RouteMapComponent } from '../../components/route-map/route-map.component';
@@ -31,7 +31,7 @@ import { FareContributionResponseModel, TransportCode } from '../../../../core/m
   templateUrl: './home-page.component.html',
   styleUrls: ['./home-page.component.scss']
 })
-export class HomePageComponent implements OnInit {
+export class HomePageComponent implements OnInit, OnDestroy {
   readonly themeService = inject(ThemeService);
   readonly fareService = inject(FareService);
   readonly nativeMobile = inject(NativeMobileService);
@@ -81,14 +81,66 @@ export class HomePageComponent implements OnInit {
   readonly contributionInitialTransport = signal<TransportCode>('bus');
 
   // Mobile App Native Bottom Nav & Info Sheet State
-  readonly activeNavTab = signal<'finder' | 'share' | 'updates' | 'info'>('finder');
+  readonly activeNavTab = signal<'finder' | 'routes' | 'share' | 'district' | 'info'>('finder');
   readonly isInfoSheetOpen = signal<boolean>(false);
+  readonly isKeyboardOpen = signal<boolean>(false);
+
+  private handleFocusIn?: (e: FocusEvent) => void;
+  private handleFocusOut?: () => void;
+  private handleViewportResize?: () => void;
 
   ngOnInit(): void {
     // Sync native mobile status bar theme with initial dark/light state
     this.nativeMobile.updateStatusBarTheme(this.themeService.isDark());
     // Load recent approved contributions for the community section
     this.fareService.loadRecentContributions(6).subscribe();
+
+    if (typeof window !== 'undefined') {
+      this.handleFocusIn = (event: FocusEvent) => {
+        const target = event.target as HTMLElement;
+        if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) {
+          const type = (target as HTMLInputElement).type;
+          if (type !== 'checkbox' && type !== 'radio') {
+            this.isKeyboardOpen.set(true);
+          }
+        }
+      };
+
+      this.handleFocusOut = () => {
+        setTimeout(() => {
+          const activeEl = document.activeElement;
+          if (!activeEl || (activeEl.tagName !== 'INPUT' && activeEl.tagName !== 'TEXTAREA')) {
+            this.isKeyboardOpen.set(false);
+          }
+        }, 120);
+      };
+
+      window.addEventListener('focusin', this.handleFocusIn);
+      window.addEventListener('focusout', this.handleFocusOut);
+
+      if (window.visualViewport) {
+        const initialHeight = window.innerHeight;
+        this.handleViewportResize = () => {
+          const currentHeight = window.visualViewport?.height || window.innerHeight;
+          if (initialHeight - currentHeight > 140) {
+            this.isKeyboardOpen.set(true);
+          } else if (document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
+            this.isKeyboardOpen.set(false);
+          }
+        };
+        window.visualViewport.addEventListener('resize', this.handleViewportResize);
+      }
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (typeof window !== 'undefined') {
+      if (this.handleFocusIn) window.removeEventListener('focusin', this.handleFocusIn);
+      if (this.handleFocusOut) window.removeEventListener('focusout', this.handleFocusOut);
+      if (this.handleViewportResize && window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', this.handleViewportResize);
+      }
+    }
   }
 
   toggleTheme(): void {
@@ -118,21 +170,25 @@ export class HomePageComponent implements OnInit {
     this.activeNavTab.set('finder');
   }
 
-  onSelectNavTab(tab: 'finder' | 'share' | 'updates' | 'info'): void {
+  onSelectNavTab(tab: 'finder' | 'routes' | 'share' | 'district' | 'info'): void {
     this.nativeMobile.hapticSelection();
     if (tab === 'finder') {
       this.activeNavTab.set('finder');
       this.showFinder();
-    } else if (tab === 'share') {
-      this.openContributionModal();
-    } else if (tab === 'updates') {
-      this.activeNavTab.set('updates');
+    } else if (tab === 'routes') {
+      this.activeNavTab.set('routes');
       if (typeof window !== 'undefined') {
-        const element = document.querySelector('.recent-contributions-section');
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const transitElement = document.querySelector('.transit-guide-box');
+        if (transitElement) {
+          transitElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+          this.showFinder();
         }
       }
+    } else if (tab === 'share') {
+      this.openContributionModal();
+    } else if (tab === 'district') {
+      this.districtService.openModal();
     } else if (tab === 'info') {
       this.openInfoSheet();
     }

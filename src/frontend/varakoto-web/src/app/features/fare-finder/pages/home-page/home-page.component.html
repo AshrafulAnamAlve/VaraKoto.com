@@ -261,8 +261,13 @@
     </div>
   </footer>
 
-  <!-- Native Mobile Bottom Navigation Bar (Fixed docked tabs on mobile / native app) -->
-  <nav class="mobile-bottom-nav mobile-only" aria-label="মোবাইল নেভিগেশন">
+  <!-- Proper Native Mobile Bottom Navigation Bar -->
+  <nav
+    class="mobile-bottom-nav mobile-only"
+    [class.keyboard-hidden]="isKeyboardOpen()"
+    aria-label="মোবাইল নেভিগেশন"
+  >
+    <!-- 1. Fare Finder Tab -->
     <button
       type="button"
       class="nav-tab-btn"
@@ -270,14 +275,35 @@
       (click)="onSelectNavTab('finder')"
     >
       <div class="nav-icon-wrapper">
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8"></circle>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path>
+          <path d="M2 12h20"></path>
         </svg>
       </div>
       <span class="nav-label">ভাড়া হিসাব</span>
     </button>
 
+    <!-- 2. Transit & Route Guide Tab -->
+    <button
+      type="button"
+      class="nav-tab-btn"
+      [class.active]="activeNavTab() === 'routes'"
+      (click)="onSelectNavTab('routes')"
+      title="বাস ও মেট্রোরেল রুট"
+    >
+      <div class="nav-icon-wrapper">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="15" rx="3"></rect>
+          <circle cx="7" cy="15" r="1.5"></circle>
+          <circle cx="17" cy="15" r="1.5"></circle>
+          <path d="M3 10h18"></path>
+        </svg>
+      </div>
+      <span class="nav-label">বাস ও রুট</span>
+    </button>
+
+    <!-- 3. Primary Share Fare Action -->
     <button
       type="button"
       class="nav-tab-btn nav-tab-primary"
@@ -285,36 +311,41 @@
       title="ভাড়া শেয়ার করুন"
     >
       <div class="nav-icon-wrapper primary-action-circle">
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#FFFFFF" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
           <line x1="12" y1="5" x2="12" y2="19"></line>
           <line x1="5" y1="12" x2="19" y2="12"></line>
         </svg>
       </div>
-      <span class="nav-label">ভাড়া শেয়ার</span>
+      <span class="nav-label">ভাড়া যোগ</span>
     </button>
 
+    <!-- 4. District Location Selector Tab -->
     <button
       type="button"
       class="nav-tab-btn"
-      [class.active]="activeNavTab() === 'updates'"
-      (click)="onSelectNavTab('updates')"
+      [class.active]="activeNavTab() === 'district'"
+      (click)="onSelectNavTab('district')"
+      title="বর্তমান জেলা পরিবর্তন করুন"
     >
       <div class="nav-icon-wrapper">
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 20v-6M6 20V10M18 20V4"></path>
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+          <circle cx="12" cy="10" r="3"></circle>
         </svg>
       </div>
-      <span class="nav-label">আপডেট</span>
+      <span class="nav-label">{{ districtService.currentDistrict().nameBn }}</span>
     </button>
 
+    <!-- 5. App Info Tab -->
     <button
       type="button"
       class="nav-tab-btn"
       [class.active]="activeNavTab() === 'info'"
       (click)="onSelectNavTab('info')"
+      title="অ্যাপের তথ্য"
     >
       <div class="nav-icon-wrapper">
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="10"></circle>
           <line x1="12" y1="16" x2="12" y2="12"></line>
           <line x1="12" y1="8" x2="12.01" y2="8"></line>
