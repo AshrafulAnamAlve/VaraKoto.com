@@ -1,5 +1,5 @@
 @if (result() && primaryFare()) {
-  <div class="result-card" role="region" aria-label="ভাড়ার ফলাফল">
+  <div class="result-card smart-ticket-layout" role="region" aria-label="ভাড়ার ফলাফল">
     <!-- 0. Top Bar with Direct Back to Home / Search Action -->
     <div class="result-top-bar">
       <button
@@ -18,131 +18,163 @@
 
       <span class="result-badge-chip">
         <span class="badge-dot"></span>
-        <span>ভাড়া ও রুট রেজাল্ট</span>
+        <span>ডিজিটাল ভাড়া টিকিট</span>
       </span>
     </div>
 
-    <!-- 1. Route Summary Header -->
-    <div class="route-header">
-      <div class="route-locations">
-        <div class="loc-item origin-loc">
-          <span class="route-dot origin-dot"></span>
-          <span class="loc-name">{{ result()?.fromLocation?.nameBn || result()?.fromLocation?.displayName }}</span>
+    <!-- 1. PRIORITY #1: UNIFIED FARE TICKET (Route Summary + Big Fare + Multi-Vehicle Strip) -->
+    <div class="unified-ticket-card" [attr.data-transport]="primaryFare()?.transportCode">
+      <!-- Ticket Top Row: Route Locations & Metrics -->
+      <div class="ticket-header">
+        <div class="ticket-route-wrap">
+          <span class="ticket-icon">🎫</span>
+          <div class="ticket-locations">
+            <span class="ticket-label">যাত্রার বিবরণ:</span>
+            <div class="route-names-inline">
+              <span class="loc-name origin-name">{{ result()?.fromLocation?.nameBn || result()?.fromLocation?.displayName }}</span>
+              <span class="route-arrow-symbol">➔</span>
+              <span class="loc-name dest-name">{{ result()?.toLocation?.nameBn || result()?.toLocation?.displayName }}</span>
+            </div>
+          </div>
         </div>
-        <div class="route-arrow">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-            <polyline points="12 5 19 12 12 19"></polyline>
-          </svg>
-        </div>
-        <div class="loc-item dest-loc">
-          <span class="route-dot dest-dot"></span>
-          <span class="loc-name">{{ result()?.toLocation?.nameBn || result()?.toLocation?.displayName }}</span>
+
+        <div class="ticket-metrics">
+          <span class="metric-dist">{{ distanceBn() }} কিমি</span>
+          <span class="metric-time">~{{ durationBn() }} মি.</span>
         </div>
       </div>
 
-      <!-- Distance & Travel Time Pills -->
-      <div class="route-metrics">
-        <span class="metric-pill">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-            <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
-          </svg>
-          <span>দূরত্ব: <strong>{{ distanceBn() }} কিমি</strong></span>
-        </span>
-
-        <span class="metric-pill">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polyline points="12 6 12 12 16 14"></polyline>
-          </svg>
-          <span>আনুমানিক সময়: <strong>~{{ durationBn() }} মিনিট</strong></span>
-        </span>
-      </div>
-    </div>
-
-    <!-- 2. ROUTE SELECTOR & SWITCHER (Always Best Route by default + One-click Change Route Button) -->
-    @if (routesInfo()) {
-      <div class="route-switcher-box">
-        <div class="switcher-top-row">
-          <div class="switcher-label-wrap">
-            <span class="switcher-label-icon">🛣️</span>
-            <span class="switcher-label-text">নির্বাচিত রুট:</span>
-            <span class="current-route-pill">{{ activeRouteName() }}</span>
+      <!-- Ticket Core: Huge Fare Display & Badges -->
+      <div class="ticket-fare-body">
+        <div class="fare-vehicle-row">
+          <div class="vehicle-title-wrap">
+            <span class="veh-icon">
+              @switch (primaryFare()?.transportCode) {
+                @case ('bus') { 🚌 }
+                @case ('rickshaw') { 🛺 }
+                @case ('cng') { 🛺💨 }
+                @case ('bike') { 🏍️ }
+              }
+            </span>
+            <span class="veh-name">{{ primaryFare()?.transportNameBn }} ভাড়া ({{ activeRouteName() }})</span>
           </div>
 
+          <!-- Reliability Badge -->
+          <div class="reliability-badge" [class.official]="primaryFare()?.reliability === 'Official'" [class.community]="primaryFare()?.reliability === 'CommunityBacked'">
+            @if (primaryFare()?.reliability === 'Official') {
+              <span class="rel-icon">✓</span>
+              <span>সরকারি রেট</span>
+            } @else if (primaryFare()?.reliability === 'CommunityBacked') {
+              <span class="rel-icon">★</span>
+              <span>কমিউনিটি যাচাইকৃত</span>
+            } @else {
+              <span class="rel-icon">~</span>
+              <span>সাধারণ আনুমানিক</span>
+            }
+          </div>
+        </div>
+
+        <!-- Huge Fare Typography in Baloo Da 2 -->
+        <div class="fare-amount-display">
+          <div class="amount-text">{{ primaryFare()?.fareDisplayBn }}</div>
+        </div>
+
+        <!-- CNG Meter vs Contract Note -->
+        @if (primaryFare()?.officialMeterFare) {
+          <div class="meter-notice-box">
+            <div class="meter-header">
+              <span class="meter-icon">ℹ️</span>
+              <span class="meter-title">সিএনজি ভাড়া সম্পর্কে তথ্য</span>
+            </div>
+            <p class="meter-body">
+              সরকারি মিটার রেট: <strong>~৳{{ fareService.toBengaliDigits(primaryFare()?.officialMeterFare || 0) }}</strong>
+              <br>
+              <span class="meter-hint">তবে ঢাকার রাস্তায় চালকরা সাধারণত মিটারে যেতে চান না এবং <strong>{{ primaryFare()?.fareDisplayBn }}</strong> চুক্তিভিত্তিক ভাড়া দাবি করেন।</span>
+            </p>
+          </div>
+        }
+
+        <!-- Feasibility warning (e.g. Rickshaws > 7km) -->
+        @if (primaryFare()?.distanceNoticeBn) {
+          <div class="distance-warning-box">
+            <span class="warn-icon">⚠️</span>
+            <span>{{ primaryFare()?.distanceNoticeBn }}</span>
+          </div>
+        }
+
+        <!-- Ticket Source Note -->
+        <div class="fare-source-footer">
+          <span class="source-icon">📌</span>
+          <span class="source-text">{{ primaryFare()?.sourceNoteBn || primaryFare()?.sourceNote }}</span>
+        </div>
+      </div>
+
+      <!-- Ticket Bottom Strip: Segmented Multi-Vehicle Live Comparison Bar -->
+      @if (allFares() && allFares().length > 1) {
+        <div class="ticket-vehicles-strip">
+          @for (fare of allFares(); track fare.transportCode) {
+            <button
+              type="button"
+              class="vehicle-strip-item"
+              [class.active]="fare.transportCode === primaryFare()?.transportCode"
+              (click)="selectTransport(fare.transportCode)"
+              [title]="fare.transportNameBn + ' ভাড়া নির্বাচন করুন'"
+            >
+              <div class="strip-item-top">
+                <span class="strip-veh-icon">
+                  @switch (fare.transportCode) {
+                    @case ('bus') { 🚌 }
+                    @case ('rickshaw') { 🛺 }
+                    @case ('cng') { 🛺💨 }
+                    @case ('bike') { 🏍️ }
+                  }
+                </span>
+                <span class="strip-veh-name">{{ fare.transportNameBn }}</span>
+              </div>
+              <div class="strip-item-amount">{{ fare.fareDisplayBn }}</div>
+            </button>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- 2. PRIORITY #2: TRANSIT GUIDE (যেভাবে যাবেন) with In-Header Small Route Change Button -->
+    @if (transitGuide()) {
+      <div class="transit-guide-box highlighted-guide">
+        <!-- Guide Header: Title + Active Route + Small Route Change Button -->
+        <div class="guide-header">
+          <div class="header-left">
+            <span class="guide-badge-icon">🧭</span>
+            <div class="guide-title-wrap">
+              <h3 class="guide-title">যেভাবে যাবেন</h3>
+              <span class="guide-route-chip" [class.alt]="selectedRouteIndex() === 1">
+                {{ selectedRouteIndex() === 0 ? 'সেরা রুট' : 'বিকল্প রুট' }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Small, sleek button for Route Change -->
           <button
             type="button"
-            class="change-route-btn"
+            class="change-route-pill-btn"
             (click)="toggleRoute()"
-            title="অন্য বিকল্প রুটের ভাড়া ও নির্দেশিকা দেখুন"
+            [title]="(selectedRouteIndex() === 0 ? 'বিকল্প রুট' : 'সেরা রুট') + ' দেখুন'"
             aria-label="রুট পরিবর্তন করুন"
           >
-            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="17 1 21 5 17 9"></polyline>
               <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
               <polyline points="7 23 3 19 7 15"></polyline>
               <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
             </svg>
-            <span>রুট পরিবর্তন</span>
+            <span>{{ selectedRouteIndex() === 0 ? 'বিকল্প রুট' : 'সেরা রুট' }}</span>
           </button>
         </div>
 
-        <div class="route-cards-grid">
-          <!-- Route 1: Best / Primary Route -->
-          <button
-            type="button"
-            class="route-card-tab"
-            [class.active]="selectedRouteIndex() === 0"
-            (click)="selectRoute(0)"
-          >
-            <div class="card-tab-top">
-              <span class="route-pill primary-pill">⭐ সেরা রুট (Best)</span>
-              <span class="route-km">{{ route1DistanceBn() }} কিমি</span>
-            </div>
-            <div class="route-via-desc">{{ route1ViaText() }}</div>
-            <div class="route-meta-footer">
-              <span>সময়: ~{{ route1DurationBn() }} মি.</span>
-              @if (selectedRouteIndex() === 0) {
-                <span class="selected-check">✓ নির্বাচিত</span>
-              }
-            </div>
-          </button>
-
-          <!-- Route 2: Alternative Route -->
-          <button
-            type="button"
-            class="route-card-tab"
-            [class.active]="selectedRouteIndex() === 1"
-            (click)="selectRoute(1)"
-          >
-            <div class="card-tab-top">
-              <span class="route-pill alt-pill">🔄 বিকল্প রুট (Alt)</span>
-              <span class="route-km">{{ route2DistanceBn() }} কিমি</span>
-            </div>
-            <div class="route-via-desc">{{ route2ViaText() }}</div>
-            <div class="route-meta-footer">
-              <span>সময়: ~{{ route2DurationBn() }} মি.</span>
-              @if (selectedRouteIndex() === 1) {
-                <span class="selected-check">✓ নির্বাচিত</span>
-              }
-            </div>
-          </button>
-        </div>
-      </div>
-    }
-
-    <!-- 3. PROMINENTLY HIGHLIGHTED TRANSIT JOURNEY GUIDE (যেভাবে যাবেন — বাহন ও রুট নির্দেশিকা) -->
-    @if (transitGuide()) {
-      <div class="transit-guide-box highlighted-guide">
-        <div class="guide-header">
-          <div class="header-left">
-            <span class="guide-badge-icon">🧭</span>
-            <div class="guide-title-wrap">
-              <span class="guide-pill-badge">জরুরি নির্দেশিকা</span>
-              <h3 class="guide-title">যেভাবে যাবেন (বাহন ও বাস রুট)</h3>
-            </div>
-          </div>
-          <span class="guide-badge-status">{{ activeRouteName() }}</span>
+        <!-- Micro road description -->
+        <div class="guide-via-subrow">
+          <span class="via-tag">রোড:</span>
+          <span class="via-text">{{ activeViaText() }}</span>
         </div>
 
         <div class="guide-content">
@@ -221,7 +253,7 @@
             </div>
           }
 
-          <!-- Option E: Transfer Route (If not short, not metro, not direct bus) -->
+          <!-- Option E: Transfer Route -->
           @if (transitGuide()?.hasTransferOption) {
             <div class="transit-card transfer-card">
               <div class="transit-card-top">
@@ -244,138 +276,36 @@
       </div>
     }
 
-    <!-- 4. Primary Fare Hero Display -->
-    <div class="fare-hero-box" [attr.data-transport]="primaryFare()?.transportCode">
-      <div class="hero-top-bar">
-        <div class="transport-badge">
-          <!-- Transport Icon -->
-          @switch (primaryFare()?.transportCode) {
-            @case ('bus') {
-              <span class="badge-icon">🚌</span>
-            }
-            @case ('rickshaw') {
-              <span class="badge-icon">🛺</span>
-            }
-            @case ('cng') {
-              <span class="badge-icon">🛺💨</span>
-            }
-            @case ('bike') {
-              <span class="badge-icon">🏍️</span>
-            }
-          }
-          <span class="badge-name">{{ primaryFare()?.transportNameBn }} ভাড়া</span>
-        </div>
-
-        <!-- Reliability Badge -->
-        <div class="reliability-badge" [class.official]="primaryFare()?.reliability === 'Official'" [class.community]="primaryFare()?.reliability === 'CommunityBacked'">
-          @if (primaryFare()?.reliability === 'Official') {
-            <span class="rel-icon">✓</span>
-            <span>বিআরটিএ সরকারি রেট</span>
-          } @else if (primaryFare()?.reliability === 'CommunityBacked') {
-            <span class="rel-icon">★</span>
-            <span>কমিউনিটি যাচাইকৃত</span>
-          } @else {
-            <span class="rel-icon">~</span>
-            <span>সাধারণ আনুমানিক</span>
-          }
-        </div>
-      </div>
-
-      <!-- Huge Fare Typography in Baloo Da 2 -->
-      <div class="fare-amount-display">
-        <span class="fare-label">আনুমানিক ভাড়া ({{ activeRouteName() }}):</span>
-        <div class="amount-text">{{ primaryFare()?.fareDisplayBn }}</div>
-      </div>
-
-      <!-- CNG Dual Display Details -->
-      @if (primaryFare()?.officialMeterFare) {
-        <div class="meter-notice-box">
-          <div class="meter-header">
-            <span class="meter-icon">ℹ️</span>
-            <span class="meter-title">সিএনজি ভাড়া সম্পর্কে তথ্য</span>
-          </div>
-          <p class="meter-body">
-            সরকারি মিটার রেট: <strong>~৳{{ fareService.toBengaliDigits(primaryFare()?.officialMeterFare || 0) }}</strong>
-            <br>
-            <span class="meter-hint">তবে ঢাকার রাস্তায় চালকরা সাধারণত মিটারে যেতে চান না এবং <strong>{{ primaryFare()?.fareDisplayBn }}</strong> চুক্তিভিত্তিক ভাড়া দাবি করেন।</span>
-          </p>
-        </div>
-      }
-
-      <!-- Distance Feasibility Notice (e.g. Rickshaws > 7km) -->
-      @if (primaryFare()?.distanceNoticeBn) {
-        <div class="distance-warning-box">
-          <span class="warn-icon">⚠️</span>
-          <span>{{ primaryFare()?.distanceNoticeBn }}</span>
-        </div>
-      }
-
-      <!-- Source & Verification Note -->
-      <div class="fare-source-footer">
-        <span class="source-icon">📌</span>
-        <span class="source-text">{{ primaryFare()?.sourceNoteBn || primaryFare()?.sourceNote }}</span>
-      </div>
-    </div>
-
-    <!-- 5. All Transports Quick Comparison Bar -->
-    @if (allFares() && allFares().length > 1) {
-      <div class="comparison-section">
-        <span class="comparison-title">অন্যান্য যানবাহনের ভাড়া তুলনা ({{ activeRouteName() }}):</span>
-        <div class="comparison-grid">
-          @for (fare of allFares(); track fare.transportCode) {
-            <button
-              type="button"
-              class="comparison-card"
-              [class.active]="fare.transportCode === primaryFare()?.transportCode"
-              (click)="selectTransport(fare.transportCode)"
-              [title]="fare.transportNameBn + ' ভাড়া দেখুন'"
-            >
-              <div class="comp-header">
-                <span class="comp-icon">
-                  @switch (fare.transportCode) {
-                    @case ('bus') { 🚌 }
-                    @case ('rickshaw') { 🛺 }
-                    @case ('cng') { 🛺💨 }
-                    @case ('bike') { 🏍️ }
-                  }
-                </span>
-                <span class="comp-name">{{ fare.transportNameBn }}</span>
-              </div>
-              <div class="comp-amount">{{ fare.fareDisplayBn }}</div>
-            </button>
-          }
-        </div>
-      </div>
-    }
-
-    <!-- 6. Result Action Buttons -->
-    <div class="result-actions">
-      <button type="button" class="action-btn back-primary-btn" (click)="onModify()" aria-label="নতুন সার্চ করুন">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="19" y1="12" x2="5" y2="12"></line>
-          <polyline points="12 19 5 12 12 5"></polyline>
-        </svg>
-        <span>নতুন সার্চ করুন</span>
-      </button>
-
-      <button type="button" class="action-btn share-btn" (click)="onShare()" aria-label="ভাড়া শেয়ার করুন">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <!-- 3. Result Action Buttons (Prominent WhatsApp Share + Secondary Buttons) -->
+    <div class="ticket-actions-wrap">
+      <button type="button" class="action-btn share-primary-cta" (click)="onShare()" aria-label="ভাড়া শেয়ার করুন">
+        <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="18" cy="5" r="3"></circle>
           <circle cx="6" cy="12" r="3"></circle>
           <circle cx="18" cy="19" r="3"></circle>
           <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
           <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
         </svg>
-        <span>শেয়ার করুন</span>
+        <span>ভাড়া ও রুট শেয়ার করুন</span>
       </button>
 
-      <button type="button" class="action-btn contribute-btn" (click)="onContribute()">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 20h9"></path>
-          <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-        </svg>
-        <span>ভাড়া আপডেট দিন</span>
-      </button>
+      <div class="actions-secondary-row">
+        <button type="button" class="action-btn back-btn" (click)="onModify()" aria-label="নতুন সার্চ করুন">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+          <span>নতুন সার্চ</span>
+        </button>
+
+        <button type="button" class="action-btn contribute-btn" (click)="onContribute()">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 20h9"></path>
+            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+          </svg>
+          <span>ভাড়া আপডেট দিন</span>
+        </button>
+      </div>
     </div>
   </div>
 }

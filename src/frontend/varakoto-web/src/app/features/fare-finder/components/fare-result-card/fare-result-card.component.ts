@@ -140,6 +140,10 @@ export class FareResultCardComponent {
   readonly route1ViaText = computed(() => this.routesInfo()?.route1.viaText || '');
   readonly route2ViaText = computed(() => this.routesInfo()?.route2.viaText || '');
 
+  readonly activeViaText = computed(() => {
+    return this.selectedRouteIndex() === 0 ? this.route1ViaText() : this.route2ViaText();
+  });
+
   // Computed active primary fare based on selected route
   readonly primaryFare = computed(() => {
     const primary = this.result()?.primaryFare;
