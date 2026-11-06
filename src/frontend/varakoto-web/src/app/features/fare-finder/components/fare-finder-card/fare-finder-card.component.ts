@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, output, signal } from '@angular/core';
+import { Component, OnInit, HostListener, inject, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
@@ -208,48 +208,79 @@ export class FareFinderCardComponent implements OnInit {
     this.toSearchSubject.next(value);
   }
 
-  private touchStartY = 0;
-  private touchStartX = 0;
-  private isTouchDragging = false;
-
-  onTouchStart(event: TouchEvent): void {
-    if (event.touches && event.touches.length > 0) {
-      this.touchStartY = event.touches[0].clientY;
-      this.touchStartX = event.touches[0].clientX;
-      this.isTouchDragging = false;
-    }
-  }
-
-  onTouchMove(event: TouchEvent): void {
-    if (event.touches && event.touches.length > 0) {
-      const deltaY = Math.abs(event.touches[0].clientY - this.touchStartY);
-      const deltaX = Math.abs(event.touches[0].clientX - this.touchStartX);
-      if (deltaY > 8 || deltaX > 8) {
-        this.isTouchDragging = true;
-      }
-    }
-  }
-
-  onSelectFromItem(loc: LocationDto): void {
-    if (this.isTouchDragging) {
-      return;
-    }
-    this.selectFrom(loc);
-  }
-
-  onSelectToItem(loc: LocationDto): void {
-    if (this.isTouchDragging) {
-      return;
-    }
-    this.selectTo(loc);
-  }
-
-  onSelectFromPointerDown(event: Event, loc: LocationDto): void {
-    this.selectFrom(loc);
-  }
-
-  onSelectToPointerDown(event: Event, loc: LocationDto): void {
-    this.selectTo(loc);
+  // Dropdown Scroll & Touch State Management
+  private isInteractingWithDropdown = false;
+  private dropdownTouchStartY = 0;
+  private dropdownTouchStartX = 0;
+  private dropdownHasScrolled = false;
+
+  @HostListener('document:touchstart', ['$event'])
+  @HostListener('document:click', ['$event'])
+  onDocumentInteraction(event: Event): void {
+    const target = event.target as HTMLElement;
+    if (!target) return;
+    if (!target.closest('.input-group')) {
+      this.showFromDropdown.set(false);
+      this.showToDropdown.set(false);
+      this.isInteractingWithDropdown = false;
+    }
+  }
+
+  onDropdownPointerDown(event: PointerEvent): void {
+    // Crucial on mobile: prevents input blur and keyboard collapse while scrolling
+    event.preventDefault();
+    this.isInteractingWithDropdown = true;
+  }
+
+  onDropdownTouchStart(event: TouchEvent): void {
+    this.isInteractingWithDropdown = true;
+    if (event.touches && event.touches.length > 0) {
+      this.dropdownTouchStartY = event.touches[0].clientY;
+      this.dropdownTouchStartX = event.touches[0].clientX;
+      this.dropdownHasScrolled = false;
+    }
+  }
+
+  onDropdownTouchMove(event: TouchEvent): void {
+    this.isInteractingWithDropdown = true;
+    if (event.touches && event.touches.length > 0) {
+      const deltaY = Math.abs(event.touches[0].clientY - this.dropdownTouchStartY);
+      const deltaX = Math.abs(event.touches[0].clientX - this.dropdownTouchStartX);
+      if (deltaY > 6 || deltaX > 6) {
+        this.dropdownHasScrolled = true;
+      }
+    }
+  }
+
+  onDropdownTouchEnd(): void {
+    setTimeout(() => {
+      this.isInteractingWithDropdown = false;
+    }, 350);
+  }
+
+  onItemSelect(event: Event, loc: LocationDto, field: 'from' | 'to'): void {
+    // If user dragged/scrolled the list, suppress selection completely!
+    if (this.dropdownHasScrolled) {
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+
+    if (field === 'from') {
+      this.selectFrom(loc);
+    } else {
+      this.selectTo(loc);
+    }
+    this.isInteractingWithDropdown = false;
+  }
+
+  // Backward compatibility alias for any existing spec tests
+  onSelectFromItem(loc: LocationDto): void {
+    this.selectFrom(loc);
+  }
+
+  onSelectToItem(loc: LocationDto): void {
+    this.selectTo(loc);
   }
 
   selectFrom(loc: LocationDto): void {

@@ -166,7 +166,14 @@
 
         @if (showFromDropdown()) {
 
-          <ul class="suggestions-list" role="listbox">
+          <ul
+            class="suggestions-list"
+            role="listbox"
+            (pointerdown)="onDropdownPointerDown($event)"
+            (touchstart)="onDropdownTouchStart($event)"
+            (touchmove)="onDropdownTouchMove($event)"
+            (touchend)="onDropdownTouchEnd()"
+          >
 
             @if (!fromQuery() || fromQuery().trim().length < 2) {
 
@@ -182,19 +189,7 @@
 
             @for (loc of fromSuggestions(); track loc.id || loc.displayName) {
 
-              <li
-
-                class="suggestion-item"
-
-                (mousedown)="$event.preventDefault()"
-
-                (touchstart)="onTouchStart($event)"
-
-                (touchmove)="onTouchMove($event)"
-
-                (click)="onSelectFromItem(loc)"
-
-              >
+              <li class="suggestion-item" (click)="onItemSelect($event, loc, 'from')">
 
                 <span class="suggest-icon">{{ loc.isHub ? '🚏' : '📍' }}</span>
 
@@ -364,7 +359,14 @@
 
         @if (showToDropdown()) {
 
-          <ul class="suggestions-list" role="listbox">
+          <ul
+            class="suggestions-list"
+            role="listbox"
+            (pointerdown)="onDropdownPointerDown($event)"
+            (touchstart)="onDropdownTouchStart($event)"
+            (touchmove)="onDropdownTouchMove($event)"
+            (touchend)="onDropdownTouchEnd()"
+          >
 
             @if (!toQuery() || toQuery().trim().length < 2) {
 
@@ -380,19 +382,7 @@
 
             @for (loc of toSuggestions(); track loc.id || loc.displayName) {
 
-              <li
-
-                class="suggestion-item"
-
-                (mousedown)="$event.preventDefault()"
-
-                (touchstart)="onTouchStart($event)"
-
-                (touchmove)="onTouchMove($event)"
-
-                (click)="onSelectToItem(loc)"
-
-              >
+              <li class="suggestion-item" (click)="onItemSelect($event, loc, 'to')">
 
                 <span class="suggest-icon">{{ loc.isHub ? '🚏' : '🏁' }}</span>
 
@@ -751,8 +741,7 @@
       </div>
 
     </div>
-
-
+
     <!-- Route Selection Preference (Auto-select Best Route by default + One-touch Change Route Option) -->
     <div class="route-preference-cluster">
       <div class="pref-header">
