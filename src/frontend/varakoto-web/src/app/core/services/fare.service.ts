@@ -22,6 +22,7 @@ export class FareService {
 
   // Reactive State Signals
   readonly selectedTransport = signal<TransportCode>('bus');
+  readonly selectedRouteMode = signal<'best' | 'alt'>('best');
   readonly latestResult = signal<FareCalculationResultModel | null>(null);
   readonly isCalculating = signal<boolean>(false);
   readonly calculationError = signal<string | null>(null);
@@ -31,6 +32,10 @@ export class FareService {
   /**
    * Sets the currently selected transport mode
    */
+  setRouteMode(mode: 'best' | 'alt'): void {
+    this.selectedRouteMode.set(mode);
+  }
+
   setSelectedTransport(transport: TransportCode): void {
     this.selectedTransport.set(transport);
     

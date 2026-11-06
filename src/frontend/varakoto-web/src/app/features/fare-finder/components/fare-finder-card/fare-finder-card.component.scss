@@ -821,3 +821,121 @@
     transform: rotate(360deg);
   }
 }
+
+/* Route Selection Preference Cluster */
+.route-preference-cluster {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background-color: var(--bg-surface-elevated);
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 12px 14px;
+  margin: 6px 0 12px;
+
+  .pref-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    .pref-icon {
+      font-size: 16px;
+    }
+
+    .pref-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-heading);
+    }
+  }
+
+  .pref-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+
+    @media (max-width: 480px) {
+      grid-template-columns: 1fr;
+    }
+
+    .pref-card {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      padding: 10px 12px;
+      border-radius: var(--radius-md);
+      background-color: var(--bg-surface);
+      border: 2px solid var(--border-subtle);
+      cursor: pointer;
+      text-align: left;
+      font-family: inherit;
+      transition: all var(--transition-fast);
+      -webkit-tap-highlight-color: transparent;
+
+      &:hover {
+        border-color: var(--vk-green);
+        transform: translateY(-1px);
+      }
+
+      &:active {
+        transform: scale(0.98);
+      }
+
+      &.active {
+        border-color: var(--vk-green);
+        background: linear-gradient(135deg, rgba(11, 79, 68, 0.08) 0%, var(--bg-surface) 100%);
+        box-shadow: 0 3px 10px rgba(11, 79, 68, 0.15);
+
+        [data-theme="dark"] & {
+          border-color: #37e6a3;
+          background: linear-gradient(135deg, rgba(55, 230, 163, 0.15) 0%, var(--bg-surface) 100%);
+        }
+      }
+
+      .pref-badge-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        .pref-pill {
+          font-size: 12px;
+          font-weight: 800;
+          padding: 2px 8px;
+          border-radius: var(--radius-full);
+
+          &.best-pill {
+            background-color: rgba(11, 79, 68, 0.12);
+            color: var(--vk-green);
+
+            [data-theme="dark"] & {
+              background-color: rgba(55, 230, 163, 0.15);
+              color: #37e6a3;
+            }
+          }
+
+          &.alt-pill {
+            background-color: rgba(229, 87, 10, 0.12);
+            color: var(--accent-cta);
+
+            [data-theme="dark"] & {
+              background-color: rgba(255, 201, 60, 0.15);
+              color: #ffc93c;
+            }
+          }
+        }
+
+        .pref-tag {
+          font-size: 11px;
+          font-weight: 700;
+          color: var(--text-muted);
+        }
+      }
+
+      .pref-subtitle {
+        font-size: 11.5px;
+        color: var(--text-muted);
+        line-height: 1.3;
+      }
+    }
+  }
+}

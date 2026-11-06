@@ -33,7 +33,7 @@ export class FareResultCardComponent {
   @Output() routeChanged = new EventEmitter<{ routeIndex: number; distanceKm: number; durationMinutes: number }>();
 
   // Active selected route index: 0 = Route 1 (Best/Default), 1 = Route 2 (Alternative)
-  readonly selectedRouteIndex = signal<number>(0);
+  readonly selectedRouteIndex = signal<number>(this.fareService.selectedRouteMode() === 'alt' ? 1 : 0);
 
   // Current calculation result
   readonly result = computed(() => this.fareService.latestResult());
@@ -224,6 +224,7 @@ export class FareResultCardComponent {
   selectRoute(index: number): void {
     this.nativeMobile.hapticSelection();
     this.selectedRouteIndex.set(index);
+    this.fareService.setRouteMode(index === 1 ? 'alt' : 'best');
     this.routeChanged.emit({
       routeIndex: index,
       distanceKm: this.activeDistanceKm(),

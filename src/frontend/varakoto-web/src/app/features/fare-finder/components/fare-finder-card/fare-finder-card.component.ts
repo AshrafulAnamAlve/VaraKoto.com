@@ -377,6 +377,11 @@ export class FareFinderCardComponent implements OnInit {
     });
   }
 
+  selectRouteMode(mode: 'best' | 'alt'): void {
+    this.nativeMobile.hapticSelection();
+    this.fareService.setRouteMode(mode);
+  }
+
   selectTransport(code: TransportCode): void {
     this.nativeMobile.hapticSelection();
     this.fareService.setSelectedTransport(code);
