@@ -398,8 +398,10 @@
 
   .suggestion-item {
     min-height: 48px;
-    touch-action: manipulation;
+    touch-action: pan-y;
     user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
     display: flex;
     align-items: center;
     gap: 10px;

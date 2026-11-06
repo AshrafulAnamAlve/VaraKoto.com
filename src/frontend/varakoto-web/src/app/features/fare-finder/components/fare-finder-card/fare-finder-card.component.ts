@@ -208,13 +208,47 @@ export class FareFinderCardComponent implements OnInit {
     this.toSearchSubject.next(value);
   }
 
+  private touchStartY = 0;
+  private touchStartX = 0;
+  private isTouchDragging = false;
+
+  onTouchStart(event: TouchEvent): void {
+    if (event.touches && event.touches.length > 0) {
+      this.touchStartY = event.touches[0].clientY;
+      this.touchStartX = event.touches[0].clientX;
+      this.isTouchDragging = false;
+    }
+  }
+
+  onTouchMove(event: TouchEvent): void {
+    if (event.touches && event.touches.length > 0) {
+      const deltaY = Math.abs(event.touches[0].clientY - this.touchStartY);
+      const deltaX = Math.abs(event.touches[0].clientX - this.touchStartX);
+      if (deltaY > 8 || deltaX > 8) {
+        this.isTouchDragging = true;
+      }
+    }
+  }
+
+  onSelectFromItem(loc: LocationDto): void {
+    if (this.isTouchDragging) {
+      return;
+    }
+    this.selectFrom(loc);
+  }
+
+  onSelectToItem(loc: LocationDto): void {
+    if (this.isTouchDragging) {
+      return;
+    }
+    this.selectTo(loc);
+  }
+
   onSelectFromPointerDown(event: Event, loc: LocationDto): void {
-    event.preventDefault();
     this.selectFrom(loc);
   }
 
   onSelectToPointerDown(event: Event, loc: LocationDto): void {
-    event.preventDefault();
     this.selectTo(loc);
   }
 

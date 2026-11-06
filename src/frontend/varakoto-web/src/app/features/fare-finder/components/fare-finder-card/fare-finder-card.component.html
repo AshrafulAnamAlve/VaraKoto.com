@@ -1,434 +1,818 @@
-<div class="finder-card">
-  <!-- Card Header -->
-  <div class="card-header">
-    <h1 class="main-heading">কোথায় যাবেন? ভাড়া জেনে নিন সহজেই</h1>
-    <p class="sub-heading">প্রারম্ভিক স্থান ও গন্তব্য নির্বাচন করে যেকোনো বাহনের সঠিক ভাড়ার হিসেব দেখুন</p>
-  </div>
-
-  <!-- User Current District / Location Bar (Editable) -->
-  <div class="user-district-bar" (click)="openDistrictSelector()" role="button" tabindex="0" title="জেলা পরিবর্তন করতে ক্লিক করুন">
-    <div class="district-badge-left">
-      <span class="district-pin">📍</span>
-      <span class="district-caption">আপনার অবস্থান:</span>
-      <span class="district-highlight">{{ districtService.currentDistrict().nameBn }} ({{ districtService.currentDistrict().nameEn }})</span>
-    </div>
-    <button type="button" class="edit-district-btn" (click)="$event.stopPropagation(); openDistrictSelector()">
-      <span class="edit-text">পরিবর্তন</span>
-      <span class="edit-icon">✏️</span>
-    </button>
-  </div>
-
-  <form class="finder-form" (ngSubmit)="onFindFare()" role="search">
-    <!-- Locations Input Cluster -->
-    <div class="locations-cluster">
-      <!-- 1. Origin Input Field -->
-      <div class="input-group origin-group" [class.has-dropdown-open]="showFromDropdown()">
-        <label for="origin-input" class="field-label">
-          <span class="label-dot origin-dot"></span>
-          <span>কোথা থেকে (From)</span>
-        </label>
-
-        <div class="input-wrapper">
-          <div class="input-icon origin-icon">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="4"></circle>
-              <path d="M12 2v3M12 19v3M2 12h3M19 12h3"></path>
-            </svg>
-          </div>
-
-          <input
-            id="origin-input"
-            type="text"
-            class="location-input"
-            placeholder="যেমন: মিরপুর ১০, ফার্মগেট, উত্তরা..."
-            autocomplete="off"
-            [ngModel]="fromQuery()"
-            (ngModelChange)="onFromInput($event)"
-            (focus)="onFromFocus()"
-            (click)="onFromFocus()"
-            (blur)="closeDropdowns()"
-            name="fromLocation"
-          />
-
-          <!-- GPS Detect Button -->
-          <button
-            type="button"
-            class="gps-btn"
-            (click)="detectCurrentLocation()"
-            [disabled]="isDetectingGps()"
-            title="বর্তমান অবস্থান সনাক্ত করুন (Detect Current Location)"
-          >
-            @if (isDetectingGps()) {
-              <span class="gps-spinner"></span>
-            } @else {
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <circle cx="12" cy="12" r="3"></circle>
-                <line x1="12" y1="2" x2="12" y2="5"></line>
-                <line x1="12" y1="19" x2="12" y2="22"></line>
-                <line x1="2" y1="12" x2="5" y2="12"></line>
-                <line x1="19" y1="12" x2="22" y2="12"></line>
-              </svg>
-            }
-          </button>
-
-          <!-- Map Pin Button -->
-          <button
-            type="button"
-            class="map-btn"
-            (click)="openMapPicker('from')"
-            title="ম্যাপে পিন করুন (Pick on Map)"
-          >
-            📍
-          </button>
-
-          <!-- Clear Button -->
-          @if (fromQuery()) {
-            <button type="button" class="clear-btn" (click)="clearFrom()" title="মুছে ফেলুন">✕</button>
-          }
-        </div>
-
-        <!-- Origin Autocomplete & Recommended Dropdown -->
-        @if (showFromDropdown()) {
-          <ul class="suggestions-list" role="listbox">
-            @if (!fromQuery() || fromQuery().trim().length < 2) {
-              <li class="recommendation-header">
-                <span class="rec-icon">⭐</span>
-                <span class="rec-title">জনপ্রিয় স্থান ও বাস স্ট্যান্ড ({{ districtService.currentDistrict().nameBn }})</span>
-              </li>
-            }
-
-            @for (loc of fromSuggestions(); track loc.id || loc.displayName) {
-              <li
-                class="suggestion-item"
-                (pointerdown)="onSelectFromPointerDown($event, loc)"
-                (click)="selectFrom(loc)"
-              >
-                <span class="suggest-icon">{{ loc.isHub ? '🚏' : '📍' }}</span>
-                <div class="suggest-details">
-                  <span class="suggest-name">{{ loc.nameBn || loc.displayName }}</span>
-                  <span class="suggest-meta">{{ loc.nameEn }} {{ loc.district ? '• ' + loc.district : '' }}</span>
-                </div>
-                @if (loc.isHub) {
-                  <span class="hub-pill">বাস হাব</span>
-                }
-              </li>
-            }
-
-            @if (fromSuggestions().length === 0 && !isSearchingFrom() && fromQuery().length >= 2) {
-              <li class="empty-suggestion-box">
-                <div class="empty-header">🔍 ম্যাপে সরাসরি এই নামটি পাওয়া যায়নি</div>
-                <div class="empty-action-row">
-                  <button type="button" class="empty-action-pill" (pointerdown)="openMapPicker('from')" (click)="openMapPicker('from')">
-                    📍 ম্যাপে পিন করুন
-                  </button>
-                  <button type="button" class="empty-action-pill" (pointerdown)="enableManualDistance()" (click)="enableManualDistance()">
-                    📏 দূরত্ব লিখে হিসাব
-                  </button>
-                </div>
-              </li>
-            }
-          </ul>
-        }
-      </div>
-
-      <!-- Swap Locations Button -->
-      <div class="swap-action">
-        <button
-          type="button"
-          class="swap-btn"
-          (click)="swapLocations()"
-          title="রুট উল্টান (Swap Locations)"
-          aria-label="Swap starting and destination locations"
-        >
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="7 10 12 5 17 10"></polyline>
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <polyline points="17 14 12 19 7 14"></polyline>
-          </svg>
-        </button>
-      </div>
-
-      <!-- 2. Destination Input Field -->
-      <div class="input-group destination-group" [class.has-dropdown-open]="showToDropdown()">
-        <label for="destination-input" class="field-label">
-          <span class="label-dot dest-dot"></span>
-          <span>কোথায় যাবেন (To)</span>
-        </label>
-
-        <div class="input-wrapper">
-          <div class="input-icon dest-icon">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-              <circle cx="12" cy="10" r="3"></circle>
-            </svg>
-          </div>
-
-          <input
-            id="destination-input"
-            type="text"
-            class="location-input"
-            placeholder="যেমন: ফার্মগেট, মতিঝিল, ধানমন্ডি..."
-            autocomplete="off"
-            [ngModel]="toQuery()"
-            (ngModelChange)="onToInput($event)"
-            (focus)="onToFocus()"
-            (click)="onToFocus()"
-            (blur)="closeDropdowns()"
-            name="toLocation"
-          />
-
-          <!-- Map Pin Button -->
-          <button
-            type="button"
-            class="map-btn"
-            (click)="openMapPicker('to')"
-            title="ম্যাপে পিন করুন (Pick on Map)"
-          >
-            📍
-          </button>
-
-          <!-- Clear Button -->
-          @if (toQuery()) {
-            <button type="button" class="clear-btn" (click)="clearTo()" title="মুছে ফেলুন">✕</button>
-          }
-        </div>
-
-        <!-- Destination Autocomplete & Recommended Dropdown -->
-        @if (showToDropdown()) {
-          <ul class="suggestions-list" role="listbox">
-            @if (!toQuery() || toQuery().trim().length < 2) {
-              <li class="recommendation-header">
-                <span class="rec-icon">⭐</span>
-                <span class="rec-title">জনপ্রিয় স্থান ও বাস স্ট্যান্ড ({{ districtService.currentDistrict().nameBn }})</span>
-              </li>
-            }
-
-            @for (loc of toSuggestions(); track loc.id || loc.displayName) {
-              <li
-                class="suggestion-item"
-                (pointerdown)="onSelectToPointerDown($event, loc)"
-                (click)="selectTo(loc)"
-              >
-                <span class="suggest-icon">{{ loc.isHub ? '🚏' : '🏁' }}</span>
-                <div class="suggest-details">
-                  <span class="suggest-name">{{ loc.nameBn || loc.displayName }}</span>
-                  <span class="suggest-meta">{{ loc.nameEn }} {{ loc.district ? '• ' + loc.district : '' }}</span>
-                </div>
-                @if (loc.isHub) {
-                  <span class="hub-pill">বাস হাব</span>
-                }
-              </li>
-            }
-
-            @if (toSuggestions().length === 0 && !isSearchingTo() && toQuery().length >= 2) {
-              <li class="empty-suggestion-box">
-                <div class="empty-header">🔍 ম্যাপে সরাসরি এই নামটি পাওয়া যায়নি</div>
-                <div class="empty-action-row">
-                  <button type="button" class="empty-action-pill" (pointerdown)="openMapPicker('to')" (click)="openMapPicker('to')">
-                    📍 ম্যাপে পিন করুন
-                  </button>
-                  <button type="button" class="empty-action-pill" (pointerdown)="enableManualDistance()" (click)="enableManualDistance()">
-                    📏 দূরত্ব লিখে হিসাব
-                  </button>
-                </div>
-              </li>
-            }
-          </ul>
-        }
-      </div>
-    </div>
-
-    <!-- Manual Distance Toggle Section -->
-    <div class="manual-distance-toggle-wrapper">
-      <button
-        type="button"
-        class="distance-toggle-btn"
-        (click)="toggleManualDistance()"
-      >
-        <span class="toggle-label">📏 সরাসরি আনুমানিক দূরত্ব (কিমি) দিয়ে হিসাব করতে চান?</span>
-        <span class="toggle-indicator">{{ isManualDistanceActive() ? '▲ বন্ধ করুন' : '▼ চালু করুন' }}</span>
-      </button>
-
-      @if (isManualDistanceActive()) {
-        <div class="manual-distance-panel">
-          <label class="distance-field-label">আনুমানিক দূরত্ব (কিলোমিটার):</label>
-          <div class="distance-input-row">
-            <input
-              type="number"
-              step="0.1"
-              min="0.5"
-              max="500"
-              class="manual-distance-input"
-              placeholder="যেমন: ৪.৫"
-              [ngModel]="manualDistance()"
-              (ngModelChange)="manualDistance.set($event)"
-              name="manualKm"
-            />
-            <span class="km-unit-badge">কিমি (KM)</span>
-          </div>
-          <p class="distance-help-text">
-            💡 প্রত্যন্ত বা অপরিচিত এলাকার ক্ষেত্রে দূরত্ব জানা থাকলে সরাসরি কিলোমিটার লিখে নির্ভুল সরকারি ভাড়ার হিসেব দেখতে পারেন।
-          </p>
-        </div>
-      }
-    </div>
-
-    <!-- GPS Error Message with direct Map Picker button -->
-    @if (gpsError()) {
-      <div class="alert-notice gps-alert">
-        <div class="alert-content">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="12" y1="8" x2="12" y2="12"></line>
-            <line x1="12" y1="16" x2="12.01" y2="16"></line>
-          </svg>
-          <span class="alert-text">{{ gpsError() }}</span>
-        </div>
-        <button type="button" class="alert-map-action-btn" (click)="openMapPicker('from')">
-          📍 ম্যাপে স্থান পিন করুন
-        </button>
-      </div>
-    }
-
-    <!-- Validation Error Alert -->
-    @if (validationMessage()) {
-      <div class="alert-notice validation-alert">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10"></circle>
-          <line x1="12" y1="8" x2="12" y2="12"></line>
-          <line x1="12" y1="16" x2="12.01" y2="16"></line>
-        </svg>
-        <span>{{ validationMessage() }}</span>
-      </div>
-    }
-
-    <!-- Transportation Selection Grid -->
-    <div class="transport-section">
-      <span class="transport-label">যানবাহন নির্বাচন করুন:</span>
-      <div class="transport-grid" role="radiogroup" aria-label="বাহন নির্বাচন">
-        <!-- 1. Bus -->
-        <button
-          type="button"
-          class="transport-option"
-          [class.selected]="fareService.selectedTransport() === 'bus'"
-          (click)="selectTransport('bus')"
-          role="radio"
-          [attr.aria-checked]="fareService.selectedTransport() === 'bus'"
-        >
-          <div class="transport-icon-box">
-            <svg viewBox="0 0 48 48" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="8" y="8" width="32" height="28" rx="5" fill="none"></rect>
-              <line x1="8" y1="22" x2="40" y2="22"></line>
-              <line x1="24" y1="8" x2="24" y2="22"></line>
-              <rect x="15" y="11" width="18" height="4" rx="1" fill="currentColor" opacity="0.3"></rect>
-              <circle cx="14" cy="30" r="2" fill="currentColor"></circle>
-              <circle cx="34" cy="30" r="2" fill="currentColor"></circle>
-              <circle cx="15" cy="38" r="3" fill="currentColor"></circle>
-              <circle cx="33" cy="38" r="3" fill="currentColor"></circle>
-            </svg>
-          </div>
-          <span class="transport-name">বাস</span>
-        </button>
-
-        <!-- 2. Rickshaw -->
-        <button
-          type="button"
-          class="transport-option"
-          [class.selected]="fareService.selectedTransport() === 'rickshaw'"
-          (click)="selectTransport('rickshaw')"
-          role="radio"
-          [attr.aria-checked]="fareService.selectedTransport() === 'rickshaw'"
-        >
-          <div class="transport-icon-box">
-            <svg viewBox="0 0 48 48" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="36" r="6" fill="none"></circle>
-              <circle cx="36" cy="36" r="6" fill="none"></circle>
-              <path d="M26 14 C 28 8, 38 8, 40 16 L 38 26 L 24 26 Z" fill="none"></path>
-              <line x1="12" y1="36" x2="24" y2="26"></line>
-              <line x1="24" y1="26" x2="36" y2="36"></line>
-              <line x1="12" y1="36" x2="16" y2="22"></line>
-              <path d="M14 20 L 19 22"></path>
-            </svg>
-          </div>
-          <span class="transport-name">রিকশা</span>
-        </button>
-
-        <!-- 3. CNG Auto-Rickshaw -->
-        <button
-          type="button"
-          class="transport-option"
-          [class.selected]="fareService.selectedTransport() === 'cng'"
-          (click)="selectTransport('cng')"
-          role="radio"
-          [attr.aria-checked]="fareService.selectedTransport() === 'cng'"
-        >
-          <div class="transport-icon-box">
-            <svg viewBox="0 0 48 48" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M10 34 L 10 24 L 18 10 L 32 10 L 38 22 L 38 34 Z" fill="none"></path>
-              <path d="M18 12 L 20 22 L 34 22 L 31 12 Z" fill="none"></path>
-              <circle cx="10" cy="27" r="1.5" fill="currentColor"></circle>
-              <circle cx="14" cy="37" r="4.5" fill="currentColor"></circle>
-              <circle cx="34" cy="37" r="4.5" fill="currentColor"></circle>
-            </svg>
-          </div>
-          <span class="transport-name">সিএনজি</span>
-        </button>
-
-        <!-- 4. Bike (Ride-sharing) -->
-        <button
-          type="button"
-          class="transport-option"
-          [class.selected]="fareService.selectedTransport() === 'bike'"
-          (click)="selectTransport('bike')"
-          role="radio"
-          [attr.aria-checked]="fareService.selectedTransport() === 'bike'"
-        >
-          <div class="transport-icon-box">
-            <svg viewBox="0 0 48 48" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="34" r="6" fill="none"></circle>
-              <circle cx="36" cy="34" r="6" fill="none"></circle>
-              <path d="M12 34 L 20 24 L 28 24 L 36 34" fill="none"></path>
-              <path d="M20 24 L 24 16 L 28 16" fill="none"></path>
-              <line x1="28" y1="16" x2="33" y2="20"></line>
-              <line x1="33" y1="16" x2="31" y2="20"></line>
-            </svg>
-          </div>
-          <span class="transport-name">বাইক</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- Primary Action CTA -->
-    <div class="action-section">
-      <button
-        type="submit"
-        class="find-fare-cta"
-        [disabled]="fareService.isCalculating()"
-      >
-        @if (fareService.isCalculating()) {
-          <span class="btn-spinner"></span>
-          <span>ভাড়া যাচাই করা হচ্ছে...</span>
-        } @else {
-          <span class="btn-icon">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-          </span>
-          <span class="cta-text">ভাড়া দেখুন</span>
-        }
-      </button>
-    </div>
-  </form>
-
-  <!-- Interactive Map Picker Modal -->
-  <app-map-picker-modal
-    [isOpen]="isMapPickerOpen()"
-    [title]="mapPickerTitle()"
-    [fieldLabel]="mapPickerField() === 'from' ? 'যাত্রার শুরুর স্থান' : 'গন্তব্য স্থান'"
-    [initialName]="mapPickerField() === 'from' ? fromQuery() : toQuery()"
-    (locationSelected)="onLocationPickedFromMap($event)"
-    (closed)="isMapPickerOpen.set(false)"
-  ></app-map-picker-modal>
-</div>
+<div class="finder-card">
+
+  <!-- Card Header -->
+
+  <div class="card-header">
+
+    <h1 class="main-heading">কোথায় যাবেন? ভাড়া জেনে নিন সহজেই</h1>
+
+    <p class="sub-heading">প্রারম্ভিক স্থান ও গন্তব্য নির্বাচন করে যেকোনো বাহনের সঠিক ভাড়ার হিসেব দেখুন</p>
+
+  </div>
+
+  <!-- User Current District / Location Bar (Editable) -->
+
+  <div class="user-district-bar" (click)="openDistrictSelector()" role="button" tabindex="0" title="জেলা পরিবর্তন করতে ক্লিক করুন">
+
+    <div class="district-badge-left">
+
+      <span class="district-pin">📍</span>
+
+      <span class="district-caption">আপনার অবস্থান:</span>
+
+      <span class="district-highlight">{{ districtService.currentDistrict().nameBn }} ({{ districtService.currentDistrict().nameEn }})</span>
+
+    </div>
+
+    <button type="button" class="edit-district-btn" (click)="$event.stopPropagation(); openDistrictSelector()">
+
+      <span class="edit-text">পরিবর্তন</span>
+
+      <span class="edit-icon">✏️</span>
+
+    </button>
+
+  </div>
+
+  <form class="finder-form" (ngSubmit)="onFindFare()" role="search">
+
+    <!-- Locations Input Cluster -->
+
+    <div class="locations-cluster">
+
+      <!-- 1. Origin Input Field -->
+
+      <div class="input-group origin-group" [class.has-dropdown-open]="showFromDropdown()">
+
+        <label for="origin-input" class="field-label">
+
+          <span class="label-dot origin-dot"></span>
+
+          <span>কোথা থেকে (From)</span>
+
+        </label>
+
+        <div class="input-wrapper">
+
+          <div class="input-icon origin-icon">
+
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+              <circle cx="12" cy="12" r="4"></circle>
+
+              <path d="M12 2v3M12 19v3M2 12h3M19 12h3"></path>
+
+            </svg>
+
+          </div>
+
+          <input
+
+            id="origin-input"
+
+            type="text"
+
+            class="location-input"
+
+            placeholder="যেমন: মিরপুর ১০, ফার্মগেট, উত্তরা..."
+
+            autocomplete="off"
+
+            [ngModel]="fromQuery()"
+
+            (ngModelChange)="onFromInput($event)"
+
+            (focus)="onFromFocus()"
+
+            (click)="onFromFocus()"
+
+            (blur)="closeDropdowns()"
+
+            name="fromLocation"
+
+          />
+
+          <!-- GPS Detect Button -->
+
+          <button
+
+            type="button"
+
+            class="gps-btn"
+
+            (click)="detectCurrentLocation()"
+
+            [disabled]="isDetectingGps()"
+
+            title="বর্তমান অবস্থান সনাক্ত করুন (Detect Current Location)"
+
+          >
+
+            @if (isDetectingGps()) {
+
+              <span class="gps-spinner"></span>
+
+            } @else {
+
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+                <circle cx="12" cy="12" r="10"></circle>
+
+                <circle cx="12" cy="12" r="3"></circle>
+
+                <line x1="12" y1="2" x2="12" y2="5"></line>
+
+                <line x1="12" y1="19" x2="12" y2="22"></line>
+
+                <line x1="2" y1="12" x2="5" y2="12"></line>
+
+                <line x1="19" y1="12" x2="22" y2="12"></line>
+
+              </svg>
+
+            }
+
+          </button>
+
+          <!-- Map Pin Button -->
+
+          <button
+
+            type="button"
+
+            class="map-btn"
+
+            (click)="openMapPicker('from')"
+
+            title="ম্যাপে পিন করুন (Pick on Map)"
+
+          >
+
+            📍
+
+          </button>
+
+          <!-- Clear Button -->
+
+          @if (fromQuery()) {
+
+            <button type="button" class="clear-btn" (click)="clearFrom()" title="মুছে ফেলুন">✕</button>
+
+          }
+
+        </div>
+
+        <!-- Origin Autocomplete & Recommended Dropdown -->
+
+        @if (showFromDropdown()) {
+
+          <ul class="suggestions-list" role="listbox">
+
+            @if (!fromQuery() || fromQuery().trim().length < 2) {
+
+              <li class="recommendation-header">
+
+                <span class="rec-icon">⭐</span>
+
+                <span class="rec-title">জনপ্রিয় স্থান ও বাস স্ট্যান্ড ({{ districtService.currentDistrict().nameBn }})</span>
+
+              </li>
+
+            }
+
+            @for (loc of fromSuggestions(); track loc.id || loc.displayName) {
+
+              <li
+
+                class="suggestion-item"
+
+                (mousedown)="$event.preventDefault()"
+
+                (touchstart)="onTouchStart($event)"
+
+                (touchmove)="onTouchMove($event)"
+
+                (click)="onSelectFromItem(loc)"
+
+              >
+
+                <span class="suggest-icon">{{ loc.isHub ? '🚏' : '📍' }}</span>
+
+                <div class="suggest-details">
+
+                  <span class="suggest-name">{{ loc.nameBn || loc.displayName }}</span>
+
+                  <span class="suggest-meta">{{ loc.nameEn }} {{ loc.district ? '• ' + loc.district : '' }}</span>
+
+                </div>
+
+                @if (loc.isHub) {
+
+                  <span class="hub-pill">বাস হাব</span>
+
+                }
+
+              </li>
+
+            }
+
+            @if (fromSuggestions().length === 0 && !isSearchingFrom() && fromQuery().length >= 2) {
+
+              <li class="empty-suggestion-box">
+
+                <div class="empty-header">🔍 ম্যাপে সরাসরি এই নামটি পাওয়া যায়নি</div>
+
+                <div class="empty-action-row">
+
+                  <button type="button" class="empty-action-pill" (mousedown)="$event.preventDefault()" (click)="openMapPicker('from')">
+
+                    📍 ম্যাপে পিন করুন
+
+                  </button>
+
+                  <button type="button" class="empty-action-pill" (mousedown)="$event.preventDefault()" (click)="enableManualDistance()">
+
+                    📏 দূরত্ব লিখে হিসাব
+
+                  </button>
+
+                </div>
+
+              </li>
+
+            }
+
+          </ul>
+
+        }
+
+      </div>
+
+      <!-- Swap Locations Button -->
+
+      <div class="swap-action">
+
+        <button
+
+          type="button"
+
+          class="swap-btn"
+
+          (click)="swapLocations()"
+
+          title="রুট উল্টান (Swap Locations)"
+
+          aria-label="Swap starting and destination locations"
+
+        >
+
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+
+            <polyline points="7 10 12 5 17 10"></polyline>
+
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+
+            <polyline points="17 14 12 19 7 14"></polyline>
+
+          </svg>
+
+        </button>
+
+      </div>
+
+      <!-- 2. Destination Input Field -->
+
+      <div class="input-group destination-group" [class.has-dropdown-open]="showToDropdown()">
+
+        <label for="destination-input" class="field-label">
+
+          <span class="label-dot dest-dot"></span>
+
+          <span>কোথায় যাবেন (To)</span>
+
+        </label>
+
+        <div class="input-wrapper">
+
+          <div class="input-icon dest-icon">
+
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+
+              <circle cx="12" cy="10" r="3"></circle>
+
+            </svg>
+
+          </div>
+
+          <input
+
+            id="destination-input"
+
+            type="text"
+
+            class="location-input"
+
+            placeholder="যেমন: ফার্মগেট, মতিঝিল, ধানমন্ডি..."
+
+            autocomplete="off"
+
+            [ngModel]="toQuery()"
+
+            (ngModelChange)="onToInput($event)"
+
+            (focus)="onToFocus()"
+
+            (click)="onToFocus()"
+
+            (blur)="closeDropdowns()"
+
+            name="toLocation"
+
+          />
+
+          <!-- Map Pin Button -->
+
+          <button
+
+            type="button"
+
+            class="map-btn"
+
+            (click)="openMapPicker('to')"
+
+            title="ম্যাপে পিন করুন (Pick on Map)"
+
+          >
+
+            📍
+
+          </button>
+
+          <!-- Clear Button -->
+
+          @if (toQuery()) {
+
+            <button type="button" class="clear-btn" (click)="clearTo()" title="মুছে ফেলুন">✕</button>
+
+          }
+
+        </div>
+
+        <!-- Destination Autocomplete & Recommended Dropdown -->
+
+        @if (showToDropdown()) {
+
+          <ul class="suggestions-list" role="listbox">
+
+            @if (!toQuery() || toQuery().trim().length < 2) {
+
+              <li class="recommendation-header">
+
+                <span class="rec-icon">⭐</span>
+
+                <span class="rec-title">জনপ্রিয় স্থান ও বাস স্ট্যান্ড ({{ districtService.currentDistrict().nameBn }})</span>
+
+              </li>
+
+            }
+
+            @for (loc of toSuggestions(); track loc.id || loc.displayName) {
+
+              <li
+
+                class="suggestion-item"
+
+                (mousedown)="$event.preventDefault()"
+
+                (touchstart)="onTouchStart($event)"
+
+                (touchmove)="onTouchMove($event)"
+
+                (click)="onSelectToItem(loc)"
+
+              >
+
+                <span class="suggest-icon">{{ loc.isHub ? '🚏' : '🏁' }}</span>
+
+                <div class="suggest-details">
+
+                  <span class="suggest-name">{{ loc.nameBn || loc.displayName }}</span>
+
+                  <span class="suggest-meta">{{ loc.nameEn }} {{ loc.district ? '• ' + loc.district : '' }}</span>
+
+                </div>
+
+                @if (loc.isHub) {
+
+                  <span class="hub-pill">বাস হাব</span>
+
+                }
+
+              </li>
+
+            }
+
+            @if (toSuggestions().length === 0 && !isSearchingTo() && toQuery().length >= 2) {
+
+              <li class="empty-suggestion-box">
+
+                <div class="empty-header">🔍 ম্যাপে সরাসরি এই নামটি পাওয়া যায়নি</div>
+
+                <div class="empty-action-row">
+
+                  <button type="button" class="empty-action-pill" (mousedown)="$event.preventDefault()" (click)="openMapPicker('to')">
+
+                    📍 ম্যাপে পিন করুন
+
+                  </button>
+
+                  <button type="button" class="empty-action-pill" (mousedown)="$event.preventDefault()" (click)="enableManualDistance()">
+
+                    📏 দূরত্ব লিখে হিসাব
+
+                  </button>
+
+                </div>
+
+              </li>
+
+            }
+
+          </ul>
+
+        }
+
+      </div>
+
+    </div>
+
+    <!-- Manual Distance Toggle Section -->
+
+    <div class="manual-distance-toggle-wrapper">
+
+      <button
+
+        type="button"
+
+        class="distance-toggle-btn"
+
+        (click)="toggleManualDistance()"
+
+      >
+
+        <span class="toggle-label">📏 সরাসরি আনুমানিক দূরত্ব (কিমি) দিয়ে হিসাব করতে চান?</span>
+
+        <span class="toggle-indicator">{{ isManualDistanceActive() ? '▲ বন্ধ করুন' : '▼ চালু করুন' }}</span>
+
+      </button>
+
+      @if (isManualDistanceActive()) {
+
+        <div class="manual-distance-panel">
+
+          <label class="distance-field-label">আনুমানিক দূরত্ব (কিলোমিটার):</label>
+
+          <div class="distance-input-row">
+
+            <input
+
+              type="number"
+
+              step="0.1"
+
+              min="0.5"
+
+              max="500"
+
+              class="manual-distance-input"
+
+              placeholder="যেমন: ৪.৫"
+
+              [ngModel]="manualDistance()"
+
+              (ngModelChange)="manualDistance.set($event)"
+
+              name="manualKm"
+
+            />
+
+            <span class="km-unit-badge">কিমি (KM)</span>
+
+          </div>
+
+          <p class="distance-help-text">
+
+            💡 প্রত্যন্ত বা অপরিচিত এলাকার ক্ষেত্রে দূরত্ব জানা থাকলে সরাসরি কিলোমিটার লিখে নির্ভুল সরকারি ভাড়ার হিসেব দেখতে পারেন।
+
+          </p>
+
+        </div>
+
+      }
+
+    </div>
+
+    <!-- GPS Error Message with direct Map Picker button -->
+
+    @if (gpsError()) {
+
+      <div class="alert-notice gps-alert">
+
+        <div class="alert-content">
+
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+
+            <circle cx="12" cy="12" r="10"></circle>
+
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+
+          </svg>
+
+          <span class="alert-text">{{ gpsError() }}</span>
+
+        </div>
+
+        <button type="button" class="alert-map-action-btn" (click)="openMapPicker('from')">
+
+          📍 ম্যাপে স্থান পিন করুন
+
+        </button>
+
+      </div>
+
+    }
+
+    <!-- Validation Error Alert -->
+
+    @if (validationMessage()) {
+
+      <div class="alert-notice validation-alert">
+
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+
+          <circle cx="12" cy="12" r="10"></circle>
+
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+
+        </svg>
+
+        <span>{{ validationMessage() }}</span>
+
+      </div>
+
+    }
+
+    <!-- Transportation Selection Grid -->
+
+    <div class="transport-section">
+
+      <span class="transport-label">যানবাহন নির্বাচন করুন:</span>
+
+      <div class="transport-grid" role="radiogroup" aria-label="বাহন নির্বাচন">
+
+        <!-- 1. Bus -->
+
+        <button
+
+          type="button"
+
+          class="transport-option"
+
+          [class.selected]="fareService.selectedTransport() === 'bus'"
+
+          (click)="selectTransport('bus')"
+
+          role="radio"
+
+          [attr.aria-checked]="fareService.selectedTransport() === 'bus'"
+
+        >
+
+          <div class="transport-icon-box">
+
+            <svg viewBox="0 0 48 48" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+
+              <rect x="8" y="8" width="32" height="28" rx="5" fill="none"></rect>
+
+              <line x1="8" y1="22" x2="40" y2="22"></line>
+
+              <line x1="24" y1="8" x2="24" y2="22"></line>
+
+              <rect x="15" y="11" width="18" height="4" rx="1" fill="currentColor" opacity="0.3"></rect>
+
+              <circle cx="14" cy="30" r="2" fill="currentColor"></circle>
+
+              <circle cx="34" cy="30" r="2" fill="currentColor"></circle>
+
+              <circle cx="15" cy="38" r="3" fill="currentColor"></circle>
+
+              <circle cx="33" cy="38" r="3" fill="currentColor"></circle>
+
+            </svg>
+
+          </div>
+
+          <span class="transport-name">বাস</span>
+
+        </button>
+
+        <!-- 2. Rickshaw -->
+
+        <button
+
+          type="button"
+
+          class="transport-option"
+
+          [class.selected]="fareService.selectedTransport() === 'rickshaw'"
+
+          (click)="selectTransport('rickshaw')"
+
+          role="radio"
+
+          [attr.aria-checked]="fareService.selectedTransport() === 'rickshaw'"
+
+        >
+
+          <div class="transport-icon-box">
+
+            <svg viewBox="0 0 48 48" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+
+              <circle cx="12" cy="36" r="6" fill="none"></circle>
+
+              <circle cx="36" cy="36" r="6" fill="none"></circle>
+
+              <path d="M26 14 C 28 8, 38 8, 40 16 L 38 26 L 24 26 Z" fill="none"></path>
+
+              <line x1="12" y1="36" x2="24" y2="26"></line>
+
+              <line x1="24" y1="26" x2="36" y2="36"></line>
+
+              <line x1="12" y1="36" x2="16" y2="22"></line>
+
+              <path d="M14 20 L 19 22"></path>
+
+            </svg>
+
+          </div>
+
+          <span class="transport-name">রিকশা</span>
+
+        </button>
+
+        <!-- 3. CNG Auto-Rickshaw -->
+
+        <button
+
+          type="button"
+
+          class="transport-option"
+
+          [class.selected]="fareService.selectedTransport() === 'cng'"
+
+          (click)="selectTransport('cng')"
+
+          role="radio"
+
+          [attr.aria-checked]="fareService.selectedTransport() === 'cng'"
+
+        >
+
+          <div class="transport-icon-box">
+
+            <svg viewBox="0 0 48 48" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+
+              <path d="M10 34 L 10 24 L 18 10 L 32 10 L 38 22 L 38 34 Z" fill="none"></path>
+
+              <path d="M18 12 L 20 22 L 34 22 L 31 12 Z" fill="none"></path>
+
+              <circle cx="10" cy="27" r="1.5" fill="currentColor"></circle>
+
+              <circle cx="14" cy="37" r="4.5" fill="currentColor"></circle>
+
+              <circle cx="34" cy="37" r="4.5" fill="currentColor"></circle>
+
+            </svg>
+
+          </div>
+
+          <span class="transport-name">সিএনজি</span>
+
+        </button>
+
+        <!-- 4. Bike (Ride-sharing) -->
+
+        <button
+
+          type="button"
+
+          class="transport-option"
+
+          [class.selected]="fareService.selectedTransport() === 'bike'"
+
+          (click)="selectTransport('bike')"
+
+          role="radio"
+
+          [attr.aria-checked]="fareService.selectedTransport() === 'bike'"
+
+        >
+
+          <div class="transport-icon-box">
+
+            <svg viewBox="0 0 48 48" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+
+              <circle cx="12" cy="34" r="6" fill="none"></circle>
+
+              <circle cx="36" cy="34" r="6" fill="none"></circle>
+
+              <path d="M12 34 L 20 24 L 28 24 L 36 34" fill="none"></path>
+
+              <path d="M20 24 L 24 16 L 28 16" fill="none"></path>
+
+              <line x1="28" y1="16" x2="33" y2="20"></line>
+
+              <line x1="33" y1="16" x2="31" y2="20"></line>
+
+            </svg>
+
+          </div>
+
+          <span class="transport-name">বাইক</span>
+
+        </button>
+
+      </div>
+
+    </div>
+
+    <!-- Primary Action CTA -->
+
+    <div class="action-section">
+
+      <button
+
+        type="submit"
+
+        class="find-fare-cta"
+
+        [disabled]="fareService.isCalculating()"
+
+      >
+
+        @if (fareService.isCalculating()) {
+
+          <span class="btn-spinner"></span>
+
+          <span>ভাড়া যাচাই করা হচ্ছে...</span>
+
+        } @else {
+
+          <span class="btn-icon">
+
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+
+              <circle cx="11" cy="11" r="8"></circle>
+
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+
+            </svg>
+
+          </span>
+
+          <span class="cta-text">ভাড়া দেখুন</span>
+
+        }
+
+      </button>
+
+    </div>
+
+  </form>
+
+  <!-- Interactive Map Picker Modal -->
+
+  <app-map-picker-modal
+
+    [isOpen]="isMapPickerOpen()"
+
+    [title]="mapPickerTitle()"
+
+    [fieldLabel]="mapPickerField() === 'from' ? 'যাত্রার শুরুর স্থান' : 'গন্তব্য স্থান'"
+
+    [initialName]="mapPickerField() === 'from' ? fromQuery() : toQuery()"
+
+    (locationSelected)="onLocationPickedFromMap($event)"
+
+    (closed)="isMapPickerOpen.set(false)"
+
+  ></app-map-picker-modal>
+
+</div>
+
