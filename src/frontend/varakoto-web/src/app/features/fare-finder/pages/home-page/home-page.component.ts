@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, computed, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { RouteMapComponent } from '../../components/route-map/route-map.component';
@@ -90,6 +90,20 @@ export class HomePageComponent implements OnInit, OnDestroy {
   readonly activeNavTab = signal<'finder' | 'routes' | 'share' | 'district' | 'info'>('finder');
   readonly isInfoSheetOpen = signal<boolean>(false);
   readonly isKeyboardOpen = signal<boolean>(false);
+  readonly isMapCollapsed = signal<boolean>(false);
+
+  constructor() {
+    effect(() => {
+      const res = this.fareService.latestResult();
+      if (res && typeof window !== 'undefined') {
+        // When calculation result arrives, smoothly scroll to top so the compact map
+        // and the main fare result card header are immediately framed in the viewport.
+        setTimeout(() => {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 80);
+      }
+    });
+  }
 
   private handleFocusIn?: (e: FocusEvent) => void;
   private handleFocusOut?: () => void;
@@ -166,11 +180,17 @@ export class HomePageComponent implements OnInit, OnDestroy {
     this.nativeMobile.hapticSelection();
   }
 
+  toggleMapCollapsed(): void {
+    this.nativeMobile.hapticSelection();
+    this.isMapCollapsed.update(v => !v);
+  }
+
   showFinder(): void {
     this.selectedRouteOverride.set(null);
     this.nativeMobile.hapticSelection();
     this.activeNavTab.set('finder');
     this.currentView.set('finder');
+    this.isMapCollapsed.set(false);
     this.fareService.clearResult();
     if (typeof window !== 'undefined') {
       window.scrollTo({ top: 0, behavior: 'smooth' });

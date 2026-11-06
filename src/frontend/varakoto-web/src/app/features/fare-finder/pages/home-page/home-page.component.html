@@ -122,17 +122,40 @@
 
       <div class="main-layout-grid">
         <!-- Animated Route Map Panel (LEFT) -->
-        <div class="map-column">
-          <app-route-map
-            [from]="resultFrom()"
-            [to]="resultTo()"
-            [vehicle]="resultVehicle()"
-            [distanceKm]="resultDistanceKm()"
-            [durationMinutes]="resultDurationMinutes()"
-            [fareAmount]="resultFareAmount()"
-            [fareDisplayBn]="resultFareDisplayBn()"
-            [replayTrigger]="replayTrigger()"
-          ></app-route-map>
+        <div class="map-column" [class.is-collapsed]="isMapCollapsed()">
+          @if (fareService.latestResult()) {
+            <div class="mobile-map-bar mobile-only">
+              <span class="map-bar-title">
+                <i class="map-indicator-dot"></i>
+                <span>লাইভ রুট ম্যাপ প্রিভিউ</span>
+              </span>
+              <button
+                type="button"
+                class="map-toggle-pill"
+                (click)="toggleMapCollapsed()"
+                [attr.aria-label]="isMapCollapsed() ? 'ম্যাপ দেখুন' : 'ম্যাপ লুকান'"
+              >
+                @if (isMapCollapsed()) {
+                  <span>🗺️ ম্যাপ দেখুন</span>
+                } @else {
+                  <span>✕ ম্যাপ লুকান</span>
+                }
+              </button>
+            </div>
+          }
+
+          <div class="map-wrapper" [class.is-collapsed]="isMapCollapsed()">
+            <app-route-map
+              [from]="resultFrom()"
+              [to]="resultTo()"
+              [vehicle]="resultVehicle()"
+              [distanceKm]="resultDistanceKm()"
+              [durationMinutes]="resultDurationMinutes()"
+              [fareAmount]="resultFareAmount()"
+              [fareDisplayBn]="resultFareDisplayBn()"
+              [replayTrigger]="replayTrigger()"
+            ></app-route-map>
+          </div>
         </div>
 
         <!-- Cards Column (RIGHT) -->

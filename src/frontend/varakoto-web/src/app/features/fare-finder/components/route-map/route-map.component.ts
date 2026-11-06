@@ -424,9 +424,20 @@ export class RouteMapComponent implements OnInit, OnDestroy {
     if (!stage || !canvas) return;
 
     const r = stage.getBoundingClientRect();
-    this.W = r.width || 600;
-    this.H = r.height || 520;
-    this.dpr = typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, 2) : 1;
+    const newW = Math.round(r.width || 600);
+    const newH = Math.round(r.height || 520);
+    const newDpr = typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, 2) : 1;
+
+    if (newW <= 0 || newH <= 0) return;
+
+    // Avoid canvas buffer re-allocation during touch/scroll when dimensions have not changed
+    if (this.W === newW && this.H === newH && this.dpr === newDpr) {
+      return;
+    }
+
+    this.W = newW;
+    this.H = newH;
+    this.dpr = newDpr;
 
     canvas.width = Math.round(this.W * this.dpr);
     canvas.height = Math.round(this.H * this.dpr);
@@ -607,16 +618,16 @@ export class RouteMapComponent implements OnInit, OnDestroy {
   private computeFit(b: BoundingBox): CameraState {
     const isMobile = this.W < 600;
     // Destination pin extends 76px above destination node, plus name chip headroom.
-    // Top HUD chip occupies top 44px.
-    const padTop = isMobile ? 85 : 90;
-    // The bottom glass card occupies ~100px on mobile, ~120px on desktop.
-    // padBot ensures the origin/destination marker and road line are never obscured by the glass info card.
-    const padBot = isMobile ? 140 : 155;
+    // On mobile, the compact map has no bottom glass card so padding is streamlined.
+    const padTop = isMobile ? 38 : 90;
+    // On mobile, bottom glass card is hidden in favor of the result card below it.
+    // On desktop, the bottom glass card occupies ~120px.
+    const padBot = isMobile ? 22 : 155;
     // padX prevents name chips from touching the left/right canvas borders.
-    const padX = isMobile ? Math.max(45, this.W * 0.12) : Math.max(70, this.W * 0.12);
+    const padX = isMobile ? Math.max(25, this.W * 0.08) : Math.max(70, this.W * 0.12);
 
-    const aw = Math.max(100, this.W - padX * 2);
-    const ah = Math.max(100, this.H - padTop - padBot);
+    const aw = Math.max(80, this.W - padX * 2);
+    const ah = Math.max(80, this.H - padTop - padBot);
 
     // Zoom level: allow z to scale down to 0.05 so routes across the entire city fit completely without cutoff.
     const fitW = Math.max(b.w, 120);

@@ -172,6 +172,16 @@ describe('HomePageComponent', () => {
     expect(component.isContributionModalOpen()).toBe(false);
   });
 
+  it('should toggle mobile map collapse state', () => {
+    expect(component.isMapCollapsed()).toBe(false);
+
+    component.toggleMapCollapsed();
+    expect(component.isMapCollapsed()).toBe(true);
+
+    component.toggleMapCollapsed();
+    expect(component.isMapCollapsed()).toBe(false);
+  });
+
   it('should render recent community contributions section', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     const section = compiled.querySelector('.recent-contributions-section');
