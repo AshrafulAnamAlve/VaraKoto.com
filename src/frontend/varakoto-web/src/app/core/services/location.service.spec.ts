@@ -136,5 +136,39 @@ describe('LocationService', () => {
       expect(chittagongResults.length).toBeGreaterThan(0);
       expect(chittagongResults[0].nameEn).toContain('Agrabad');
     });
+
+    it('should match local neighborhoods with English digits (e.g. mirpur 2 -> মিরপুর ২)', () => {
+      const results = service.searchLocalHubs('mirpur 2', 'dhaka', 5);
+      expect(results.length).toBeGreaterThan(0);
+      expect(results[0].nameEn.toLowerCase()).toContain('mirpur 2');
+    });
+
+    it('should match newly curated local neighborhoods (bosila, bonosree, aftabnagar, shankar)', () => {
+      const bosila = service.searchLocalHubs('bosila', 'dhaka', 5);
+      expect(bosila.length).toBeGreaterThan(0);
+      expect(bosila.some(r => r.nameEn.toLowerCase().includes('bosila') || r.nameBn.includes('বসিলা'))).toBe(true);
+
+      const banasree = service.searchLocalHubs('bonosree', 'dhaka', 5);
+      expect(banasree.length).toBeGreaterThan(0);
+      expect(banasree.some(r => r.nameEn.toLowerCase().includes('banasree') || r.nameBn.includes('বনশ্রী'))).toBe(true);
+
+      const aftabnagar = service.searchLocalHubs('aftabnagar', 'dhaka', 5);
+      expect(aftabnagar.length).toBeGreaterThan(0);
+      expect(aftabnagar.some(r => r.nameEn.toLowerCase().includes('aftabnagar') || r.nameBn.includes('আফতাবনগর'))).toBe(true);
+
+      const shankar = service.searchLocalHubs('shankar', 'dhaka', 5);
+      expect(shankar.length).toBeGreaterThan(0);
+      expect(shankar.some(r => r.nameEn.toLowerCase().includes('shankar') || r.nameBn.includes('শংকর'))).toBe(true);
+    });
+
+    it('should match locations across multiple districts in Bangladesh', () => {
+      const sylhet = service.searchLocalHubs('Zindabazar', 'sylhet', 5);
+      expect(sylhet.length).toBeGreaterThan(0);
+      expect(sylhet.some(r => r.nameEn.includes('Zindabazar'))).toBe(true);
+
+      const rajshahi = service.searchLocalHubs('Shaheb Bazar', 'rajshahi', 5);
+      expect(rajshahi.length).toBeGreaterThan(0);
+      expect(rajshahi.some(r => r.nameEn.includes('Saheb Bazar') || r.nameBn.includes('সাহেব বাজার'))).toBe(true);
+    });
   });
 });
