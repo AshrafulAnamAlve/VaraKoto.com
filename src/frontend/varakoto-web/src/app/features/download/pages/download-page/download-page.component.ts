@@ -16,7 +16,7 @@ export class DownloadPageComponent {
   readonly themeService = inject(ThemeService);
   readonly nativeMobile = inject(NativeMobileService);
 
-  readonly appVersion = 'v1.1.6';
+  readonly appVersion = 'v1.1.7';
   readonly appSize = '~9.7 MB';
   readonly minAndroid = 'Android 7.0+';
 
@@ -24,7 +24,7 @@ export class DownloadPageComponent {
   readonly directDownloadUrl = 'downloads/varakoto.apk';
 
   // GitHub Releases mirror link
-  readonly githubReleaseUrl = 'https://github.com/AshrafulAnamAlve/VaraKoto.com/releases/download/v1.1.6/VaraKoto.apk';
+  readonly githubReleaseUrl = 'https://github.com/AshrafulAnamAlve/VaraKoto.com/releases/download/v1.1.7/VaraKoto.apk';
 
   readonly features = [
     { icon: '⚡', title: '৬০ FPS সিনেমাটিক রুট ম্যাপ', desc: 'কম্পিউটেড রোড গ্রিডে লাইভ অ্যানিমেশন' },

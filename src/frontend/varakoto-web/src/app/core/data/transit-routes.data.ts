@@ -181,6 +181,54 @@ export const DHAKA_BUS_ROUTES: BusRouteInfo[] = [
     nameEn: 'Dhaka Chaka AC Bus',
     stops: ['police plaza', 'gulshan 1', 'gulshan 2', 'natun bazar'],
     stopsBn: ['পুলিশ প্লাজা', 'গুলশান ১', 'গুলশান ২', 'নতুন বাজার']
+  },
+  {
+    nameBn: 'আশিয়ান পরিবহন',
+    nameEn: 'Ashian Paribahan',
+    stops: ['gabtoli', 'technical', 'shyamoli', 'asad gate', 'farmgate', 'mohakhali', 'kakoli', 'airport', 'uttara', 'abdullahpur'],
+    stopsBn: ['গাবতলী', 'টেকনিক্যাল', 'শ্যামলী', 'আসাদ গেট', 'ফার্মগেট', 'মহাখালী', 'কাকলী', 'এয়ারপোর্ট', 'উত্তরা', 'আবদুল্লাহপুর']
+  },
+  {
+    nameBn: 'মৌমিতা পরিবহন',
+    nameEn: 'Moumita Paribahan',
+    stops: ['signboard', 'jatrabari', 'sayedabad', 'shahbagh', 'science lab', 'dhanmondi', 'mohammadpur', 'bosila'],
+    stopsBn: ['সাইনবোর্ড', 'যাত্রাবাড়ী', 'সায়েদাবাদ', 'শাহবাগ', 'সায়েন্স ল্যাব', 'ধানমন্ডি', 'মোহাম্মদপুর', 'বসিলা']
+  },
+  {
+    nameBn: 'সাভার পরিবহন',
+    nameEn: 'Savar Paribahan',
+    stops: ['savar', 'hemayetpur', 'aminbazar', 'gabtoli', 'shyamoli', 'asad gate', 'farmgate', 'shahbagh', 'gulistan'],
+    stopsBn: ['সাভার', 'হেমায়েতপুর', 'আমিনবাজার', 'গাবতলী', 'শ্যামলী', 'আসাদ গেট', 'ফার্মগেট', 'শাহবাগ', 'গুলিস্তান']
+  },
+  {
+    nameBn: 'হিমাচল পরিবহন',
+    nameEn: 'Himachol Paribahan',
+    stops: ['mirpur 12', 'mirpur 10', 'kochukhet', 'banani', 'gulshan 2', 'badda', 'rampura'],
+    stopsBn: ['মিরপুর ১২', 'মিরপুর ১০', 'কচুক্ষেত', 'বনানী', 'গুলশান ২', 'বাড্ডা', 'রামপুরা']
+  },
+  {
+    nameBn: 'মিরপুর ইউনাইটেড',
+    nameEn: 'Mirpur United',
+    stops: ['mirpur 1', 'mirpur 2', 'mirpur 10', 'kalshi', 'ecb', 'kuril', 'natun bazar', 'badda'],
+    stopsBn: ['মিরপুর ১', 'মিরপুর ২', 'মিরপুর ১০', 'কালশী', 'ইসিবি', 'কুড়িল', 'নতুন বাজার', 'বাড্ডা']
+  },
+  {
+    nameBn: 'গাজীপুর পরিবহন',
+    nameEn: 'Gazipur Paribahan',
+    stops: ['gazipur chowrasta', 'tongi', 'airport', 'khilkhet', 'mohakhali', 'mogbazar', 'kakrail', 'gulistan'],
+    stopsBn: ['গাজীপুর চৌরাস্তা', 'টঙ্গী', 'এয়ারপোর্ট', 'খিলক্ষেত', 'মহাখালী', 'মগবাজার', 'কাকরাইল', 'গুলিস্তান']
+  },
+  {
+    nameBn: 'আল মক্কা পরিবহন',
+    nameEn: 'Al Mokka Paribahan',
+    stops: ['gabtoli', 'technical', 'shyamoli', 'asad gate', 'science lab', 'new market', 'azimpur', 'motijheel'],
+    stopsBn: ['গাবতলী', 'টেকনিক্যাল', 'শ্যামলী', 'আসাদ গেট', 'সায়েন্স ল্যাব', 'নিউ মার্কেট', 'আজিমপুর', 'মতিঝিল']
+  },
+  {
+    nameBn: 'রইস পরিবহন',
+    nameEn: 'Rois Paribahan',
+    stops: ['bosila', 'mohammadpur', 'asad gate', 'farmgate', 'mohakhali', 'kuril', 'airport', 'abdullahpur'],
+    stopsBn: ['বসিলা', 'মোহাম্মদপুর', 'আসাদ গেট', 'ফার্মগেট', 'মহাখালী', 'কুড়িল', 'এয়ারপোর্ট', 'আবদুল্লাহপুর']
   }
 ];
 

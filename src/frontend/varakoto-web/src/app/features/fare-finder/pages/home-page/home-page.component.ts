@@ -54,6 +54,23 @@ export class HomePageComponent implements OnInit, OnDestroy {
     return res?.toLocation?.nameBn || res?.toLocation?.displayName || res?.toLocation?.nameEn || '';
   });
 
+  readonly resultFromCoords = computed(() => {
+    const res = this.fareService.latestResult();
+    if (!res?.fromLocation?.latitude || !res?.fromLocation?.longitude) return null;
+    return { lat: Number(res.fromLocation.latitude), lng: Number(res.fromLocation.longitude) };
+  });
+
+  readonly resultToCoords = computed(() => {
+    const res = this.fareService.latestResult();
+    if (!res?.toLocation?.latitude || !res?.toLocation?.longitude) return null;
+    return { lat: Number(res.toLocation.latitude), lng: Number(res.toLocation.longitude) };
+  });
+
+  readonly resultDistrict = computed(() => {
+    const res = this.fareService.latestResult();
+    return res?.fromLocation?.district || this.districtService.currentDistrict().nameEn || 'Dhaka';
+  });
+
   readonly resultDistanceKm = computed(() => {
     const override = this.selectedRouteOverride();
     if (override) return override.distanceKm;

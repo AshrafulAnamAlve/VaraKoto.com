@@ -142,6 +142,9 @@ export class RouteMapComponent implements OnInit, OnDestroy {
   readonly fareAmount = input<number | null>(null);
   readonly fareDisplayBn = input<string>('');
   readonly replayTrigger = input<number>(0);
+  readonly fromCoords = input<{ lat: number; lng: number } | null>(null);
+  readonly toCoords = input<{ lat: number; lng: number } | null>(null);
+  readonly district = input<string>('');
 
   @ViewChild('stage', { static: true }) stageRef!: ElementRef<HTMLElement>;
   @ViewChild('mapCanvas', { static: true }) canvasRef!: ElementRef<HTMLCanvasElement>;
@@ -464,6 +467,27 @@ export class RouteMapComponent implements OnInit, OnDestroy {
   }
 
   /* ----------------- Pathfinding & Geometry ----------------- */
+  private resolveGeographicNode(
+    name: string,
+    targetX: number,
+    targetY: number,
+    excludeNode?: number
+  ): { name: string; node: number } {
+    let best = -1;
+    let bd = Infinity;
+    const candidates = this.mainNodes.length > 0 ? this.mainNodes : this.nodes.map((_, i) => i);
+    candidates.forEach((nodeIdx) => {
+      if (nodeIdx === excludeNode) return;
+      const n = this.nodes[nodeIdx];
+      const d = Math.pow(n.x - targetX, 2) + Math.pow(n.y - targetY, 2);
+      if (d < bd) {
+        bd = d;
+        best = nodeIdx;
+      }
+    });
+    return { name: name.trim(), node: best !== -1 ? best : (excludeNode === 0 ? 1 : 0) };
+  }
+
   private resolveNode(name: string, excludeNode?: number): { name: string; node: number } {
     const trimmed = name.trim().toLowerCase();
     const match = this.places.find(
@@ -689,8 +713,38 @@ export class RouteMapComponent implements OnInit, OnDestroy {
   /* ----------------- Route Execution & State ----------------- */
   startRun(fromName: string, toName: string): void {
     this.resize();
-    const fromLoc = this.resolveNode(fromName);
-    const toLoc = this.resolveNode(toName, fromLoc.node);
+    const fromC = this.fromCoords();
+    const toC = this.toCoords();
+
+    let fromLoc: { name: string; node: number };
+    let toLoc: { name: string; node: number };
+
+    if (fromC && toC && (fromC.lat !== toC.lat || fromC.lng !== toC.lng)) {
+      const dLng = toC.lng - fromC.lng;
+      const midLat = ((fromC.lat + toC.lat) / 2) * (Math.PI / 180);
+      const dLat = toC.lat - fromC.lat;
+
+      const cosLat = Math.cos(midLat);
+      const dxGeo = dLng * cosLat;
+      const dyGeo = -dLat; // Invert latitude because canvas Y increases downwards
+
+      const angle = Math.atan2(dyGeo, dxGeo);
+      const cx = this.WW / 2;
+      const cy = this.WH / 2;
+
+      // Span distance across canvas proportional to route orientation
+      const spanRadius = Math.min(this.WW, this.WH) * 0.38;
+      const fromTargetX = clamp(cx - Math.cos(angle) * spanRadius, this.WW * 0.08, this.WW * 0.92);
+      const fromTargetY = clamp(cy - Math.sin(angle) * spanRadius, this.WH * 0.08, this.WH * 0.92);
+      const toTargetX = clamp(cx + Math.cos(angle) * spanRadius, this.WW * 0.08, this.WW * 0.92);
+      const toTargetY = clamp(cy + Math.sin(angle) * spanRadius, this.WH * 0.08, this.WH * 0.92);
+
+      fromLoc = this.resolveGeographicNode(fromName, fromTargetX, fromTargetY);
+      toLoc = this.resolveGeographicNode(toName, toTargetX, toTargetY, fromLoc.node);
+    } else {
+      fromLoc = this.resolveNode(fromName);
+      toLoc = this.resolveNode(toName, fromLoc.node);
+    }
 
     let ids = this.dijkstra(fromLoc.node, toLoc.node);
     if (ids.length < 2) {
@@ -1170,14 +1224,30 @@ export class RouteMapComponent implements OnInit, OnDestroy {
     // Screen-space overlay (pins, beams, name chips)
     ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
 
-    // Background place labels when zoomed in
-    if (z > 0.4) {
-      const a = clamp((z - 0.4) / 0.4) * (R ? 0.3 : 0.55);
+    // Background place labels when zoomed in (only show if route is in Dhaka and places are close to the route corridor)
+    const currentDist = (this.district() || '').toLowerCase();
+    const isDhaka = !currentDist || currentDist.includes('dhaka');
+
+    if (z > 0.45 && isDhaka) {
+      const a = clamp((z - 0.45) / 0.45) * (R ? 0.28 : 0.45);
       ctx.font = '600 13px "Baloo Da 2", system-ui, sans-serif';
       ctx.textBaseline = 'middle';
       ctx.textAlign = 'left';
       for (const p of this.places) {
         if (R && (p.node === R.fromNode || p.node === R.toNode)) continue;
+
+        // If route is active, ONLY draw places that are physically near the active route path!
+        if (R) {
+          const placeNode = this.nodes[p.node];
+          let minDistSq = Infinity;
+          for (let step = 0; step < R.path.pts.length; step += 4) {
+            const pt = R.path.pts[step];
+            const distSq = Math.pow(pt.x - placeNode.x, 2) + Math.pow(pt.y - placeNode.y, 2);
+            if (distSq < minDistSq) minDistSq = distSq;
+          }
+          if (minDistSq > 200 * 200) continue;
+        }
+
         const s = this.toScreen(this.nodes[p.node]);
         if (s.x < -80 || s.x > this.W + 80 || s.y < -20 || s.y > this.H + 20) continue;
         ctx.fillStyle = `rgba(255,255,255,${a})`;
